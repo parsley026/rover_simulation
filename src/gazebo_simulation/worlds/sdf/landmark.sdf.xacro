@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<sdf version="1.7" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="landmark" params="id *pose">
+
+    <xacro:property name="pole_above_ground" value="0.3"/>
+    <xacro:property name="box_width" value="0.25"/>
+    <xacro:property name="pole_below_ground" value="0.1"/>
+    <xacro:property name="box_height" value="0.32"/>
+    <xacro:property name="sheet_width" value="0.005"/>
+    <xacro:property name="sheet_out" value="0.001"/>
+
+    <model name="landmark${id}">
+      <xacro:insert_block name="pose"/>
+      <static>true</static>
+
+      <link name="landmark">
+        <visual name="pole_visual">
+          <pose>0 0 ${(pole_above_ground - pole_below_ground)/2} 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.01</radius>
+              <length>${pole_above_ground + pole_below_ground}</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.3 0.2 0.1 1</ambient>
+            <diffuse>0.6 0.4 0.2 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+        </visual>
+
+        <collision name="pole_collision">
+          <pose>0 0 ${(pole_above_ground - pole_below_ground)/2} 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.01</radius>
+              <length>${pole_above_ground + pole_below_ground}</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <visual name="box_visual">
+          <pose>0 0 ${pole_above_ground + box_height/2} 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>${box_width} ${box_width} ${box_height}</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.52 0.25 1.0</ambient>
+            <diffuse>0.8 0.52 0.25 1.0</diffuse>
+            <specular>0.1 0.1 0.1 1.0</specular>
+            <emissive>0.0 0.0 0.0 1.0</emissive>
+          </material>
+        </visual>
+
+        <collision name="box_collision">
+          <pose>0 0 ${pole_above_ground + box_height/2} 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>${box_width} ${box_width} ${box_height}</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <xacro:macro name="landmark_sheet" params="name *pose">
+          <visual name="${name}">
+            <xacro:insert_block name="pose"/>
+            <geometry>
+              <box>
+                <size>0.21 ${sheet_width} 0.297</size>
+              </box>
+            </geometry>
+            <material>
+            <double_sided>true</double_sided>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>1 1 1 1</specular>
+            <emissive>0 0 0 1</emissive>
+              <pbr>
+                <metal>
+                  <albedo_map>model://materials/textures/erc_landmark_${id}.png</albedo_map>
+                  <roughness>0.5</roughness>   <!-- można dostosować -->
+                  <metalness>0.0</metalness>   <!-- plastik, nie metal -->
+                </metal>
+              </pbr>
+            </material>
+          </visual>
+        </xacro:macro>
+
+        <xacro:landmark_sheet name="sheet1">
+          <pose>0 ${(box_width - sheet_width)/2 + sheet_out} ${pole_above_ground + box_height/2} 0 0 0</pose>
+        </xacro:landmark_sheet>
+
+        <xacro:landmark_sheet name="sheet2">
+          <pose>0 -${(box_width - sheet_width)/2 + sheet_out} ${pole_above_ground + box_height/2} 0 0 0</pose>
+        </xacro:landmark_sheet>
+
+        <xacro:landmark_sheet name="sheet3">
+          <pose>${(box_width - sheet_width)/2 + sheet_out} 0 ${pole_above_ground + box_height/2} 0 0 ${pi/2}</pose>
+        </xacro:landmark_sheet>
+
+        <xacro:landmark_sheet name="sheet4">
+          <pose>-${(box_width - sheet_width)/2 + sheet_out} 0 ${pole_above_ground + box_height/2} 0 0 ${pi/2}</pose>
+        </xacro:landmark_sheet>
+
+      </link>
+    </model>
+  </xacro:macro>
+</sdf>

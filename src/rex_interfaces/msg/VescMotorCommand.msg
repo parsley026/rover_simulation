@@ -1,0 +1,6 @@
+uint8 command_id
+float32 set_value
+uint8 set_origin_data
+float32 set_pos_speed_loop_position
+float32 set_pos_speed_loop_speed
+float32 set_pos_speed_loop_acceleration

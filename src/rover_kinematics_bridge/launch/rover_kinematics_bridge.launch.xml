@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="rover_kinematics_bridge" exec="rover_kinematics_bridge_node" name="rover_kinematics_bridge_node" output="screen" />
+</launch>

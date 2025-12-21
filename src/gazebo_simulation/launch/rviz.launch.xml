@@ -1,0 +1,4 @@
+<launch>
+    <arg name="rviz_config_path" default="$(find-pkg-share rover_description)/config/config.rviz"/>
+    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(var rviz_config_path)" />
+</launch>

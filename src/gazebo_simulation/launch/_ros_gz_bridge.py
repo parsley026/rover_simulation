@@ -8,10 +8,10 @@ from launch.substitutions import PathJoinSubstitution
 def generate_launch_description() -> LaunchDescription:
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
 
-    config_file = LaunchConfiguration('config_file')
+    config_file = LaunchConfiguration('config-file')
 
     config_file_launch_arg = DeclareLaunchArgument(
-        'config_file',
+        'config-file',
         default_value=PathJoinSubstitution([pkg_project_gazebo, 'config', 'rex_ros_gz_bridge.yaml']),
         description='Path to YAML config file for ros_gz_bridge'
     )

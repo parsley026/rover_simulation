@@ -13,7 +13,7 @@ from launch.launch_context import LaunchContext
 def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
-    world_file = LaunchConfiguration('world_file')
+    world_file = LaunchConfiguration('world-file')
     headless = LaunchConfiguration('headless')
     check_headless = headless.perform(context).strip().lower() in ('1', 'true')
 
@@ -32,7 +32,7 @@ def generate_launch_description() -> LaunchDescription:
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
 
     world_file_launch_arg = DeclareLaunchArgument(
-        'world_file',
+        'world-file',
         default_value=PathJoinSubstitution([pkg_project_gazebo, 'worlds', 'rex.sdf']),
         description='Path to SDF world file'
     )

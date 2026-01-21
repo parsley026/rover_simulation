@@ -26,15 +26,15 @@ def _parse_pose(s: str) -> list[str]:
         or not _check_float(coords[0])
         or not _check_float(coords[1])
         or not _check_float(coords[2])):
-        return ['0', '0', '0.5']
+        return ['0', '0', '10']
     
     return coords
 
 def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
 
-    model_file = LaunchConfiguration('model_file')
+    model_file = LaunchConfiguration('model-file')
     pose = LaunchConfiguration('pose')
-    reset_robot_arg = LaunchConfiguration('reset_robot')
+    reset_robot_arg = LaunchConfiguration('reset-robot')
 
     model_file_desc = model_file.perform(context)
     model_coords = _parse_pose(pose.perform(context))
@@ -91,19 +91,19 @@ def generate_launch_description() -> LaunchDescription:
     pkg_project_description = get_package_share_directory('rover_description')
     
     model_file_launch_arg = DeclareLaunchArgument(
-        'model_file',
+        'model-file',
         default_value=PathJoinSubstitution([pkg_project_description, 'urdf', 'rex.urdf']),
         description='Path to URDF model file'
     )
 
     pose_launch_arg = DeclareLaunchArgument(
         'pose',
-        default_value='0 0 0.5',
+        default_value='0 0 10',
         description='XYZ coordinates of the running model'
     )
 
     reset_robot_arg = DeclareLaunchArgument(
-        'reset_robot', 
+        'reset-robot', 
         default_value='false',
         description='Reset the robot in Gazebo.'
     )

@@ -1,3 +1,5 @@
+from typing import Any
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -6,8 +8,9 @@ from launch.actions import OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
+from launch.launch_context import LaunchContext
 
-def launch_setup(context, *_, **__):
+def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
     world_file = LaunchConfiguration('world_file')
@@ -25,7 +28,7 @@ def launch_setup(context, *_, **__):
     return [gazebo_sim]
 
 
-def generate_launch_description():
+def generate_launch_description() -> LaunchDescription:
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
 
     world_file_launch_arg = DeclareLaunchArgument(

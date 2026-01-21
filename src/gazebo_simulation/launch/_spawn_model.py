@@ -8,6 +8,7 @@ from launch.actions import OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
 from launch.launch_context import LaunchContext
+from launch.conditions import IfCondition
 
 def _check_float(s: str) -> bool:
     try:
@@ -33,6 +34,7 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
 
     model_file = LaunchConfiguration('model_file')
     pose = LaunchConfiguration('pose')
+    reset_robot_arg = LaunchConfiguration('reset_robot')
 
     model_file_desc = model_file.perform(context)
     model_coords = _parse_pose(pose.perform(context))
@@ -69,7 +71,20 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
         output="screen",
     )
 
-    return [robot_state_publisher, spawn_entity]
+    reset_robot = Node(
+        package='ros2cli',
+        executable='ros2',
+        arguments=[
+            'service', 'call', 
+            '/world/default/reset', 
+            'ros_gz_sim_msgs/srv/ResetWorld', 
+            '{all:true}'
+        ],
+        condition=IfCondition(reset_robot_arg),
+        output='screen'
+    )
+
+    return [robot_state_publisher, spawn_entity, reset_robot]
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -87,7 +102,13 @@ def generate_launch_description() -> LaunchDescription:
         description='XYZ coordinates of the running model'
     )
 
+    reset_robot_arg = DeclareLaunchArgument(
+        'reset_robot', 
+        default_value='false',
+        description='Reset the robot in Gazebo.'
+    )
+
     opaque_func = OpaqueFunction(function=launch_setup)
 
-    return LaunchDescription([model_file_launch_arg, pose_launch_arg, opaque_func])
+    return LaunchDescription([model_file_launch_arg, pose_launch_arg, reset_robot_arg, opaque_func])
 

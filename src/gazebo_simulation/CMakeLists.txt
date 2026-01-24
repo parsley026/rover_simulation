@@ -76,18 +76,9 @@ endif()
 #   TARGETS BasicSystem FullSystem
 #   DESTINATION lib/${PROJECT_NAME}
 # )
-file(GLOB xacro_files worlds/*.world.xacro)
-xacro_add_files(${xacro_files} TARGET generate_world_files)
 
-install(DIRECTORY launch config models media
+install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}/
-)
-
-# Install world files
-install(DIRECTORY worlds 
-  DESTINATION share/${PROJECT_NAME}/
-  # FILES_MATCHING PATTERN "*.world"
-  # PATTERN "sdf" EXCLUDE
 )
 
 # Following hooks are used to ensure that the correct environment variables

@@ -1,0 +1,4 @@
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/gazebo_simulation/worlds
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/gazebo_simulation/models
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/gazebo_simulation/media
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/rover_description/mesh

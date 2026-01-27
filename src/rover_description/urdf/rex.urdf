@@ -1095,4 +1095,63 @@
     </collision> 
   </gazebo>
     
+  <!-- ************************** OAK-D DEPTH CAMERA ************************** -->
+
+  <!-- OAK-D Camera Link -->
+  <link name="oakd_camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.03 0.03" />
+      </geometry>
+      <material name="oakd_camera_material">
+        <color rgba="0.2 0.2 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.03 0.03" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.2" />
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+  </link>
+
+  <!-- OAK-D Camera Joint (fixed to base_link, adjust pose as needed) -->
+  <joint name="oakd_camera_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="oakd_camera_link" />
+    <origin xyz="0.38 0 0.10" rpy="0 0 0" />
+  </joint>
+
+  <!-- OAK-D Camera Gazebo Sensor Plugin (simulation equivalent) -->
+  <gazebo reference="oakd_camera_link">
+    <sensor name="oakd_depth" type="depth_camera">
+      <always_on>true</always_on>
+      <update_rate>20.0</update_rate>
+      <visualize>false</visualize>
+      <topic>/oakd/depth/image_raw</topic>
+      <camera name="oakd_depth_camera">
+        <horizontal_fov>1.39626</horizontal_fov> <!-- ~80 degrees -->
+        <image>
+          <width>640</width>
+          <height>400</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>10.0</far>
+        </clip>
+        <depth_camera>
+          <output>true</output>
+        </depth_camera>
+      </camera>
+      <frame_id>oakd_camera_link</frame_id>
+    </sensor>
+  </gazebo>
+
 </robot>

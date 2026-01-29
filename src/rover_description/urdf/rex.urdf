@@ -1095,96 +1095,93 @@
     </collision> 
   </gazebo>
     
-  <!-- ************************** OAK-D DEPTH CAMERA ************************** -->
+  <!-- ************************** OAK-D ************************** -->
 
-  <!-- OAK-D Camera Link -->
-  <link name="oakd_camera_link">
+  <!-- OAK-D Camera -->
+  <link name="oakd_camera">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.03 0.03" />
+        <mesh filename="package://rover_description/meshes/oak_d.dae"/>
       </geometry>
-      <material name="oakd_camera_material">
-        <color rgba="0.2 0.2 0.2 1" />
-      </material>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.03 0.03" />
+        <mesh filename="package://rover_description/meshes/oak_d.dae"/>
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="0.2" />
+      <origin xyz="0 0 0" />
+      <mass value="0.1" />
       <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
     </inertial>
   </link>
 
-  <!-- OAK-D Camera Joint (fixed to base_link, adjust pose as needed) -->
-  <joint name="oakd_camera_joint" type="fixed">
+  <!-- OAK-D Camera Link(may need update) -->
+  <joint name="oakd_camera_link" type="fixed">
     <parent link="base_link" />
-    <child link="oakd_camera_link" />
+    <child link="oakd_camera" />
     <origin xyz="0.38 0 0.10" rpy="0 0 0" />
   </joint>
 
-  <!-- OAK-D Camera Gazebo Sensor Plugin (simulation equivalent) -->
-  <gazebo reference="oakd_camera_link">
+  <!-- OAK-D Camera Gazebo -->
+  <gazebo reference="oakd_camera">
     <sensor name="oakd_depth" type="depth_camera">
       <always_on>true</always_on>
       <update_rate>20.0</update_rate>
       <visualize>false</visualize>
       <topic>/oakd/depth/image_raw</topic>
       <camera name="oakd_depth_camera">
-        <horizontal_fov>1.39626</horizontal_fov> <!-- ~80 degrees -->
+      <camera_info_topic>/oakd/depth/camera_info</camera_info_topic>
+        <horizontal_fov>1.25663</horizontal_fov> <!-- 72 degrees -->
         <image>
           <width>640</width>
           <height>400</height>
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.1</near>
-          <far>10.0</far>
+          <near>0.8</near>
+          <far>12.0</far>
         </clip>
         <depth_camera>
-          <output>true</output>
+          <near>0.8</near>
+          <far>12.0</far>
         </depth_camera>
       </camera>
-      <frame_id>oakd_camera_link</frame_id>
+      <frame_id>oakd_camera</frame_id>
     </sensor>
 
-    <!-- OAK-D PointCloud2 (na podstawie depth_camera) -->
+    <!-- OAK-D PointCloud2 -->
     <sensor name="oakd_points" type="depth_camera">
       <always_on>true</always_on>
       <update_rate>20.0</update_rate>
       <visualize>false</visualize>
       <topic>/points</topic>
       <camera name="oakd_points_camera">
-        <horizontal_fov>1.39626</horizontal_fov>
+        <horizontal_fov>1.25663</horizontal_fov>
         <image>
           <width>640</width>
           <height>400</height>
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.1</near>
-          <far>10.0</far>
+          <near>0.8</near>
+          <far>12.0</far>
         </clip>
         <point_cloud>
           <output>true</output>
         </point_cloud>
       </camera>
-      <frame_id>oakd_camera_link</frame_id>
+      <frame_id>oakd_camera</frame_id>
     </sensor>
 
     <!-- OAK-D IMU -->
     <sensor name="oakd_imu" type="imu">
-      <always_on>true</always_on>
-      <update_rate>100.0</update_rate>
+      <always_on>1</always_on>
+      <update_rate>50</update_rate>
       <visualize>false</visualize>
       <topic>/imu/data</topic>
       <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
-      <frame_id>oakd_camera_link</frame_id>
+      <frame_id>oakd_camera</frame_id>
     </sensor>
 
     <!-- OAK-D RGB camera -->
@@ -1195,18 +1192,23 @@
       <topic>/rgb/image_raw</topic>
       <camera name="oakd_rgb_camera">
         <camera_info_topic>/rgb/camera_info</camera_info_topic>
-        <horizontal_fov>1.39626</horizontal_fov>
+        <horizontal_fov>1.20427</horizontal_fov> <!-- 69 degrees -->
         <image>
-          <width>640</width>
-          <height>400</height>
+          <width>1280</width>
+          <height>720</height>
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.1</near>
-          <far>10.0</far>
+          <near>0.2</near>
+          <far>5.0</far>
         </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
       </camera>
-      <frame_id>oakd_camera_link</frame_id>
+      <frame_id>oakd_camera</frame_id>
     </sensor>
 
     <!-- OAK-D stereo left camera -->
@@ -1217,18 +1219,18 @@
       <topic>/stereo/left/image_raw</topic>
       <camera name="oakd_stereo_left_camera">
         <camera_info_topic>/stereo/left/camera_info</camera_info_topic>
-        <horizontal_fov>1.39626</horizontal_fov>
+        <horizontal_fov>1.25663</horizontal_fov>
         <image>
           <width>640</width>
           <height>400</height>
-          <format>R8G8B8</format>
+          <format>L8</format>
         </image>
         <clip>
-          <near>0.1</near>
-          <far>10.0</far>
+          <near>0.8</near>
+          <far>12.0</far>
         </clip>
       </camera>
-      <frame_id>oakd_camera_link</frame_id>
+      <frame_id>oakd_camera</frame_id>
     </sensor>
 
     <!-- OAK-D stereo right camera -->
@@ -1239,18 +1241,18 @@
       <topic>/stereo/right/image_raw</topic>
       <camera name="oakd_stereo_right_camera">
         <camera_info_topic>/stereo/right/camera_info</camera_info_topic>
-        <horizontal_fov>1.39626</horizontal_fov>
+        <horizontal_fov>1.25663</horizontal_fov>
         <image>
           <width>640</width>
           <height>400</height>
-          <format>R8G8B8</format>
+          <format>L8</format>
         </image>
         <clip>
-          <near>0.1</near>
-          <far>10.0</far>
+          <near>0.8</near>
+          <far>12.0</far>
         </clip>
       </camera>
-      <frame_id>oakd_camera_link</frame_id>
+      <frame_id>oakd_camera</frame_id>
     </sensor>
   </gazebo>
 

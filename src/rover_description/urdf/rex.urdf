@@ -1098,7 +1098,7 @@
   <!-- ************************** OAK-D ************************** -->
 
   <!-- OAK-D Camera -->
-  <link name="oakd_camera">
+  <link name="oakd_camera_center">
     <visual>
       <geometry>
         <mesh filename="package://rover_description/meshes/oak_d.dae"/>
@@ -1119,12 +1119,28 @@
   <!-- OAK-D Camera Link(may need update) -->
   <joint name="oakd_camera_link" type="fixed">
     <parent link="base_link" />
-    <child link="oakd_camera" />
+    <child link="oakd_camera_center" />
     <origin xyz="0.38 0 0.10" rpy="0 0 0" />
   </joint>
 
+  <joint name="oakd_left_camera_joint" type="fixed">
+    <parent link="oakd_camera_center"/>
+    <child link="oakd_camera_left"/>
+    <origin xyz="0 0.375 0" rpy="0 0 0" />
+  </joint>
+
+  <link name="oakd_camera_left"/>
+
+  <joint name="oakd_right_camera_joint" type="fixed">
+    <parent link="oakd_camera_center"/>
+    <child link="oakd_camera_right"/>
+    <origin xyz="0 -0.375 0" rpy="0 0 0" />
+  </joint>
+
+  <link name="oakd_camera_right"/>
+
   <!-- OAK-D Camera Gazebo -->
-  <gazebo reference="oakd_camera">
+  <gazebo reference="oakd_camera_center">
     <sensor name="oakd_depth" type="depth_camera">
       <always_on>true</always_on>
       <update_rate>20.0</update_rate>
@@ -1147,7 +1163,7 @@
           <far>12.0</far>
         </depth_camera>
       </camera>
-      <frame_id>oakd_camera</frame_id>
+      <frame_id>oakd_camera_center</frame_id>
     </sensor>
 
     <!-- OAK-D PointCloud2 -->
@@ -1171,7 +1187,7 @@
           <output>true</output>
         </point_cloud>
       </camera>
-      <frame_id>oakd_camera</frame_id>
+      <frame_id>oakd_camera_center</frame_id>
     </sensor>
 
     <!-- OAK-D IMU -->
@@ -1181,7 +1197,7 @@
       <visualize>false</visualize>
       <topic>/imu/data</topic>
       <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
-      <frame_id>oakd_camera</frame_id>
+      <frame_id>oakd_camera_center</frame_id>
     </sensor>
 
     <!-- OAK-D RGB camera -->
@@ -1208,9 +1224,11 @@
           <stddev>0.007</stddev>
         </noise>
       </camera>
-      <frame_id>oakd_camera</frame_id>
+      <frame_id>oakd_camera_center</frame_id>
     </sensor>
+  </gazebo>
 
+  <gazebo reference="oakd_camera_left">
     <!-- OAK-D stereo left camera -->
     <sensor name="oakd_stereo_left" type="camera">
       <always_on>true</always_on>
@@ -1230,9 +1248,11 @@
           <far>12.0</far>
         </clip>
       </camera>
-      <frame_id>oakd_camera</frame_id>
+      <frame_id>oakd_camera_left</frame_id>
     </sensor>
+  </gazebo>
 
+  <gazebo reference="oakd_camera_right">
     <!-- OAK-D stereo right camera -->
     <sensor name="oakd_stereo_right" type="camera">
       <always_on>true</always_on>
@@ -1252,7 +1272,7 @@
           <far>12.0</far>
         </clip>
       </camera>
-      <frame_id>oakd_camera</frame_id>
+      <frame_id>oakd_camera_right</frame_id>
     </sensor>
   </gazebo>
 

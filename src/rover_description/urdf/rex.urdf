@@ -1129,9 +1129,9 @@
       <always_on>true</always_on>
       <update_rate>20.0</update_rate>
       <visualize>false</visualize>
-      <topic>/oakd/depth/image_raw</topic>
+      <topic>/depth/image_raw</topic>
       <camera name="oakd_depth_camera">
-      <camera_info_topic>/oakd/depth/camera_info</camera_info_topic>
+      <camera_info_topic>/depth/camera_info</camera_info_topic>
         <horizontal_fov>1.25663</horizontal_fov> <!-- 72 degrees -->
         <image>
           <width>640</width>

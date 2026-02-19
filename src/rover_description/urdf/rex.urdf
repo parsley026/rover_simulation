@@ -1123,6 +1123,15 @@
     <origin xyz="0.38 0 0.10" rpy="0 0 0" />
   </joint>
 
+  <!-- OAK-D optical frame (camera optical axis forward) -->
+  <joint name="oakd_camera_optical_joint" type="fixed">
+    <parent link="oakd_camera_center" />
+    <child link="oakd_camera_optical_frame" />
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708" />
+  </joint>
+
+  <link name="oakd_camera_optical_frame"/>
+
   <joint name="oakd_left_camera_joint" type="fixed">
     <parent link="oakd_camera_center"/>
     <child link="oakd_camera_left"/>
@@ -1139,7 +1148,6 @@
 
   <link name="oakd_camera_right"/>
 
-  <!-- OAK-D Camera Gazebo -->
   <gazebo reference="oakd_camera_center">
     <sensor name="oakd_depth" type="depth_camera">
       <always_on>true</always_on>
@@ -1163,7 +1171,8 @@
           <far>12.0</far>
         </depth_camera>
       </camera>
-      <frame_id>oakd_camera_center</frame_id>
+      <frame_id>oakd_camera_optical_frame</frame_id>
+      <gz_frame_id>oakd_camera_optical_frame</gz_frame_id>
     </sensor>
 
     <!-- OAK-D PointCloud2 -->
@@ -1187,7 +1196,8 @@
           <output>true</output>
         </point_cloud>
       </camera>
-      <frame_id>oakd_camera_center</frame_id>
+      <frame_id>oakd_camera_optical_frame</frame_id>
+      <gz_frame_id>oakd_camera_optical_frame</gz_frame_id>
     </sensor>
 
     <!-- OAK-D IMU -->

@@ -54,6 +54,66 @@
   gz_type_name: "gz.msgs.IMU"
   direction: GZ_TO_ROS
 
+# OAK-D Pro W stereo cameras
+- ros_topic_name: "/oak_d_pro_w/stereo/left/image_raw"
+  gz_topic_name: "/stereo/left/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak_d_pro_w/stereo/left/camera_info"
+  gz_topic_name: "/stereo/left/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak_d_pro_w/stereo/right/image_raw"
+  gz_topic_name: "/stereo/right/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak_d_pro_w/stereo/right/camera_info"
+  gz_topic_name: "/stereo/right/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# OAK-D Pro W RGB camera
+- ros_topic_name: "/oak_d_pro_w/rgb/image_raw"
+  gz_topic_name: "/rgb/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak_d_pro_w/rgb/camera_info"
+  gz_topic_name: "/rgb/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# OAK-D Pro W depth camera
+- ros_topic_name: "/oak_d_pro_w/depth/image_raw"
+  gz_topic_name: "/depth/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak_d_pro_w/depth/camera_info"
+  gz_topic_name: "/depth/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# OAK-D Pro W points image (Gazebo publishes /points as Image, not PointCloudPacked)
+- ros_topic_name: "/oak_d_pro_w/points"
+  gz_topic_name: "/points"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+# OAK-D Pro W IMU
+- ros_topic_name: "/oak_d_pro_w/imu/data"
+  gz_topic_name: "/imu/data"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
 - ros_topic_name: "/clock"
   gz_topic_name: "/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"

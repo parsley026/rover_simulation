@@ -1,0 +1,3 @@
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/gazebo_worlds/worlds
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/gazebo_worlds/models
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share/gazebo_worlds/media

@@ -13,7 +13,6 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ros_gz REQUIRED)
-find_package(rover_description REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -21,6 +20,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(urdf REQUIRED)
 find_package(xacro REQUIRED)
+
+find_package(gazebo_worlds REQUIRED)
 
 find_package(rover_description REQUIRED)
 

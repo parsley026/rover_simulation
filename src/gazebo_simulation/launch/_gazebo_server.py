@@ -29,11 +29,11 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
 
 
 def generate_launch_description() -> LaunchDescription:
-    pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
+    pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
 
     world_file_launch_arg = DeclareLaunchArgument(
         'world-file',
-        default_value=PathJoinSubstitution([pkg_project_gazebo, 'worlds', 'rex.sdf']),
+        default_value=PathJoinSubstitution([pkg_project_gazebo_worlds, 'worlds', 'rex.sdf']),
         description='Path to SDF world file'
     )
 

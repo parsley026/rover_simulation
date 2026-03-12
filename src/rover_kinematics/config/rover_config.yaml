@@ -1,0 +1,58 @@
+# ---
+# wheels_distance_length: 0.99  # [m]
+# wheels_distance_width: 0.74 # [m] 
+# wheel_diameter: 0.24         # [m]
+# poles_pair_number: 15        # Number of poles in the motor
+# velocity_limit: 1.0          # [m/s]
+# publish_rate: 20.0           # [Hz] (Recommended: 20.0, Maximum: 50.0)
+# use_sim_time: true          # Use simulation time
+
+
+# max_steering_radius: 5.0     # [m] Maximum steering radius of the robot
+# min_steering_radius: 1.0     # [m] Minimum steering radius of the robot
+
+# # Odometry covariances for the encoder output of the robot. These values should
+# # be tuned to your robot's sample odometry data, but these values are a good place
+# # to start
+# #                          [x,     y,     z,     roll,  pitch, yaw]
+# pose_covariance_diagonal:  [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]  
+# twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
+
+# # Top level frame (link) of the robot description
+# base_frame_id: '/base_link'  # Base frame id
+
+# # Transform from odom -> base_link: Enable if NOT:
+# # using ekf_localization or simulation source
+# odom_frame_id: '/odom'      # Odom frame id
+# enable_odom_tf: false       # Enable odom -> base_link transform (true - real robot, false - simulation)
+
+
+---
+wheels_distance_length: 0.99 # [m]
+wheels_distance_width: 0.74  # [m] 
+wheel_diameter: 0.24         # [m]
+poles_pair_number: 15         # Number of poles in the motor
+motor_gear_ratio: 1.0       # Gear ratio of the motor
+min_erpm: 0.0              # Minimum ERPM for the motors
+velocity_limit: 1.0          # [m/s]
+publish_rate: 20.0           # [Hz] (Recommended: 20.0, Maximum: 50.0)
+use_sim_time: false          # Use simulation time
+
+
+max_steering_radius: 5.0    # [m] Maximum steering radius of the robot
+min_steering_radius: 1.0     # [m] Minimum steering radius of the robot
+
+# Odometry covariances for the encoder output of the robot. These values should
+# be tuned to your robot's sample odometry data, but these values are a good place
+# to start
+#                          [x,     y,     z,     roll,  pitch, yaw]
+pose_covariance_diagonal:  [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]  
+twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
+
+# Top level frame (link) of the robot description
+base_frame_id: '/base_link'
+
+# Transform from odom -> base_link: Enable if NOT:
+# using ekf_localization or simulation source
+odom_frame_id: '/odom'      # Odom frame id
+enable_odom_tf: false       # Enable odom -> base_link transform (true - real robot, false - simulation)

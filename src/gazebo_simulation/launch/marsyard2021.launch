@@ -1,9 +1,9 @@
 <launch>
     
-    <arg name="rover_decription" default="rex"/>
+    <arg name="rover_description" default="rex"/>
     
     <arg name="bridge_name" default="gz_sim_bridge"/>
-    <arg name="config_file" default="$(find-pkg-share gazebo_simulation)/config/rex_ros_gz_bridge.yaml"/>
+    <arg name="config_file" default="$(find-pkg-share gazebo_worlds)/config/rex_ros_gz_bridge.yaml"/>
     <arg name="container_name" default="ros_gz_container" />
     <arg name="create_own_container" default="False" />
     <arg name="namespace" default="" />
@@ -11,8 +11,8 @@
     <arg name="use_respawn" default="False" />
     <arg name="log_level" default="info" />
     <arg name="bridge_params" default="" />
-    <arg name="world_sdf_file" default="$(find-pkg-share gazebo_simulation)/worlds/marsyard2021.world" />
-    <arg name="world_sdf_string" default="$(find-pkg-share gazebo_simulation)/worlds/marsyard2021.world" />
+    <arg name="world_sdf_file" default="$(find-pkg-share gazebo_worlds)/worlds/marsyard2021.world" />
+    <arg name="world_sdf_string" default="$(find-pkg-share gazebo_worlds)/worlds/marsyard2021.world" />
     <arg name="world" default=""/>
     <arg name="file" default="" />
     <arg name="model_string" default="" />

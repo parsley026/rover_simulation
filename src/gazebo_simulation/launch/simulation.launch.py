@@ -7,7 +7,9 @@ from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
 
 def generate_launch_description() -> LaunchDescription:
+    pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
+
     pkg_project_description = get_package_share_directory('rover_description')
 
     world_name = LaunchConfiguration('world-name')
@@ -29,7 +31,7 @@ def generate_launch_description() -> LaunchDescription:
             PathJoinSubstitution([pkg_project_gazebo, 'launch', '_gazebo_server.py'])
         ),
         launch_arguments={
-            'world-file': PathJoinSubstitution([pkg_project_gazebo, 'worlds', world_name]),
+            'world-file': PathJoinSubstitution([pkg_project_gazebo_worlds, 'worlds', world_name]),
         }.items()
     )
 

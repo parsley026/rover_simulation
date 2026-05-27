@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <model name="simple_building">
+    <static>true</static>
+    <link name="building_link">
+      <collision name="back_wall_collision">
+        <pose>0 -5 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10 0.2 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="back_wall_visual">
+        <pose>0 -5 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10 0.2 3</size>
+          </box>
+        </geometry>
+        <material>
+          <diffuse>0.8 0.6 0.4 1.0</diffuse> </material>
+      </visual>
+
+      <collision name="front_wall_collision">
+        <pose>0 5 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10 0.2 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="front_wall_visual">
+        <pose>0 5 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>10 0.2 3</size>
+          </box>
+        </geometry>
+        <material>
+          <diffuse>0.8 0.6 0.4 1.0</diffuse>
+        </material>
+      </visual>
+
+      <collision name="left_wall_collision">
+        <pose>-5 0 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.2 10 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="left_wall_visual">
+        <pose>-5 0 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.2 10 3</size>
+          </box>
+        </geometry>
+        <material>
+          <diffuse>0.8 0.6 0.4 1.0</diffuse>
+        </material>
+      </visual>
+
+      <collision name="right_wall_collision">
+        <pose>5 0 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.2 10 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="right_wall_visual">
+        <pose>5 0 1.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.2 10 3</size>
+          </box>
+        </geometry>
+        <material>
+          <diffuse>0.8 0.6 0.4 1.0</diffuse>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>

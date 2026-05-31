@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot name="rex" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Include all modules -->
+  <xacro:include filename="$(find rover_description)/urdf/xacro/base.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/xacro/wheel_assembly.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/xacro/gazebo_plugins.xacro"/>
+
+  <!-- Base body -->
+  <xacro:base_link/>
+
+  <!-- Left side: swivel -> arm_pivot -> arm_front + arm_rear -->
+  <xacro:swivel_and_arm side="left"  base_y=" 0.2735" arm_y=" 0.0535"/>
+
+  <!-- Right side: swivel -> arm_pivot -> arm_front + arm_rear -->
+  <xacro:swivel_and_arm side="right" base_y="-0.2735" arm_y="-0.0535"/>
+
+  <!-- Gazebo plugins -->
+  <xacro:gazebo_plugins/>
+
+</robot>

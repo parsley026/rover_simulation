@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="gazebo_plugins">
+    <gazebo>
+
+      <!-- Joint state publisher -->
+      <plugin filename="gz-sim-joint-state-publisher-system"
+              name="gz::sim::systems::JointStatePublisher">
+        <topic>/world/demo/model/rex/joint_state</topic>
+      </plugin>
+
+      <!-- Pose publisher -->
+      <plugin filename="gz-sim-pose-publisher-system"
+              name="gz::sim::systems::PosePublisher">
+        <publish_link_pose>true</publish_link_pose>
+        <use_pose_vector_msg>true</use_pose_vector_msg>
+        <static_publisher>true</static_publisher>
+        <static_update_frequency>5</static_update_frequency>
+      </plugin>
+
+      <!-- Odometry -->
+      <plugin filename="gz-sim-odometry-publisher-system"
+              name="gz::sim::systems::OdometryPublisher">
+        <odom_frame>/odom</odom_frame>
+        <robot_base_frame>/base_link</robot_base_frame>
+        <odom_publish_frequency>15</odom_publish_frequency>
+        <tf_topic>/tf</tf_topic>
+      </plugin>
+
+      <!-- Differential swivel sync + bogie spring-damper -->
+      <plugin filename="libdifferential_plugin.so"
+              name="gazebo_sim_ros2_example::DifferentialPlugin">
+        <jointA>base_link_to_swivel_right</jointA>
+        <jointB>base_link_to_swivel_left</jointB>
+        <forceConstant>100.0</forceConstant>
+        <bogieJoint>arm_pivot_left_to_arm_front_left</bogieJoint>
+        <bogieJoint>arm_pivot_left_to_arm_rear_left</bogieJoint>
+        <bogieJoint>arm_pivot_right_to_arm_front_right</bogieJoint>
+        <bogieJoint>arm_pivot_right_to_arm_rear_right</bogieJoint>
+        <bogieSpring>200.0</bogieSpring>
+        <bogieDamping>20.0</bogieDamping>
+      </plugin>
+
+      <!-- ===== Steering controllers (position) ===== -->
+      <xacro:steer_position_controller joint="arm_front_left_to_steer_front_left"/>
+      <xacro:steer_position_controller joint="arm_rear_left_to_steer_rear_left"/>
+      <xacro:steer_position_controller joint="arm_front_right_to_steer_front_right"/>
+      <xacro:steer_position_controller joint="arm_rear_right_to_steer_rear_right"/>
+
+      <!-- ===== Drive controllers (velocity/force) ===== -->
+      <xacro:wheel_drive_controller joint="steer_front_left_to_wheel_front_left"/>
+      <xacro:wheel_drive_controller joint="steer_rear_left_to_wheel_rear_left"/>
+      <xacro:wheel_drive_controller joint="steer_front_right_to_wheel_front_right"/>
+      <xacro:wheel_drive_controller joint="steer_rear_right_to_wheel_rear_right"/>
+
+    </gazebo>
+  </xacro:macro>
+
+
+  <!-- Helper: one steering position controller -->
+  <xacro:macro name="steer_position_controller" params="joint">
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>${joint}</joint_name>
+      <use_velocity_commands>true</use_velocity_commands>
+      <joint_index>0</joint_index>
+      <cmd_max> 0.65</cmd_max>
+      <cmd_min>-0.65</cmd_min>
+    </plugin>
+  </xacro:macro>
+
+
+  <!-- Helper: one wheel drive controller -->
+  <xacro:macro name="wheel_drive_controller" params="joint">
+    <plugin filename="gz-sim-joint-controller-system"
+            name="gz::sim::systems::JointController">
+      <joint_name>${joint}</joint_name>
+      <initial_velocity>0.0</initial_velocity>
+      <use_force_commands>true</use_force_commands>
+      <p_gain>0.5</p_gain>
+      <i_gain>0.5</i_gain>
+      <d_gain>0.0001</d_gain>
+      <cmd_max> 50.0</cmd_max>
+      <cmd_min>-50.0</cmd_min>
+    </plugin>
+  </xacro:macro>
+
+</robot>

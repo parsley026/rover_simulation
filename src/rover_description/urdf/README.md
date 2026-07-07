@@ -1,0 +1,1 @@
+Oakd and Oakd Pro currently have the same topics so if you want to use rex.urdf with Oakd you have to replace Oakd Pro definition with Oakd definition form oakd.urdf

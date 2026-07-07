@@ -21,8 +21,8 @@ def generate_launch_description() -> LaunchDescription:
 
     model_name = LaunchConfiguration('model-name')
     model_name_launch_arg = DeclareLaunchArgument(
-        'model-name', 
-        default_value='rex.urdf',
+        'model-name',
+        default_value='rex.urdf.xacro',
         description='Name of the URDF model file'
     )
 

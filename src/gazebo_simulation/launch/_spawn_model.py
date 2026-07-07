@@ -39,8 +39,12 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
     model_file_desc = model_file.perform(context)
     model_coords = _parse_pose(pose.perform(context))
 
-    with open(model_file_desc) as stream:
-        robot_desc = stream.read()
+    if model_file_desc.endswith('.xacro'):
+        import subprocess
+        robot_desc = subprocess.check_output(['xacro', model_file_desc]).decode()
+    else:
+        with open(model_file_desc) as stream:
+            robot_desc = stream.read()
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -98,7 +102,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pose_launch_arg = DeclareLaunchArgument(
         'pose',
-        default_value='0 0 10',
+        default_value='0 0 0.36',
         description='XYZ coordinates of the running model'
     )
 

@@ -40,25 +40,6 @@
     </gazebo>
   </xacro:macro>
 
-  <!-- Left Stereo Camera -->
-  <xacro:oakd_stereo_camera 
-    name="oakd_camera_left" 
-    parent_link="oakd_camera_center" 
-    offset="${oakd_left_offset}" 
-    frame_id="oakd_camera_left" 
-    topic="/stereo/left/image_raw" 
-    camera_info_topic="/stereo/left/camera_info"/>
-
-  <!-- Right Stereo Camera -->
-  <xacro:oakd_stereo_camera 
-    name="oakd_camera_right" 
-    parent_link="oakd_camera_center" 
-    offset="${oakd_right_offset}" 
-    frame_id="oakd_camera_right" 
-    topic="/stereo/right/image_raw" 
-    camera_info_topic="/stereo/right/camera_info"/>
-
-
   <!-- Depth Camera Sensor (depth or pointcloud) -->
   <xacro:macro name="oakd_depth_sensor" params="name topic camera_info_topic frame_id output_type">
     <gazebo reference="oakd_camera_center">
@@ -114,8 +95,8 @@
             <format>R8G8B8</format>
           </image>
           <clip>
-            <near>0.2</near>
-            <far>5.0</far>
+            <near>0.8</near>
+            <far>12.0</far>
           </clip>
           <noise>
             <type>gaussian</type>

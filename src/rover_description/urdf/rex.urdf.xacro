@@ -18,19 +18,14 @@
   <!-- Gazebo plugins -->
   <xacro:gazebo_plugins/>
 
-  <!-- <xacro:include filename="$(find rover_description)/urdf/xacro/macros/camera_assembly.xacro"/>
-  <xacro:camera_assembly parent_link="base_link" camera_center_xyz="0.40 0.0 0.10"/> -->
-
-  <xacro:include filename="$(find rover_description)/urdf/xacro/macros/oak_d_camera_assembly.xacro"/>
-  <xacro:oak_d_camera name="camera" parent_link="base_link">
+  <!-- <xacro:include filename="$(find rover_description)/urdf/xacro/macros/oak_d_pro_w_camera_assembly.xacro"/>
+  <xacro:oak_d_pro_w_camera name="camera" parent_link="base_link">
     <origin xyz="0.40 0.0 0.10" rpy="0 0 0" />
-  </xacro:oak_d_camera>
+  </xacro:oak_d_pro_w_camera> -->
 
-  <!-- <xacro:include filename="$(find rover_description)/urdf/xacro/oakd.xacro"/>
-  <xacro:include filename="$(find rover_description)/urdf/xacro/oakd_pro.xacro"/> -->
-
-  <!-- <xacro:oakd_module parent_link="base_link"/> -->
-
-  <!-- <xacro:oakd_pro_module parent_link="base_link"/> -->
+  <xacro:include filename="$(find rover_description)/urdf/xacro/macros/ouster_os1_lidar_assembly.xacro"/>
+  <xacro:ouster_os1_lidar name="lidar" parent_link="base_link">
+    <origin xyz="0.40 0.0 0.10" rpy="0 0 0" />
+  </xacro:ouster_os1_lidar>
 
 </robot>

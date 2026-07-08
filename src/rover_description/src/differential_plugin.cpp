@@ -31,16 +31,17 @@ class DifferentialPlugin
   public gz::sim::ISystemConfigure,
   public gz::sim::ISystemUpdate
 {
-  /// Model entity
   gz::sim::Model model_{gz::sim::kNullEntity};
 
-  /// Force multiplier constant
+  // Swivel differential
   double force_constant_;
-
-  /// Joint entities
   gz::sim::Entity joint_a_, joint_b_;
 
-  /// Whether the system has been properly configured
+  // Bogie spring-damper (arm_front / arm_rear joints)
+  std::vector<gz::sim::Entity> bogie_joints_;
+  double bogie_spring_{50.0};
+  double bogie_damping_{5.0};
+
   bool configured_{false};
 
 public:
@@ -53,60 +54,69 @@ public:
     model_ = gz::sim::Model(entity);
 
     if (!model_.Valid(ecm)) {
-      gzerr  << "DifferentialSystem plugin should be attached to a model "
-             << "entity. Failed to initialize." << std::endl;
+      gzerr << "DifferentialPlugin must be attached to a model entity." << std::endl;
       return;
     }
 
-    if (!sdf->HasElement("jointA")) {
-      gzerr << "No jointA element present. DifferentialSystem could not be loaded." << std::endl;
+    // --- Swivel differential joints ---
+    if (!sdf->HasElement("jointA") || !sdf->HasElement("jointB") ||
+      !sdf->HasElement("forceConstant"))
+    {
+      gzerr << "DifferentialPlugin requires jointA, jointB and forceConstant." << std::endl;
       return;
     }
-    auto joint_a_name_ = sdf->Get<std::string>("jointA");
 
-    if (!sdf->HasElement("jointB")) {
-      gzerr << "No jointB element present. DifferentialSystem could not be loaded." << std::endl;
-      return;
-    }
-    auto joint_b_name_ = sdf->Get<std::string>("jointB");
-
-    if (!sdf->HasElement("forceConstant")) {
-      gzerr << "No forceConstant element present. DifferentialSystem could not be loaded." <<
-        std::endl;
-      return;
-    }
     force_constant_ = sdf->Get<double>("forceConstant");
 
-    joint_a_ = model_.JointByName(ecm, joint_a_name_);
-    if (joint_a_ == gz::sim::kNullEntity) {
-      gzerr << "Failed to find joint named \'" << joint_a_name_ << "\'" << std::endl;
-      return;
+    auto init_swivel_joint = [&](const std::string & name) -> gz::sim::Entity {
+        auto e = model_.JointByName(ecm, name);
+        if (e == gz::sim::kNullEntity) {
+          gzerr << "Joint not found: " << name << std::endl;
+          return gz::sim::kNullEntity;
+        }
+        if (!ecm.EntityHasComponentType(e, gz::sim::components::JointPosition().TypeId())) {
+          ecm.CreateComponent(e, gz::sim::components::JointPosition());
+        }
+        if (!ecm.EntityHasComponentType(e, gz::sim::components::JointForceCmd().TypeId())) {
+          ecm.CreateComponent(e, gz::sim::components::JointForceCmd({0}));
+        }
+        return e;
+      };
+
+    joint_a_ = init_swivel_joint(sdf->Get<std::string>("jointA"));
+    joint_b_ = init_swivel_joint(sdf->Get<std::string>("jointB"));
+    if (joint_a_ == gz::sim::kNullEntity || joint_b_ == gz::sim::kNullEntity) {return;}
+
+    // --- Bogie spring/damper joints ---
+    if (sdf->HasElement("bogieSpring")) {
+      bogie_spring_ = sdf->Get<double>("bogieSpring");
+    }
+    if (sdf->HasElement("bogieDamping")) {
+      bogie_damping_ = sdf->Get<double>("bogieDamping");
     }
 
-    joint_b_ = model_.JointByName(ecm, joint_b_name_);
-    if (joint_b_ == gz::sim::kNullEntity) {
-      gzerr << "Failed to find joint named \'" << joint_b_name_ << "\'" << std::endl;
-      return;
-    }
-
-    if (!ecm.EntityHasComponentType(joint_a_, gz::sim::components::JointPosition().TypeId())) {
-      gzmsg << "Joint A does not have JointPosition component. Creating one..." << std::endl;
-      ecm.CreateComponent(joint_a_, gz::sim::components::JointPosition());
-    }
-
-    if (!ecm.EntityHasComponentType(joint_b_, gz::sim::components::JointPosition().TypeId())) {
-      gzmsg << "Joint B does not have JointPosition component. Creating one..." << std::endl;
-      ecm.CreateComponent(joint_b_, gz::sim::components::JointPosition());
-    }
-
-    if (!ecm.EntityHasComponentType(joint_a_, gz::sim::components::JointForceCmd().TypeId())) {
-      gzmsg << "Joint A does not have JointForceCmd component. Creating one..." << std::endl;
-      ecm.CreateComponent(joint_a_, gz::sim::components::JointForceCmd({0}));
-    }
-
-    if (!ecm.EntityHasComponentType(joint_b_, gz::sim::components::JointForceCmd().TypeId())) {
-      gzmsg << "Joint B does not have JointForceCmd component. Creating one..." << std::endl;
-      ecm.CreateComponent(joint_b_, gz::sim::components::JointForceCmd({0}));
+    if (sdf->HasElement("bogieJoint")) {
+      auto elem = sdf->FindElement("bogieJoint");
+      while (elem) {
+        auto name = elem->Get<std::string>();
+        auto e = model_.JointByName(ecm, name);
+        if (e == gz::sim::kNullEntity) {
+          gzerr << "Bogie joint not found: " << name << std::endl;
+        } else {
+          gzmsg << "Bogie joint registered: " << name << std::endl;
+          if (!ecm.EntityHasComponentType(e, gz::sim::components::JointPosition().TypeId())) {
+            ecm.CreateComponent(e, gz::sim::components::JointPosition());
+          }
+          if (!ecm.EntityHasComponentType(e, gz::sim::components::JointVelocity().TypeId())) {
+            ecm.CreateComponent(e, gz::sim::components::JointVelocity());
+          }
+          if (!ecm.EntityHasComponentType(e, gz::sim::components::JointForceCmd().TypeId())) {
+            ecm.CreateComponent(e, gz::sim::components::JointForceCmd({0}));
+          }
+          bogie_joints_.push_back(e);
+        }
+        elem = elem->GetNextElement("bogieJoint");
+      }
     }
 
     configured_ = true;
@@ -118,34 +128,37 @@ public:
   {
     if (!configured_ || info.paused) {return;}
 
-    // Retrieve components
-    auto pos_a_component = ecm.Component<gz::sim::components::JointPosition>(joint_a_);
-    auto pos_b_component = ecm.Component<gz::sim::components::JointPosition>(joint_b_);
-    auto force_cmd_a_component = ecm.Component<gz::sim::components::JointForceCmd>(joint_a_);
-    auto force_cmd_b_component = ecm.Component<gz::sim::components::JointForceCmd>(joint_b_);
+    // --- Swivel differential ---
+    auto pos_a = ecm.Component<gz::sim::components::JointPosition>(joint_a_)->Data()[0];
+    auto pos_b = ecm.Component<gz::sim::components::JointPosition>(joint_b_)->Data()[0];
+    auto force_a = ecm.Component<gz::sim::components::JointForceCmd>(joint_a_);
+    auto force_b = ecm.Component<gz::sim::components::JointForceCmd>(joint_b_);
 
-    double pos_a = pos_a_component->Data()[0];
-    double pos_b = pos_b_component->Data()[0];
     double angle_diff = pos_a - pos_b;
+    double stabilize = -(pos_a + pos_b) * force_constant_;
 
-    double current_cmd_a = force_cmd_a_component->Data()[0];
-    double current_cmd_b = force_cmd_b_component->Data()[0];
+    *force_a = gz::sim::components::JointForceCmd(
+      {force_a->Data()[0] - angle_diff * force_constant_ + stabilize});
+    *force_b = gz::sim::components::JointForceCmd(
+      {force_b->Data()[0] + angle_diff * force_constant_ + stabilize});
 
-    *force_cmd_a_component = gz::sim::components::JointForceCmd(
-      {current_cmd_a - angle_diff * force_constant_});
-    *force_cmd_b_component = gz::sim::components::JointForceCmd(
-      {current_cmd_b + angle_diff * force_constant_});
+    // --- Bogie spring-damper: returns each arm half to neutral (0 rad) ---
+    for (auto & e : bogie_joints_) {
+      auto pos_c = ecm.Component<gz::sim::components::JointPosition>(e);
+      auto vel_c = ecm.Component<gz::sim::components::JointVelocity>(e);
+      auto force_c = ecm.Component<gz::sim::components::JointForceCmd>(e);
+      if (!pos_c || !vel_c || !force_c) {continue;}
 
-      double base_stabilizing_torque = - (pos_a + pos_b) * force_constant_;
+      double pos = pos_c->Data().empty() ? 0.0 : pos_c->Data()[0];
+      double vel = vel_c->Data().empty() ? 0.0 : vel_c->Data()[0];
 
-    *force_cmd_a_component = gz::sim::components::JointForceCmd(
-      {force_cmd_a_component->Data()[0] + base_stabilizing_torque});
-    *force_cmd_b_component = gz::sim::components::JointForceCmd(
-      {force_cmd_b_component->Data()[0] + base_stabilizing_torque});
+      *force_c = gz::sim::components::JointForceCmd(
+        {-bogie_spring_ * pos - bogie_damping_ * vel});
+    }
   }
 };
 
-}  // namespace leo_gz
+}  // namespace gazebo_sim_ros2_example
 
 GZ_ADD_PLUGIN(
   gazebo_sim_ros2_example::DifferentialPlugin,

@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+   <xacro:macro name="camera_sensor" 
+                params="name parent 
+                camera_topic camera_info_topic type:='camera' 
+                fps:=30 
+                h_fov:=1.2 
+                width:=1920 height:=1080 
+                format:='R8G8B8'  
+                clip_near:=0.100 clip_far:=100.0
+                noise_type:='gaussian' noise_mean:=0.0 noise_stddev:=0.0
+                frame_id"
+   >
+
+    <gazebo reference="${parent}">
+      <sensor name="${name}" type="${type}">
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+
+        <update_rate>${fps}</update_rate>
+        
+        <topic>${camera_topic}</topic>
+
+        <camera>
+          <horizontal_fov>${h_fov}</horizontal_fov>
+          
+          <image>
+            <width>${width}</width>
+            <height>${height}</height>
+            
+            <format>${format}</format>
+          </image>
+
+          <clip>
+            <near>${clip_near}</near>
+            <far>${clip_far}</far>
+          </clip>
+
+          <noise>
+            <type>${noise_type}</type>
+            
+            <mean>${noise_mean}</mean>
+            <stddev>${noise_stddev}</stddev>
+          </noise>
+
+          <camera_info_topic>${camera_info_topic}</camera_info_topic>
+        </camera>
+
+        <frame_id>${frame_id}</frame_id>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+<xacro:macro name="imu_sensor"
+             params="name parent 
+             imu_topic
+             fps:=30
+             frame_id
+             ">
+
+  <gazebo reference="${parent}">
+    <sensor name="${name}" type="imu">
+      <always_on>true</always_on>
+      <visualize>false</visualize>
+
+      <update_rate>${fps}</update_rate>
+
+      <topic>${imu_topic}</topic>
+
+      <imu>
+        <frame_id>${frame_id}</frame_id>
+      </imu>
+    </sensor>
+  </gazebo>
+
+</xacro:macro>
+
+</robot>

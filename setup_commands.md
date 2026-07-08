@@ -1,0 +1,1 @@
+ros2 launch gazebo_simulation simulation.launch.py

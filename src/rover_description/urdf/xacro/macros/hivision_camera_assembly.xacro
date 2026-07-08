@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find rover_description)/urdf/xacro/macros/sensors.xacro"/>
+
+  <xacro:macro name="hivision_camera" params="name parent_link *origin">
+    
+    <xacro:property name="cam_length" value="0.0496"/>
+    <xacro:property name="cam_width"  value="0.0315"/>
+    <xacro:property name="cam_height" value="0.0315"/>
+
+    <xacro:property name="cam_mass"   value="0.093"/> 
+    
+    <joint name="${name}_center_joint" type="fixed">
+      <xacro:insert_block name="origin" /> 
+      <parent link="${parent_link}" />
+      <child  link="${name}_center_link" />
+    </joint>
+
+    <link name="${name}_center_link">
+      <visual>
+        <origin xyz="${cam_length/2} 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="${cam_length} ${cam_width} ${cam_height}"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="${cam_length/2} 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="${cam_length} ${cam_width} ${cam_height}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${cam_mass}" /> 
+        <origin xyz="${cam_length/2} 0 0" />
+        <inertia 
+            ixx="0.000015" ixy="0.0" ixz="0.0" 
+            iyy="0.000027" iyz="0.0" 
+            izz="0.000027" />
+      </inertial>
+    </link>
+
+    <gazebo reference="${name}_center_link">
+      <visual>
+        <material>
+          <diffuse>0.15 0.15 0.15 1.0</diffuse>
+          <specular>0.2 0.2 0.2 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo>0.15 0.15 0.15 1.0</albedo>
+              <roughness>0.6</roughness>
+              <metalness>0.5</metalness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+    </gazebo>
+
+    <joint name="${name}_rgb_optical_joint" type="fixed">
+      <origin xyz="${cam_length} 0 0" rpy="-1.5708 0 -1.5708" />
+      <parent link="${name}_center_link" />
+      <child link="${name}_rgb_optical_frame" />
+    </joint>
+
+    <link name="${name}_rgb_optical_frame"/>
+
+    <xacro:camera_sensor 
+        name="${name}_rgb_sensor" 
+        parent="${name}_center_link" 
+
+        camera_topic="${name}/image_raw" 
+        camera_info_topic="${name}/camera_info" 
+        type="camera"
+ 
+        fps="60.0"
+
+        h_fov="1.8814" 
+        width="1920" height="1080"
+        format="R8G8B8" 
+
+        clip_near="0.1" clip_far="100.0" 
+        noise_type="gaussian" noise_mean="0.0" noise_stddev="0.007"
+
+        frame_id="${name}_rgb_optical_frame"
+        />
+
+  </xacro:macro>
+</robot>

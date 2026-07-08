@@ -23,9 +23,14 @@
     <origin xyz="0.40 0.0 0.10" rpy="0 0 0" />
   </xacro:oak_d_pro_w_camera> -->
 
-  <xacro:include filename="$(find rover_description)/urdf/xacro/macros/ouster_os1_lidar_assembly.xacro"/>
+  <!-- <xacro:include filename="$(find rover_description)/urdf/xacro/macros/ouster_os1_lidar_assembly.xacro"/>
   <xacro:ouster_os1_lidar name="lidar" parent_link="base_link">
     <origin xyz="0.40 0.0 0.10" rpy="0 0 0" />
-  </xacro:ouster_os1_lidar>
+  </xacro:ouster_os1_lidar> -->
+
+  <!-- <xacro:include filename="$(find rover_description)/urdf/xacro/macros/hivision_camera_assembly.xacro"/>
+  <xacro:hivision_camera name="camera" parent_link="base_link">
+    <origin xyz="0.40 0.0 0.10" rpy="0 0 0" />
+  </xacro:hivision_camera> -->
 
 </robot>

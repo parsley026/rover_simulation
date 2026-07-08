@@ -73,7 +73,7 @@
   gz_type_name: "gz.msgs.CameraInfo"
   direction: GZ_TO_ROS
 
-# Left Camera
+# Left Stereo Camera
 - ros_topic_name: "new/camera/left/image_raw"
   gz_topic_name: "/camera/left/image_raw"
   ros_type_name: "sensor_msgs/msg/Image"
@@ -85,7 +85,7 @@
   gz_type_name: "gz.msgs.CameraInfo"
   direction: GZ_TO_ROS
 
-# Right Camera
+# Right Stereo Camera
 - ros_topic_name: "new/camera/right/image_raw"
   gz_topic_name: "/camera/right/image_raw"
   ros_type_name: "sensor_msgs/msg/Image"
@@ -100,6 +100,20 @@
 # IMU
 - ros_topic_name: "/new/camera/imu/data"
   gz_topic_name: "/camera/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# LiDAR
+- ros_topic_name: "/new/lidar/points"
+  gz_topic_name:  "/lidar/points"
+  ros_type_name:  "sensor_msgs/msg/PointCloud2"
+  gz_type_name:   "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+
+# IMU
+- ros_topic_name: "/new/lidar/imu/data"
+  gz_topic_name: "/lidar/imu"
   ros_type_name: "sensor_msgs/msg/Imu"
   gz_type_name: "gz.msgs.IMU"
   direction: GZ_TO_ROS

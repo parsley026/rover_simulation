@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:include filename="$(find rover_description)/urdf/xacro/macros/sensors.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/macros/base/sensors.xacro"/>
 
-  <xacro:macro name="oak_d_pro_camera" params="name parent_link *origin">
+  <xacro:macro name="oak_d_pro_w_camera" params="name parent_link *origin">
     
-    <xacro:property name="mesh_path"  value="$(find rover_description)/meshes/oak_d_pro.dae"/>
+    <xacro:property name="mesh_path"  value="$(find rover_description)/meshes/oak_d_pro_w.dae"/>
     <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
 
     <xacro:property name="camera_mesh_xyz" value="-0.022 0.048 -0.00"/> 
@@ -14,13 +14,13 @@
     <xacro:property name="left_offset"  value="0  0.375 0"/>
     <xacro:property name="right_offset" value="0 -0.375 0"/>
     
-    <joint name="${name}_center_joint" type="fixed">
+    <joint name="${name}_joint" type="fixed">
       <xacro:insert_block name="origin" /> 
       <parent link="${parent_link}" />
-      <child  link="${name}_center_link" />
+      <child  link="${name}_link" />
     </joint>
 
-    <link name="${name}_center_link">
+    <link name="${name}_link">
       <visual>
         <origin xyz="${camera_mesh_xyz}" rpy="${camera_mesh_rpy}" />
         <geometry>
@@ -40,7 +40,7 @@
       </inertial>
     </link>
 
-    <gazebo reference="${name}_center_link">
+    <gazebo reference="${name}_link">
       <visual>
         <material>
           <diffuse>0.15 0.15 0.15 1.0</diffuse>
@@ -56,49 +56,73 @@
       </visual>
     </gazebo>
 
-    <joint name="${name}_rgb_optical_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <parent link="${name}_center_link" />
-      <child link="${name}_rgb_optical_frame" />
+    <joint name="${name}_rgb_camera_joint" type="fixed">
+      <origin xyz="${left_offset}" rpy="0 0 0" />
+      <parent link="${name}_link" />
+      <child link="${name}_rgb_camera_frame" />
     </joint>
-    
-    <link name="${name}_rgb_optical_frame"/>
+
+    <link name="${name}_rgb_camera_frame"/>
+
+    <joint name="${name}_rgb_camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${name}_rgb_camera_frame" />
+      <child link="${name}_rgb_camera_optical_frame" />
+    </joint>
+
+    <link name="${name}_rgb_camera_optical_frame"/>
 
     <joint name="${name}_left_joint" type="fixed">
       <origin xyz="${left_offset}" rpy="0 0 0" />
-      <parent link="${name}_center_link" />
-      <child link="${name}_left_link" />
+      <parent link="${name}_link" />
+      <child link="${name}_left_camera_frame" />
     </joint>
 
-    <link name="${name}_left_link"/>
+    <link name="${name}_left_camera_frame"/>
 
-    <joint name="${name}_left_optical_joint" type="fixed">
+    <joint name="${name}_left_camera_optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <parent link="${name}_left_link" />
-      <child link="${name}_left_optical_frame" />
+      <parent link="${name}_left_camera_frame" />
+      <child link="${name}_left_camera_optical_frame" />
     </joint>
 
-    <link name="${name}_left_optical_frame"/>
+    <link name="${name}_left_camera_optical_frame"/>
 
     <joint name="${name}_right_joint" type="fixed">
       <origin xyz="${right_offset}" rpy="0 0 0" />
-      <parent link="${name}_center_link" />
-      <child link="${name}_right_link" />
+      <parent link="${name}_link" />
+      <child link="${name}_right_camera_frame" />
     </joint>
 
-    <link name="${name}_right_link"/>
+    <link name="${name}_right_camera_frame"/>
 
-    <joint name="${name}_right_optical_joint" type="fixed">
+    <joint name="${name}_right_camera_optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <parent link="${name}_right_link" />
-      <child link="${name}_right_optical_frame" />
+      <parent link="${name}_right_camera_frame" />
+      <child link="${name}_right_camera_optical_frame" />
+    </joint>
+    
+    <link name="${name}_right_camera_optical_frame"/>
+
+    <joint name="${name}_imu_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${name}_link" />
+      <child link="${name}_imu_frame" />
     </joint>
 
-    <link name="${name}_right_optical_frame"/>
+    <link name="${name}_imu_frame"/>
+
+    <joint name="${name}_model_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${name}_link" />
+      <child link="${name}_model_origin" />
+    </joint>
+
+    <link name="${name}_model_origin"/>
 
     <xacro:camera_sensor 
         name="${name}_rgbd_sensor" 
-        parent="${name}_center_link" 
+        parent="${name}_rgb_camera_frame" 
 
         camera_topic="${name}/rgbd" 
         camera_info_topic="${name}/rgbd/camera_info" 
@@ -106,19 +130,19 @@
  
         fps="20.0"
 
-        h_fov="1.39626"
-        width="1280" height="800"
+        h_fov="2.21657" 
+        width="1280" height="800" 
         format="RGB_INT8" 
 
         clip_near="0.10" clip_far="12.0" 
         noise_type="gaussian" noise_mean="0.0" noise_stddev="0.0"
 
-        frame_id="${name}_rgb_optical_frame"
+        frame_id="${name}_rgb_camera_optical_frame"
         />
 
     <xacro:camera_sensor 
         name="${name}_left_sensor" 
-        parent="${name}_left_link" 
+        parent="${name}_left_camera_frame" 
 
         camera_topic="${name}/left/image_raw" 
         camera_info_topic="${name}/left/camera_info"
@@ -126,19 +150,19 @@
 
         fps="20.0" 
         
-        h_fov="1.39626"
-        width="1280" height="800"
+        h_fov="2.21657" 
+        width="1280" height="800" 
         format="L8" 
 
         clip_near="0.2" clip_far="35.0" 
         noise_type="gaussian" noise_mean="0.0" noise_stddev="0.0"
 
-        frame_id="${name}_left_optical_frame" 
+        frame_id="${name}_left_camera_optical_frame" 
         />
 
     <xacro:camera_sensor 
         name="${name}_right_sensor" 
-        parent="${name}_right_link"
+        parent="${name}_right_camera_frame"
 
         camera_topic="${name}/right/image_raw" 
         camera_info_topic="${name}/right/camera_info"
@@ -146,25 +170,25 @@
         
         fps="20.0" 
         
-        h_fov="1.39626"
-        width="1280" height="800"
+        h_fov="2.21657" 
+        width="1280" height="800" 
         format="L8"
 
         clip_near="0.2" clip_far="35.0" 
         noise_type="gaussian" noise_mean="0.0" noise_stddev="0.0"
         
-        frame_id="${name}_right_optical_frame" 
+        frame_id="${name}_right_camera_optical_frame" 
         />
 
     <xacro:imu_sensor 
         name="${name}_imu" 
-        parent="${name}_center_link" 
+        parent="${name}_link" 
 
         imu_topic="${name}/imu" 
 
         fps="50.0" 
 
-        frame_id="${name}_center_link" 
+        frame_id="${name}_imu_frame" 
         />
 
   </xacro:macro>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:include filename="$(find rover_description)/urdf/xacro/macros/sensors.xacro"/>
+    <xacro:include filename="$(find rover_description)/urdf/macros/base/sensors.xacro"/>
 
     <xacro:property name="lidar_mesh"       value="package://rover_description/meshes/ouster_os1.dae"/>
     <xacro:property name="lidar_mesh_scale" value="1 1 1"/>

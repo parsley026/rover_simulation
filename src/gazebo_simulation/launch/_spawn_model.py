@@ -97,7 +97,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pose_launch_arg = DeclareLaunchArgument(
         'pose',
-        default_value='0 0 0.36',
+        default_value='0 0 1.36',
         description='XYZ coordinates of the running model'
     )
 

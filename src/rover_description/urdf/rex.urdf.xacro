@@ -18,7 +18,10 @@
   <!-- Gazebo plugins -->
   <xacro:gazebo_plugins/>
 
-  <xacro:include filename="$(find rover_description)/urdf/macros/assembly/camera/oak_d_pro_w_camera_assembly.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/xacro/autonomy_submodule.xacro"/>
+  <xacro:autonomy_submodule name="autonomy_submodule" parent_link="base_link"/>
+
+  <!-- <xacro:include filename="$(find rover_description)/urdf/macros/assembly/camera/oak_d_pro_w_camera_assembly.xacro"/>
   <xacro:oak_d_pro_w_camera name="camera_00" parent_link="base_link">
     <origin xyz="0.40 0.0 0.05" rpy="0 0 0" />
   </xacro:oak_d_pro_w_camera>
@@ -26,7 +29,7 @@
   <xacro:include filename="$(find rover_description)/urdf/macros/assembly/lidar/ouster_os1_lidar_assembly.xacro"/>
   <xacro:ouster_os1_lidar name="lidar_00" parent_link="base_link">
     <origin xyz="0.40 0.0 0.15" rpy="0 0 0" />
-  </xacro:ouster_os1_lidar>
+  </xacro:ouster_os1_lidar> -->
 
   <!-- <xacro:include filename="$(find rover_description)/urdf/macros/assembly/camera/hivision_camera_assembly.xacro"/>
   <xacro:hivision_camera name="camera_01" parent_link="base_link">

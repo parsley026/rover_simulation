@@ -1,5 +1,6 @@
 from typing import Any
 
+from launch.substitutions import Command
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
@@ -9,6 +10,7 @@ from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
 from launch.launch_context import LaunchContext
 from launch.conditions import IfCondition
+from launch_ros.parameter_descriptions import ParameterValue
 
 def _check_float(s: str) -> bool:
     try:
@@ -39,22 +41,15 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
     model_file_desc = model_file.perform(context)
     model_coords = _parse_pose(pose.perform(context))
 
-    if model_file_desc.endswith('.xacro'):
-        import subprocess
-        robot_desc = subprocess.check_output(['xacro', model_file_desc]).decode()
-    else:
-        with open(model_file_desc) as stream:
-            robot_desc = stream.read()
-
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
         output='both',
-        parameters=[
-            {'use_sim_time': True},
-            {'robot_description': robot_desc},
-        ]
+        parameters=[{
+            'use_sim_time': True,
+            'robot_description': ParameterValue(Command(['xacro ', model_file_desc]), value_type=str)
+        }]
     )
 
     spawn_entity = Node(

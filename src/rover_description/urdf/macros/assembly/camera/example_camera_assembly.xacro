@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:include filename="$(find rover_description)/urdf/xacro/macros/sensors.xacro"/>
+    <xacro:include filename="$(find rover_description)/urdf/macros/base/sensors.xacro"/>
 
     <xacro:property name="camera_mesh"       value="package://rover_description/meshes/oak_d_pro_w.dae"/>
     <xacro:property name="camera_mesh_scale" value="0.001 0.001 0.001"/>

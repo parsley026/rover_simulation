@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:include filename="$(find rover_description)/urdf/xacro/macros/sensors.xacro"/>
+    <xacro:include filename="$(find rover_description)/urdf/macros/base/sensors.xacro"/>
 
     <xacro:property name="mesh_path"  value="package://rover_description/meshes/ouster_os1.dae"/>
     <xacro:property name="mesh_scale" value="1 1 1"/>
@@ -11,13 +11,13 @@
     
     <xacro:macro name="ouster_os1_lidar" params="name parent_link *origin">
         
-        <joint name="${name}_center_joint" type="fixed">
+        <joint name="${name}_joint" type="fixed">
             <xacro:insert_block name="origin" /> 
             <parent link="${parent_link}" />
-            <child  link="${name}_center_link" />
+            <child  link="${name}_link" />
         </joint>
 
-        <link name="${name}_center_link">
+        <link name="${name}_link">
             <visual>
                 <origin xyz="${lidar_mesh_xyz}" rpy="${lidar_mesh_rpy}" />
                 <geometry>
@@ -37,7 +37,7 @@
             </inertial>
         </link>
 
-        <gazebo reference="${name}_center_link">
+        <gazebo reference="${name}_link">
         <visual>
             <material>
             <diffuse>0.75 0.75 0.75 1.0</diffuse>
@@ -56,15 +56,23 @@
 
         <joint name="${name}_lidar_joint" type="fixed">
             <origin xyz="0 0 0" rpy="0 0 0" />
-            <parent link="${name}_center_link" />
-            <child  link="${name}_lidar_link" />
+            <parent link="${name}_link" />
+            <child  link="${name}_lidar_frame" />
         </joint>
 
-        <link name="${name}_lidar_link"/>
+        <link name="${name}_lidar_frame"/>
+
+        <joint name="${name}_imu_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <parent link="${name}_link" />
+            <child link="${name}_imu_frame" />
+        </joint>
+
+        <link name="${name}_imu_frame"/>
 
         <xacro:lidar_sensor
             name="${name}_lidar_sensor" 
-            parent="${name}_center_link" 
+            parent="${name}_link" 
 
             lidar_topic="${name}"
             fps="10"
@@ -84,18 +92,18 @@
 
             noise_type="gaussian" noise_mean="0.000" noise_stddev="0.003"
 
-            frame_id="${name}_lidar_link"
+            frame_id="${name}_lidar_frame"
             />
 
         <xacro:imu_sensor 
             name="${name}_imu" 
-            parent="${name}_center_link" 
+            parent="${name}_link" 
 
             imu_topic="${name}/imu" 
 
             fps="50.0" 
 
-            frame_id="${name}_center_link" 
+            frame_id="${name}_imu_frame" 
             />
 
     </xacro:macro>

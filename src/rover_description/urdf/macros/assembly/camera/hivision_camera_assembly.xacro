@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:include filename="$(find rover_description)/urdf/xacro/macros/sensors.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/macros/base/sensors.xacro"/>
 
   <xacro:macro name="hivision_camera" params="name parent_link *origin">
     

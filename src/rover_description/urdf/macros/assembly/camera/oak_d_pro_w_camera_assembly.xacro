@@ -5,14 +5,14 @@
 
   <xacro:macro name="oak_d_pro_w_camera" params="name parent_link *origin">
     
-    <xacro:property name="mesh_path"  value="$(find rover_description)/meshes/oak_d_pro_w.dae"/>
+    <xacro:property name="mesh_path"  value="package://rover_description/meshes/oak_d_pro_w.dae"/>
     <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
 
     <xacro:property name="camera_mesh_xyz" value="-0.022 0.048 -0.00"/> 
     <xacro:property name="camera_mesh_rpy" value="1.5708 0 -1.5708"/>
 
-    <xacro:property name="left_offset"  value="0  0.375 0"/>
-    <xacro:property name="right_offset" value="0 -0.375 0"/>
+    <xacro:property name="left_offset"  value="0  0.0375 0"/>
+    <xacro:property name="right_offset" value="0 -0.0375 0"/>
     
     <joint name="${name}_joint" type="fixed">
       <xacro:insert_block name="origin" /> 

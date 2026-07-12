@@ -1,0 +1,74 @@
+# RGBD Camera
+- ros_topic_name: "/camera_00/rgb/image_raw"
+  gz_topic_name: "/camera_00/rgbd/image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/camera_00/rgb/camera_info"
+  gz_topic_name: "/camera_00/rgbd/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/camera_00/stereo/image_raw"
+  gz_topic_name: "/camera_00/rgbd/depth_image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+# Left Stereo Camera
+- ros_topic_name: "/camera_00/left/image_raw"
+  gz_topic_name: "/camera_00/left/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/camera_00/left/camera_info"
+  gz_topic_name: "/camera_00/left/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# Right Stereo Camera
+- ros_topic_name: "/camera_00/right/image_raw"
+  gz_topic_name: "/camera_00/right/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/camera_00/right/camera_info"
+  gz_topic_name: "/camera_00/right/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# IMU
+- ros_topic_name: "/camera_00/imu/data"
+  gz_topic_name: "/camera_00/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# LiDAR
+- ros_topic_name: "/lidar_00/points"
+  gz_topic_name:  "/lidar_00/points"
+  ros_type_name:  "sensor_msgs/msg/PointCloud2"
+  gz_type_name:   "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+
+# IMU
+- ros_topic_name: "/lidar_00/imu/data"
+  gz_topic_name: "/lidar_00/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# RGB Hivision Camera
+# - ros_topic_name: "hivision/camera/image_raw"
+#   gz_topic_name: "/camera_xx/image_raw"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS
+# - ros_topic_name: "hivision/camera/camera_info"
+#   gz_topic_name: "/camera_xx/camera_info"
+#   ros_type_name: "sensor_msgs/msg/CameraInfo"
+#   gz_type_name: "gz.msgs.CameraInfo"
+#   direction: GZ_TO_ROS

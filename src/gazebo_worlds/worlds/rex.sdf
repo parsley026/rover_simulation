@@ -102,11 +102,6 @@
         </visual>
       </link>
     </model>
-
-    <!-- <model name="ramps">
-      <include>
-        <uri>model://ramps</uri>
-      </include>
-    </model> -->
+    
   </world>
 </sdf>

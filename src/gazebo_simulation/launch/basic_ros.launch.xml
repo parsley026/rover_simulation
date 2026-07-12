@@ -1,7 +1,0 @@
-<launch>
-  <!-- Uncomment if you want to use mqtt_bridge / application -->
-  <!-- <include file="$(find-pkg-share mqtt_bridge)/launch/mqtt_bridge.yaml"/> --> 
-  
-  <include file="$(find-pkg-share qrk2sim)/launch/qrk2sim.launch.xml"/>
-  <include file="$(find-pkg-share quad_rover_kinematics)/launch/qrk.yaml"/>
-</launch>

@@ -1,15 +1,22 @@
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.launch_description_sources import PythonLaunchDescriptionSource, AnyLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.conditions import IfCondition
 
 def generate_launch_description() -> LaunchDescription:
     
+    # --- Package Directories ---
     pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
     pkg_project_description = get_package_share_directory('rover_description')
+    
+    # New packages
+    pkg_rover_kinematics = get_package_share_directory('quad_rover_kinematics')
+    pkg_rover_kinematics_bridge = get_package_share_directory('rover_kinematics_bridge')
 
+    # --- Declare Launch Arguments ---
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time', 
         default_value='true', 
@@ -34,11 +41,21 @@ def generate_launch_description() -> LaunchDescription:
         description='Spawn coordinates of the robot as "x y z"'
     )
 
+    # New argument to toggle kinematics
+    run_kinematics_arg = DeclareLaunchArgument(
+        'run_kinematics',
+        default_value='true',
+        description='Option to launch the rover kinematics and kinematics bridge'
+    )
+
+    # --- Launch Configurations ---
     use_sim_time = LaunchConfiguration('use_sim_time')
     world_name = LaunchConfiguration('world-name')
     robot_name = LaunchConfiguration('robot-name')
     pose = LaunchConfiguration('pose')
+    run_kinematics = LaunchConfiguration('run_kinematics')
 
+    # --- Include Launch Descriptions ---
     gazebo_server = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([pkg_project_gazebo, 'launch', 'components', '_gazebo_server.py'])
@@ -71,10 +88,24 @@ def generate_launch_description() -> LaunchDescription:
             PathJoinSubstitution([pkg_project_gazebo, 'launch', 'components', '_spawn_robot.py'])
         ),
         launch_arguments={
-            'model-file': PathJoinSubstitution([pkg_project_description, 'urdf', robot_name]), # Fixed argument name
+            'model-file': PathJoinSubstitution([pkg_project_description, 'urdf', robot_name]), 
             'use_sim_time': use_sim_time,
-            'pose': pose, # Passing the new pose down
+            'pose': pose, 
         }.items()
+    )
+
+    rover_kinematics = IncludeLaunchDescription(
+        AnyLaunchDescriptionSource(
+            PathJoinSubstitution([pkg_rover_kinematics, 'launch', 'qrk.yaml'])
+        ),
+        condition=IfCondition(run_kinematics)
+    )
+
+    rover_kinematics_bridge = IncludeLaunchDescription(
+        AnyLaunchDescriptionSource(
+            PathJoinSubstitution([pkg_rover_kinematics_bridge, 'launch', 'rover_kinematics_bridge.launch.xml'])
+        ),
+        condition=IfCondition(run_kinematics)
     )
 
     return LaunchDescription([
@@ -82,7 +113,10 @@ def generate_launch_description() -> LaunchDescription:
         world_name_arg,
         robot_name_arg,
         pose_arg,
+        run_kinematics_arg,
         gazebo_server,
         bridge_core,
         spawn_robot,
+        rover_kinematics,
+        rover_kinematics_bridge
     ])

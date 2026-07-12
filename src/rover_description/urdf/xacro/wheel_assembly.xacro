@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <xacro:include filename="$(find rover_description)/urdf/macros/base/inertial.xacro"/>
+
   <!-- Single wheel -->
   <xacro:macro name="wheel_assembly" params="name parent x">
 
@@ -30,13 +32,9 @@
           <cylinder radius="0.025" length="0.05"/>
         </geometry>
       </collision>
-      <inertial>
+      <xacro:inertial_cylinder mass="0.001" length="0.05" radius="0.025">
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <mass value="0.001"/>
-        <inertia ixx="0.000001" ixy="0" ixz="0"
-                               iyy="0.000001" iyz="0"
-                                              izz="0.000001"/>
-      </inertial>
+      </xacro:inertial_cylinder>
     </link>
 
     <!-- Drive joint -->
@@ -64,22 +62,36 @@
           <cylinder radius="0.125" length="0.13"/>
         </geometry>
       </collision>
-      <inertial>
-        <mass value="3"/>
-        <inertia ixx="0.015025" ixy="0" ixz="0"
-                               iyy="0.015025" iyz="0"
-                                              izz="0.0216"/>
-      </inertial>
+      <xacro:inertial_cylinder mass="3" length="0.13" radius="0.125">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </xacro:inertial_cylinder>
     </link>
 
     <!-- Wheel ground contact properties -->
     <gazebo reference="wheel_${name}">
-      <mu>1.5</mu>
-      <mu2>1.5</mu2>
-      <slip1>0.00062</slip1>
-      <slip2>0.0</slip2>
-      <fdir1>1 0 0</fdir1>
-      <maxContacts>10</maxContacts>
+      <surface>
+        <friction>
+          <ode>
+            <mu>1.5</mu>
+            <mu2>1.5</mu2>
+            <slip1>0.00062</slip1>
+            <slip2>0.0</slip2>
+          </ode>
+          <bullet>
+            <friction>1.5</friction>
+            <friction2>1.5</friction2>
+          </bullet>
+        </friction>
+        <contact>
+          <ode>
+            <max_contacts>10</max_contacts>
+          </ode>
+          <bullet>
+            <soft_cfm>0.001</soft_cfm>
+            <soft_erp>0.2</soft_erp>
+          </bullet>
+        </contact>
+      </surface>
     </gazebo>
 
   </xacro:macro>
@@ -93,9 +105,13 @@
       <child link="swivel_${side}"/>
       <origin xyz="0 ${base_y} 0" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
-      <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
+      <limit effort="1000.0" lower="-1.15" upper="1.15" velocity="0.6"/>
       <dynamics friction="1.0" damping="0.1"/>
     </joint>
+
+    <gazebo reference="swivel_${side}">
+      <selfCollide>true</selfCollide>
+    </gazebo>
 
     <!-- Swivel pin -->
     <link name="swivel_${side}">
@@ -114,13 +130,9 @@
           <cylinder radius="0.01" length="0.107"/>
         </geometry>
       </collision>
-      <inertial>
+      <xacro:inertial_cylinder mass="0.001" length="0.107" radius="0.01">
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <mass value="0.001"/>
-        <inertia ixx="0.000001" ixy="0" ixz="0"
-                               iyy="0.000001" iyz="0"
-                                              izz="0.000001"/>
-      </inertial>
+      </xacro:inertial_cylinder>
     </link>
 
     <!-- Fixed connection: swivel to center -->
@@ -147,14 +159,14 @@
           <box size="0.10 0.07 0.06"/>
         </geometry>
       </collision>
-      <inertial>
+      <xacro:inertial_box mass="0.3" x="0.10" y="0.07" z="0.06">
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <mass value="0.3"/>
-        <inertia ixx="0.000213" ixy="0" ixz="0"
-                               iyy="0.000340" iyz="0"
-                                              izz="0.000373"/>
-      </inertial>
+      </xacro:inertial_box>
     </link>
+
+    <gazebo reference="arm_pivot_${side}">
+      <selfCollide>true</selfCollide>
+    </gazebo>
 
     <!-- Front arm half -->
     <joint name="arm_pivot_${side}_to_arm_front_${side}" type="revolute">
@@ -162,8 +174,8 @@
       <child link="arm_front_${side}"/>
       <origin xyz="0.05 0 0" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
-      <limit effort="500.0" lower="-0.5" upper="0.5" velocity="0.5"/>
-      <dynamics friction="0.5" damping="0.1"/>
+      <limit effort="500.0" lower="-0.7" upper="0.7" velocity="0.6"/>
+      <dynamics friction="0.3" damping="0.05"/>
     </joint>
 
     <!-- Front arm beam -->
@@ -183,14 +195,14 @@
           <box size="0.45 0.04 0.04"/>
         </geometry>
       </collision>
-      <inertial>
+      <xacro:inertial_box mass="0.4" x="0.45" y="0.04" z="0.04">
         <origin xyz="0.225 0 0" rpy="0 0 0"/>
-        <mass value="0.4"/>
-        <inertia ixx="0.000107" ixy="0" ixz="0"
-                               iyy="0.006803" iyz="0"
-                                              izz="0.006803"/>
-      </inertial>
+      </xacro:inertial_box>
     </link>
+
+    <gazebo reference="arm_front_${side}">
+      <selfCollide>true</selfCollide>
+    </gazebo>
 
     <!-- Rear arm half -->
     <joint name="arm_pivot_${side}_to_arm_rear_${side}" type="revolute">
@@ -198,8 +210,8 @@
       <child link="arm_rear_${side}"/>
       <origin xyz="-0.05 0 0" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
-      <limit effort="500.0" lower="-0.5" upper="0.5" velocity="0.5"/>
-      <dynamics friction="0.5" damping="0.1"/>
+      <limit effort="500.0" lower="-0.7" upper="0.7" velocity="0.6"/>
+      <dynamics friction="0.3" damping="0.05"/>
     </joint>
 
     <!-- Rear arm beam -->
@@ -219,15 +231,14 @@
           <box size="0.45 0.04 0.04"/>
         </geometry>
       </collision>
-      <inertial>
+      <xacro:inertial_box mass="0.4" x="0.45" y="0.04" z="0.04">
         <origin xyz="-0.225 0 0" rpy="0 0 0"/>
-        <mass value="0.4"/>
-        <inertia ixx="0.000107" 
-                 ixy="0" ixz="0"
-                 iyy="0.006803" iyz="0"
-                 izz="0.006803"/>
-      </inertial>
+      </xacro:inertial_box>
     </link>
+
+    <gazebo reference="arm_rear_${side}">
+      <selfCollide>true</selfCollide>
+    </gazebo>
 
     <!-- Wheels -->
     <xacro:wheel_assembly name="front_${side}" parent="arm_front_${side}" x="0.40"/>

@@ -33,13 +33,15 @@ find_package(Ceres REQUIRED)
 # Declare a C++ executable
 add_executable(${PROJECT_NAME}_node
   src/main.cpp
-  src/rover.cpp
-  src/kinematics.cpp
+  src/RoverNode.cpp
+  src/InverseKinematics.cpp
+  src/ForwardKinematics.cpp
+  src/HardwareInterface.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_node PUBLIC include
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIR}
 )
 
@@ -78,11 +80,11 @@ install(
   DESTINATION share/${PROJECT_NAME}/config
 )
 
-# Install include files
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
+# Install public headers
+install(DIRECTORY include/ DESTINATION include)
+
+# Export headers for downstream packages
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 
 # Install launch files
 install(

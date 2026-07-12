@@ -1,0 +1,97 @@
+/**:
+  ros__parameters:
+    # -----------------------------------------------------------------
+    # General Camera Connection & Base Settings
+    # -----------------------------------------------------------------
+    camera:
+      i_ip: "192.168.1.24"
+      i_mx_id: "194430102150AE2F00"
+      i_enable_ir: true
+      i_laser_dot_brightness: 800
+      i_pipeline_type: RGBD
+      imu_from_descr: true
+      i_enable_sync: true
+
+    # -----------------------------------------------------------------
+    # Pipeline Generation and Sync Wrapper
+    # -----------------------------------------------------------------
+    pipeline_gen:
+      i_enable_imu: true
+      i_enable_sync: true
+      i_enable_diagnostics: false # Disabled to reduce background CPU polling
+
+    # -----------------------------------------------------------------
+    # IMU Configuration
+    # -----------------------------------------------------------------
+    imu:
+      i_message_type: IMU
+      i_acc_freq: 400
+      i_gyro_freq: 400
+      i_sync_method: COPY # Changed from interpolation to reduce host thread load
+
+    # -----------------------------------------------------------------
+    # RGB Sensor Configuration (Center Camera)
+    # -----------------------------------------------------------------
+    rgb:
+      i_board_socket_id: 0
+      i_fps: 15.0
+      i_resolution: 720P
+      
+      # Synchronization mechanics
+      i_synced: true
+      i_get_base_device_timestamp: false # Crucial for network latency mitigation
+      
+      # Network Bandwidth Optimization (PoE Requirement)
+      i_low_bandwidth: true
+      i_low_bandwidth_quality: 50
+      i_publish_compressed: true # Crucial: Offloads decompression from Host CPU
+      
+      # Pipeline Stability
+      i_max_q_size: 30
+      i_enable_lazy_publisher: true
+
+    # -----------------------------------------------------------------
+    # Left and Right Monochrome Sensors
+    # -----------------------------------------------------------------
+    left:
+      i_fps: 15.0
+      i_resolution: 720P
+      i_synced: true
+      i_get_base_device_timestamp: false
+      i_max_q_size: 30
+      
+    right:
+      i_fps: 15.0
+      i_resolution: 720P
+      i_synced: true
+      i_get_base_device_timestamp: false
+      i_max_q_size: 30
+
+    # -----------------------------------------------------------------
+    # Stereo Depth Configuration
+    # -----------------------------------------------------------------
+    stereo:
+      i_board_socket_id: 0
+      i_fps: 15.0
+      
+      # Synchronization mechanics
+      i_synced: true
+      i_get_base_device_timestamp: false
+      
+      # Computational Load Reduction
+      i_align_depth: true 
+      i_depth_preset: HIGH_ACCURACY # Reduced from HIGH_DENSITY
+      i_subpixel: false # Crucial: Disabled to prevent conflict with low_bandwidth
+      
+      # Network Bandwidth Optimization (PoE Requirement)
+      i_low_bandwidth: true
+      i_low_bandwidth_quality: 50
+      i_publish_compressed: false # Crucial: Prevents host decoding overhead
+      
+      # Distortion and Hardware Settings
+      i_enable_distortion_correction: true
+      i_lr_check: true
+      i_publish_topic: true
+      
+      # Pipeline Stability
+      i_max_q_size: 30

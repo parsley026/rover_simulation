@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find rover_description)/urdf/macros/base/sensors.xacro"/>
+
+    <xacro:property name="camera_mesh"       value="package://rover_description/meshes/oak_d_pro_w.dae"/>
+    <xacro:property name="camera_mesh_scale" value="0.001 0.001 0.001"/>
+
+    <xacro:property name="camera_mesh_xyz" value="-0.022 0.048 -0.00"/> 
+    <xacro:property name="camera_mesh_rpy" value="1.5708 0 -1.5708"/>
+    
+    <xacro:macro name="camera_assembly" params="parent_link:=base_link camera_center_xyz:='0 0 0.10'">
+        
+        <link name="camera_assembly_link">
+            <visual>
+                <origin xyz="${camera_mesh_xyz}" rpy="${camera_mesh_rpy}" />
+                <geometry>
+                    <mesh filename="${camera_mesh}" scale="${camera_mesh_scale}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="${camera_mesh_xyz}" rpy="${camera_mesh_rpy}" />
+                <geometry>
+                    <mesh filename="${camera_mesh}" scale="${camera_mesh_scale}"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <origin xyz="0 0 0" />
+                <mass value="0.09" />
+                <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+            </inertial>
+        </link>
+
+        <joint name="camera_assembly_joint" type="fixed">
+            <parent link="${parent_link}" />
+            <child link="camera_assembly_link" />
+            <origin xyz="${camera_center_xyz}" rpy="0 0 0" />
+        </joint>
+
+        <link name="camera_assembly_optical_frame"/>
+
+        <joint name="camera_assembly_optical_joint" type="fixed">
+            <parent link="camera_assembly_link" />
+            <child link="camera_assembly_optical_frame" />
+            <origin xyz="0 0 0" rpy="${camera_mesh_rpy}" />
+        </joint>
+
+        <xacro:camera_sensor 
+            name="camera" 
+            parent="camera_assembly_link" 
+
+            camera_topic="camera/rgbd" 
+            camera_info_topic="camera/camera_info" 
+            type="rgbd_camera"
+    
+            fps="20.0"
+
+            h_fov="1.20428"
+            width="4056" height="3040"
+            format="RGB_INT8" 
+
+            clip_near="0.080" clip_far="100.0" 
+            noise_type="gaussian" noise_mean="0.0" noise_stddev="0.0"
+
+            frame_id="camera_assembly_optical_frame"
+            />
+
+    </xacro:macro>
+
+</robot>

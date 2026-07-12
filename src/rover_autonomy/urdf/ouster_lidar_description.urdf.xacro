@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot name="ouster_os" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:arg name="sensor_name"  default="os"/>
+    <xacro:arg name="sensor_model" default="os" />
+    <xacro:arg name="base_frame"   default="os_frame"/>
+    <xacro:arg name="parent_frame" default="os-base-frame"/>
+    <xacro:arg name="lidar_frame"  default="os_lidar_frame"/>
+    <xacro:arg name="imu_frame"    default="os_imu_frame"/>
+
+    <xacro:arg name="sensor_pos_x" default="0.0"/>
+    <xacro:arg name="sensor_pos_y" default="0.0"/>
+    <xacro:arg name="sensor_pos_z" default="0.0"/>
+    <xacro:arg name="sensor_roll"  default="0.0"/>
+    <xacro:arg name="sensor_pitch" default="0.0"/>
+    <xacro:arg name="sensor_yaw"   default="0.0"/>
+
+    <xacro:include filename="$(find my_lidar_description)/urdf/ouster_os_macro.urdf.xacro"/>
+
+    <link name="$(arg parent_frame)"/>
+    <xacro:ouster_os sensor_name="$(arg sensor_name)" parent="$(arg parent_frame)"
+        sensor_model="$(arg sensor_model)" base_frame="$(arg base_frame)" 
+        lidar_frame="$(arg lidar_frame)"   imu_frame="$(arg imu_frame)"
+        sensor_pos_x="$(arg sensor_pos_x)" sensor_pos_y="$(arg sensor_pos_y)" sensor_pos_z="$(arg sensor_pos_z)"
+        sensor_roll="$(arg sensor_roll)"   sensor_pitch="$(arg sensor_pitch)" sensor_yaw="$(arg sensor_yaw)"
+    />
+
+</robot>

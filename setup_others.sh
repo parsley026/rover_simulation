@@ -35,6 +35,7 @@ sudo apt update && sudo apt install -y \
     python3-colcon-common-extensions \
     libceres-dev \
     libpaho-mqttpp-dev \
-    libpaho-mqtt-dev
+    libpaho-mqtt-dev \
+    ros-${ROS_DISTRO}-can-msgs
 
 echo "installation complete"

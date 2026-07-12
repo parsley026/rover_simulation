@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+# camera sensor macro
+  <xacro:macro name="camera_sensor" 
+                params="name parent 
+                camera_topic camera_info_topic type:='camera' 
+                fps:=30 
+                h_fov:=1.2 
+                width:=1920 height:=1080 
+                format:='R8G8B8'  
+                clip_near:=0.100 clip_far:=100.0
+                noise_type:='gaussian' noise_mean:=0.0 noise_stddev:=0.0
+                frame_id
+  ">
+
+    <gazebo reference="${parent}">
+      <sensor name="${name}" type="${type}">
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+
+        <update_rate>${fps}</update_rate>
+        
+        <topic>${camera_topic}</topic>
+
+        <gz_frame_id>${frame_id}</gz_frame_id>
+        
+        <camera>
+          <horizontal_fov>${h_fov}</horizontal_fov>
+          
+          <image>
+            <width>${width}</width>
+            <height>${height}</height>
+            
+            <format>${format}</format>
+          </image>
+
+          <clip>
+            <near>${clip_near}</near>
+            <far>${clip_far}</far>
+          </clip>
+
+          <noise>
+            <type>${noise_type}</type>
+            
+            <mean>${noise_mean}</mean>
+            <stddev>${noise_stddev}</stddev>
+          </noise>
+
+          <camera_info_topic>${camera_info_topic}</camera_info_topic>
+        </camera>
+
+        <frame_id>${frame_id}</frame_id>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+# imu sensor macro
+  <xacro:macro name="imu_sensor"
+              params="name parent 
+              imu_topic
+              fps:=30
+              frame_id
+  ">
+
+    <gazebo reference="${parent}">
+      <sensor name="${name}" type="imu">
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+
+        <update_rate>${fps}</update_rate>
+
+        <topic>${imu_topic}</topic>
+        
+        <gz_frame_id>${frame_id}</gz_frame_id>
+
+        <imu>
+          <frame_id>${frame_id}</frame_id>
+        </imu>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+# lidar sensor macro
+  <xacro:macro name="lidar_sensor" 
+              params="name parent 
+              lidar_topic 
+              fps:=30 
+              horizontal_samples:=640 
+              horizontal_resolution:=1.0 
+              horizontal_min_angle:=-1.396263 horizontal_max_angle:=1.396263 
+              vertical_samples:=32
+              vertical_resolution:=1.0 
+              vertical_min_angle:=-0.5353 vertical_max_angle:=0.1862
+              range_resolution:=0.1 
+              range_min:=0.1 range_max:=100.0 
+              noise_type:='gaussian' noise_mean:=0.0 noise_stddev:=0.0
+              frame_id
+  ">
+
+    <gazebo reference="${parent}">
+      <sensor name="${name}" type="gpu_lidar">
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+
+        <update_rate>${fps}</update_rate>
+
+        <topic>${lidar_topic}</topic>
+
+        <gz_frame_id>${frame_id}</gz_frame_id>
+
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>${horizontal_samples}</samples>
+              
+              <resolution>${horizontal_resolution}</resolution>
+              <min_angle>${horizontal_min_angle}</min_angle>
+              <max_angle>${horizontal_max_angle}</max_angle>
+            </horizontal>
+
+            <vertical>
+              <samples>${vertical_samples}</samples>
+
+              <resolution>${vertical_resolution}</resolution>
+              <min_angle>${vertical_min_angle}</min_angle>
+              <max_angle>${vertical_max_angle}</max_angle>
+            </vertical>
+          </scan>
+
+          <range>
+            <resolution>${range_resolution}</resolution>
+            <min>${range_min}</min>
+            <max>${range_max}</max>
+          </range>
+
+          <noise>
+            <type>${noise_type}</type>
+
+            <mean>${noise_mean}</mean>
+            <stddev>${noise_stddev}</stddev>
+        </noise>
+
+        <frame_id>${frame_id}</frame_id>
+        </lidar>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>

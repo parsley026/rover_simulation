@@ -1,0 +1,152 @@
+# Clock
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+# TF
+- ros_topic_name: "/tf"
+  gz_topic_name: "/tf"
+  ros_type_name: "tf2_msgs/msg/TFMessage"
+  gz_type_name: "gz.msgs.Pose_V"
+  direction: GZ_TO_ROS
+
+# 4WS
+- ros_topic_name: "/steer/rear_right/cmd_pos"
+  gz_topic_name: "/model/rex/joint/arm_rear_right_to_steer_rear_right/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/steer/rear_left/cmd_pos"
+  gz_topic_name: "/model/rex/joint/arm_rear_left_to_steer_rear_left/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/steer/front_left/cmd_pos"
+  gz_topic_name: "/model/rex/joint/arm_front_left_to_steer_front_left/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/steer/front_right/cmd_pos"
+  gz_topic_name: "/model/rex/joint/arm_front_right_to_steer_front_right/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+# 4WD
+- ros_topic_name: "/wheel/front_left/cmd_vel"
+  gz_topic_name: "/model/rex/joint/steer_front_left_to_wheel_front_left/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/wheel/rear_right/cmd_vel"
+  gz_topic_name: "/model/rex/joint/steer_rear_right_to_wheel_rear_right/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/wheel/front_right/cmd_vel"
+  gz_topic_name: "/model/rex/joint/steer_front_right_to_wheel_front_right/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/wheel/rear_left/cmd_vel"
+  gz_topic_name: "/model/rex/joint/steer_rear_left_to_wheel_rear_left/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+# 
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/world/demo/model/rex/joint_state"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+# Odometry
+- ros_topic_name: "perfect/odom"
+  gz_topic_name: "/model/rex/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "perfect/odom/covariance"
+  gz_topic_name: "/model/rex/odometry_with_covariance"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.OdometryWithCovariance"
+  direction: GZ_TO_ROS
+
+# RGBD Camera
+- ros_topic_name: "/camera_00/rgb/image_raw"
+  gz_topic_name: "/camera_00/rgbd/image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/camera_00/rgb/camera_info"
+  gz_topic_name: "/camera_00/rgbd/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/camera_00/stereo/image_raw"
+  gz_topic_name: "/camera_00/rgbd/depth_image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+# Left Stereo Camera
+- ros_topic_name: "/camera_00/left/image_raw"
+  gz_topic_name: "/camera_00/left/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/camera_00/left/camera_info"
+  gz_topic_name: "/camera_00/left/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# Right Stereo Camera
+- ros_topic_name: "/camera_00/right/image_raw"
+  gz_topic_name: "/camera_00/right/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/camera_00/right/camera_info"
+  gz_topic_name: "/camera_00/right/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# IMU
+- ros_topic_name: "/camera_00/imu/data"
+  gz_topic_name: "/camera_00/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# LiDAR
+- ros_topic_name: "/lidar_00/points"
+  gz_topic_name:  "/lidar_00/points"
+  ros_type_name:  "sensor_msgs/msg/PointCloud2"
+  gz_type_name:   "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+
+# IMU
+- ros_topic_name: "/lidar_00/imu/data"
+  gz_topic_name: "/lidar_00/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# RGB Hivision Camera
+# - ros_topic_name: "hivision/camera/image_raw"
+#   gz_topic_name: "/camera_xx/image_raw"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS
+# - ros_topic_name: "hivision/camera/camera_info"
+#   gz_topic_name: "/camera_xx/camera_info"
+#   ros_type_name: "sensor_msgs/msg/CameraInfo"
+#   gz_type_name: "gz.msgs.CameraInfo"
+#   direction: GZ_TO_ROS

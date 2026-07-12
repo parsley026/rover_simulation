@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <xacro:include filename="$(find rover_description)/urdf/macros/base/inertial.xacro"/>
+
   <!-- Main body -->
   <xacro:macro name="base_link">
     <link name="base_link">
@@ -19,14 +21,14 @@
           <box size="0.7 0.44 0.176"/>
         </geometry>
       </collision>
-      <inertial>
+      <xacro:inertial_box mass="15" x="0.7" y="0.44" z="0.176">
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <mass value="15"/>
-        <inertia ixx="0.28072" ixy="0" ixz="0"
-                              iyy="0.65122" iyz="0"
-                                            izz="0.8545"/>
-      </inertial>
+      </xacro:inertial_box>
     </link>
+
+    <gazebo reference="base_link">
+      <selfCollide>true</selfCollide>
+    </gazebo>
   </xacro:macro>
 
 </robot>

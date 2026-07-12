@@ -7,6 +7,15 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_context import LaunchContext
 
 def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
+    """
+    Create the Gazebo simulation launch description using the selected world and headless mode.
+    
+    Parameters:
+    	context (LaunchContext): Launch context used to resolve launch configurations
+    
+    Returns:
+    	list[Any]: A list containing the configured Gazebo simulation launch description
+    """
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
     world_file = LaunchConfiguration('world-file')
@@ -23,6 +32,12 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
     return [gazebo_sim]
 
 def generate_launch_description() -> LaunchDescription:
+    """
+    Create the launch description for the Gazebo world simulation.
+    
+    Returns:
+        LaunchDescription: Launch description with configurable world file and headless mode arguments.
+    """
     pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
 
     return LaunchDescription([

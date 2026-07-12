@@ -145,22 +145,79 @@ public:
      */
     OdometryEstimate update(const rex_interfaces::msg::Wheels& feedback, const rclcpp::Time& timestamp);
 
-    const nav_msgs::msg::Odometry& odometry() const { return odometry_; }
-    const tf2_msgs::msg::TFMessage& transform() const { return transformation_; }
+    /**
+ * @brief Provides the current odometry estimate.
+ *
+ * @return const nav_msgs::msg::Odometry& The stored odometry message.
+ */
+const nav_msgs::msg::Odometry& odometry() const { return odometry_; }
+    /**
+ * @brief Provides the current odometry-to-base transform.
+ *
+ * @return const tf2_msgs::msg::TFMessage& Current transform message.
+ */
+const tf2_msgs::msg::TFMessage& transform() const { return transformation_; }
 
-    double x() const { return x_; }
-    double y() const { return y_; }
-    double heading() const { return heading_; }
-    double linearX() const { return linear_x_; }
-    double linearY() const { return linear_y_; }
-    double angular() const { return angular_; }
+    /**
+ * @brief Gets the estimated x position.
+ *
+ * @return double Estimated x position in the odometry frame.
+ */
+double x() const { return x_; }
+    /**
+ * @brief Gets the estimated y position.
+ *
+ * @return double Estimated y position in the odometry frame.
+ */
+double y() const { return y_; }
+    /**
+ * @brief Gets the estimated heading.
+ *
+ * @return double Estimated heading in radians.
+ */
+double heading() const { return heading_; }
+    /**
+ * @brief Gets the estimated longitudinal velocity.
+ *
+ * @return double Estimated body-frame velocity along the x-axis, in metres per second.
+ */
+double linearX() const { return linear_x_; }
+    /**
+ * @brief Gets the estimated lateral velocity.
+ *
+ * @return double Estimated lateral velocity in metres per second.
+ */
+double linearY() const { return linear_y_; }
+    /**
+ * @brief Gets the estimated angular velocity.
+ *
+ * @return double Estimated angular velocity.
+ */
+double angular() const { return angular_; }
 
 private:
     struct WheelResidual {
-        WheelResidual(const double* v_xi_ptr, const double* v_yi_ptr, double x_i, double y_i)
+        /**
+             * @brief Initializes a wheel residual with measured velocity pointers and wheel position.
+             *
+             * @param v_xi_ptr Pointer to the measured wheel velocity in the x direction.
+             * @param v_yi_ptr Pointer to the measured wheel velocity in the y direction.
+             * @param x_i Wheel x-coordinate relative to the vehicle frame.
+             * @param y_i Wheel y-coordinate relative to the vehicle frame.
+             */
+            WheelResidual(const double* v_xi_ptr, const double* v_yi_ptr, double x_i, double y_i)
             : v_xi_ptr_(v_xi_ptr), v_yi_ptr_(v_yi_ptr), x_i_(x_i), y_i_(y_i) {}
 
         template <typename T>
+        /**
+         * @brief Computes residuals between measured wheel velocities and predicted body motion.
+         *
+         * @param v_x Estimated body-frame velocity along the x-axis.
+         * @param v_y Estimated body-frame velocity along the y-axis.
+         * @param omega Estimated angular velocity.
+         * @param residual Output residuals for the wheel velocity components.
+         * @return true after computing the residuals.
+         */
         bool operator()(const T* const v_x, const T* const v_y, const T* const omega, T* residual) const {
             // measured values are provided via pointers to doubles and read at evaluation time
             const T measured_vx = T(*v_xi_ptr_);
@@ -219,6 +276,9 @@ private:
     bool problem_initialized_{false};
     // Ensure proper cleanup of allocated residuals
 public:
+    /**
+     * @brief Releases the resources allocated for wheel residuals and cost functions.
+     */
     ~ForwardKinematics() {
         for (int i = 0; i < 4; ++i) {
             if (cost_functions_[i]) delete cost_functions_[i];

@@ -14,6 +14,14 @@ from nav2_common.launch import RewrittenYaml
 
 def generate_launch_description():
     # Update this to match your actual package name where your config lives
+    """
+    Create a ROS 2 launch description for the Nav2 navigation stack.
+    
+    The launch description supports standalone or composable Nav2 nodes, configurable namespaces, parameters, lifecycle startup, simulation time, respawning, logging, and topic remappings.
+    
+    Returns:
+    	LaunchDescription: The configured Nav2 launch description.
+    """
     my_package_name = 'rover_autonomy'
     my_package_dir = get_package_share_directory(my_package_name)
 

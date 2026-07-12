@@ -15,6 +15,12 @@ class OdomAnalyzer(Node):
     Strictly driven by a ROS 2 YAML parameter file.
     """
     def __init__(self):
+        """
+        Initialize the odometry analyzer, configure its topics, and set up synchronized subscriptions and per-topic error metrics.
+        
+        Raises:
+            SystemExit: If the default package or configuration file cannot be found, or the resulting topic configuration is invalid.
+        """
         super().__init__('odom_analyzer')
         self.metrics = {}
 
@@ -83,15 +89,25 @@ class OdomAnalyzer(Node):
         }
 
     def get_yaw_from_quaternion(self, q):
-        """Converts a ROS 2 geometry_msgs Quaternion to Euler Yaw (Z-axis rotation)."""
+        """
+        Convert a quaternion to its yaw angle about the Z axis.
+        
+        Parameters:
+            q: A ROS 2 quaternion containing the orientation.
+        
+        Returns:
+            The yaw angle in radians.
+        """
         siny_cosp = 2 * (q.w * q.z + q.x * q.y)
         cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
         return math.atan2(siny_cosp, cosy_cosp)
 
     def sync_callback(self, *msgs):
         """
-        Triggered when a matching set of messages arrive across ALL topics.
-        msgs[0] is always Ground Truth. msgs[1:] are the kinematic topics in order.
+        Process synchronized ground-truth and kinematic odometry messages to update per-topic error metrics.
+        
+        Parameters:
+            *msgs: A ground-truth odometry message followed by kinematic odometry messages in the configured topic order.
         """
         msg_gt = msgs[0]
         kin_msgs = msgs[1:]
@@ -135,6 +151,12 @@ class OdomAnalyzer(Node):
                 )
 
 def main(args=None):
+    """
+    Run the odometry analyzer node until it stops or is interrupted.
+    
+    Parameters:
+        args: Optional arguments passed to ROS 2 initialization.
+    """
     rclpy.init(args=args)
     
     try:

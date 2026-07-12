@@ -6,6 +6,13 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     
     # Declare arguments so you can override them from the terminal
+    """
+    Create the launch description for the keyboard teleoperation node.
+    
+    Returns:
+        LaunchDescription: A launch description that declares velocity, step-size,
+            and odometry-topic arguments and starts the teleoperation node.
+    """
     max_vel_arg = DeclareLaunchArgument('max_vel', default_value='1.0', description='Maximum speed limit')
     step_size_arg = DeclareLaunchArgument('step_size', default_value='0.05', description='Acceleration step size')
     odom_topic_arg = DeclareLaunchArgument('odom_topic', default_value='/kinematic/odometry', description='Odometry topic to track')

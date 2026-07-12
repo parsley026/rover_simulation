@@ -90,6 +90,11 @@ void rover_kinematics_bridge::kinematicsCallback(const rex_interfaces::msg::Whee
 
 }
 
+/**
+ * @brief Updates wheel and steering feedback from joint state measurements.
+ *
+ * @param msg Joint state message containing joint names, positions, and velocities.
+ */
 void rover_kinematics_bridge::feedbackCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
         static const std::unordered_map<std::string, std::function<void(rover_kinematics_bridge*, double, double)>> joint_map = {
                 // FIXED: Changed 'motor_' to 'arm_'

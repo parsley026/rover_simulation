@@ -92,15 +92,20 @@ void rover_kinematics_bridge::kinematicsCallback(const rex_interfaces::msg::Whee
 
 void rover_kinematics_bridge::feedbackCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
         static const std::unordered_map<std::string, std::function<void(rover_kinematics_bridge*, double, double)>> joint_map = {
-                {"motor_front_left_to_steer_front_left",    [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->front_left_steer.data = p; }},
-                {"motor_front_right_to_steer_front_right",  [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->front_right_steer.data = p; }},
-                {"motor_rear_right_to_steer_rear_right",    [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->rear_right_steer.data = p; }},
-                {"motor_rear_left_to_steer_rear_left",      [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->rear_left_steer.data = p; }},
+                // FIXED: Changed 'motor_' to 'arm_'
+                {"arm_front_left_to_steer_front_left",    [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->front_left_steer.data = p; }},
+                {"arm_front_right_to_steer_front_right",  [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->front_right_steer.data = p; }},
+                {"arm_rear_right_to_steer_rear_right",    [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->rear_right_steer.data = p; }},
+                {"arm_rear_left_to_steer_rear_left",      [](rover_kinematics_bridge* s, double p, double){ s->kinematic_feedback_buffor_->rear_left_steer.data = p; }},
+                
+                // LEAVE THESE AS THEY ARE:
                 {"steer_front_left_to_wheel_front_left",    [](rover_kinematics_bridge* s, double, double v){ s->kinematic_feedback_buffor_->front_left_drive.data = v; }},
                 {"steer_front_right_to_wheel_front_right",  [](rover_kinematics_bridge* s, double, double v){ s->kinematic_feedback_buffor_->front_right_drive.data = v; }},
                 {"steer_rear_right_to_wheel_rear_right",    [](rover_kinematics_bridge* s, double, double v){ s->kinematic_feedback_buffor_->rear_right_drive.data = v; }},
                 {"steer_rear_left_to_wheel_rear_left",      [](rover_kinematics_bridge* s, double, double v){ s->kinematic_feedback_buffor_->rear_left_drive.data = v; }}
         };
+
+        // ... rest of function remains the same ...
 
         for (size_t i = 0; i < msg->name.size(); ++i) {
                 auto it = joint_map.find(msg->name[i]);

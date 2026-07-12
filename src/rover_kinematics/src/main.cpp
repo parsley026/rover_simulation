@@ -1,9 +1,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include "quad_rover_kinematics/rover.h"
+#include "quad_rover_kinematics/RoverNode.hpp"
 
 
+/**
+ * @brief Program entry point for the `quad_rover_kinematics` node.
+ *
+ * Initializes ROS 2, constructs a `RoverNode` configured from the package's
+ * `config/rover_config.yaml` file and spins a multi-threaded executor.
+ */
 int main(int argc, char** argv)
 {
     // Initialize ROS 2
@@ -14,7 +20,7 @@ int main(int argc, char** argv)
     std::string cfg_pkg_path = package_share_directory + "/config/rover_config.yaml";
 
     // Create the Rover node
-    auto node = std::make_shared<Rover>(rclcpp::NodeOptions(), cfg_pkg_path);
+    auto node = std::make_shared<RoverNode>(rclcpp::NodeOptions(), cfg_pkg_path);
 
     // Create a multi-threaded executor
     rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 4 /* number of threads */);

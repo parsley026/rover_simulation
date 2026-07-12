@@ -37,9 +37,10 @@ public:
     explicit HardwareInterface(const RoverConfig &cfg) { setConfig(cfg); }
 
     /**
-     * @brief Store a copy of configuration for conversions.
-     * @param cfg RoverConfig instance copied into the object.
-     */
+ * @brief Stores configuration used by subsequent unit conversions.
+ *
+ * @param cfg Configuration containing conversion parameters and polarity settings.
+ */
     void setConfig(const RoverConfig &cfg) { config_ = cfg; }
 
     /**

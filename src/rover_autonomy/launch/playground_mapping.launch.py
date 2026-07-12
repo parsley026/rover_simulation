@@ -238,6 +238,17 @@ slam_remappings = [
 
 def launch_setup(context, *args, **kwargs):
 
+    """
+    Build the RTAB-Map launch actions for the configured camera, LiDAR, and mapping components.
+    
+    Parameters:
+        context: Launch context used to evaluate launch configurations.
+        *args: Additional launch setup arguments.
+        **kwargs: Additional launch setup keyword arguments.
+    
+    Returns:
+        list: Launch actions for enabled camera and LiDAR odometry nodes and the mapping node.
+    """
     enable_camera_00 = LaunchConfiguration('enable_camera_00')
     enable_lidar_00  = LaunchConfiguration('enable_lidar_00')
 
@@ -314,6 +325,12 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
+    """
+    Create the launch description for the mapping system.
+    
+    Returns:
+        LaunchDescription: A launch description containing camera and LiDAR enablement arguments and the launch-time setup function.
+    """
     declared_arguments = [
         DeclareLaunchArgument('enable_camera_00', default_value='true'),
         DeclareLaunchArgument('enable_lidar_00',  default_value='true'),

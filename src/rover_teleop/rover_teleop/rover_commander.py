@@ -23,6 +23,12 @@ class RoverCommander(Node):
     Handles MQTT publishers, Odometry subscribers, and background heartbeats.
     """
     def __init__(self, node_name='rover_commander'):
+        """
+        Initialize the rover commander node and configure its communication interfaces.
+        
+        Parameters:
+            node_name (str): Name assigned to the ROS 2 node.
+        """
         super().__init__(node_name)
         
         self.declare_parameter('odom_topic',    '/kinematic/odometry')
@@ -48,10 +54,16 @@ class RoverCommander(Node):
         self.heartbeat_timer = self.create_timer(0.1, self._publish_heartbeat)
 
     def _odom_callback(self, msg):
+        """Update the stored rover pose from an odometry message.
+        
+        Parameters:
+        	msg: Odometry message containing the latest rover pose.
+        """
         with self.lock:
             self.current_pose = msg.pose.pose
 
     def _publish_heartbeat(self):
+        """Publish the rover's current connection and control status."""
         status = RoverStatus()
         status.header.stamp = self.get_clock().now().to_msg()
         status.communication_state = 2   # CONNECTION_CONNECTED
@@ -60,12 +72,19 @@ class RoverCommander(Node):
         self.status_pub.publish(status)
 
     def set_control_mode(self, mode: int):
-        """Change rover control mode."""
+        """
+        Set the rover's control mode.
+        
+        Parameters:
+            mode (int): Identifier of the control mode to activate.
+        """
         self.control_mode = mode
         self.get_logger().info(f"Control mode changed to {mode}")
 
     def enable_autonomy(self):
-        """Switch rover into autonomy mode (listens to /cmd_vel)."""
+        """
+        Switch the rover to autonomy control mode.
+        """
         self.set_control_mode(AUTONOMY_CONTROL)
 
     def enable_manual(self):
@@ -73,7 +92,15 @@ class RoverCommander(Node):
         self.set_control_mode(USER_CONTROL)
 
     def send_velocity(self, vel, x_axis=0.0, y_axis=0.0, mode=None):
-        """Sends a movement command to the rover kinematics engine."""
+        """
+        Send a velocity and axis command using the selected driving mode.
+        
+        Parameters:
+            vel: Forward velocity command.
+            x_axis: Lateral or rotational axis command.
+            y_axis: Secondary axis command.
+            mode: Driving mode to use for this command and subsequent commands.
+        """
         if mode is not None:
             self.drive_mode = mode
             
@@ -87,6 +114,10 @@ class RoverCommander(Node):
         self.control_pub.publish(msg)
 
     def get_pose(self):
-        """Safely returns the latest odometry pose without blocking."""
+        """Return the latest odometry pose.
+        
+        Returns:
+            The most recently received odometry pose, or ``None`` if no pose is available.
+        """
         with self.lock:
             return self.current_pose

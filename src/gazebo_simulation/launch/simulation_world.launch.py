@@ -6,6 +6,12 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 
 def generate_launch_description() -> LaunchDescription:
 
+    """
+    Creates the launch description for the Gazebo simulation world.
+    
+    Returns:
+    	LaunchDescription: A launch description that declares simulation-time and world-name arguments and starts the Gazebo server.
+    """
     pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
 

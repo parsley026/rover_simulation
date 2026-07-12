@@ -72,13 +72,9 @@ RoverNode::RoverNode(const rclcpp::NodeOptions &options, const std::string &conf
 }
 
 /**
- * @brief Read YAML configuration and apply to components (legacy fallback).
+ * @brief Loads rover configuration from a YAML file and applies it to the node components.
  *
- * This function parses `config_file_path` and updates `config_` and
- * dependent components. It is used as a fallback if `RoverConfig::loadFromFile`
- * fails to enforce immutability.
- *
- * @param config_file_path Path to the rover_config.yaml file.
+ * @param config_file_path Path to the YAML configuration file.
  */
 void RoverNode::readConfig(const std::string &config_file_path) {
     try {
@@ -110,10 +106,11 @@ void RoverNode::resetOdometryCallback(const std::shared_ptr<std_srvs::srv::Empty
 }
 
 /**
- * @brief Helper to populate the internal `rover_cmd_velocity_` message.
+ * @brief Sets the rover's commanded motion and its timestamp.
  *
- * This sets timestamping according to `use_sim_time_` and stores the provided
- * motion command into the realtime buffer for `onUpdate()` to consume.
+ * @param x_vel Command along the x axis.
+ * @param y_vel Command along the y axis.
+ * @param speed Commanded speed.
  */
 void RoverNode::setCmdVelocity(double x_vel, double y_vel, double speed) {
     rover_cmd_velocity_.header.stamp = config_.use_sim_time_ ? sim_time_ : this->get_clock()->now();
@@ -153,15 +150,11 @@ rex_interfaces::msg::Wheels RoverNode::assembleWheelsFromCommand(const WheelComm
 }
 
 /**
- * @brief Periodic timer callback that runs kinematics and publishes messages.
+ * @brief Processes wheel feedback and commands, publishing odometry and wheel setpoints.
  *
- * Sequence:
- * - Check wheel feedback staleness and enter safe brake mode when needed.
- * - If fresh feedback available, call `ForwardKinematics::update()` and
- *   publish odometry and TF.
- * - Read the latest high-level command and compute wheel setpoints via
- *   `InverseKinematics` and `assembleWheelsFromCommand()`.
- * - Publish wheel setpoints to the CAN bridge topic.
+ * Enters brake mode when wheel feedback is stale or communication is disconnected.
+ * Otherwise, updates kinematics, publishes valid odometry and optional TF data, and
+ * publishes wheel commands for the active control mode.
  */
 void RoverNode::onUpdate() {
     rclcpp::Time time_curr = config_.use_sim_time_ ? sim_time_ : this->get_clock()->now();
@@ -288,11 +281,12 @@ void RoverNode::cmdVelCallback(const rex_interfaces::msg::RoverControl::SharedPt
 }
 
 /**
- * @brief VESC feedback callback that translates controller messages into
- * the internal per-wheel feedback representation.
+ * @brief Updates per-wheel feedback from a VESC status message.
  *
- * The callback maps VESC CAN IDs to wheel indices and converts ERPM/precise
- * position fields into physical units using `HardwareInterface`.
+ * Converts drive ERPM or steering position according to the VESC identifier
+ * and records the resulting feedback for subsequent kinematic updates.
+ *
+ * @param msg VESC status message containing the controller identifier and feedback value.
  */
 void RoverNode::feedbackCallback(const rex_interfaces::msg::VescStatus::SharedPtr msg) {
     rover_wheels_velocity_feedback_.header.stamp = config_.use_sim_time_ ? sim_time_ : this->get_clock()->now();
@@ -344,11 +338,12 @@ void RoverNode::statusCallback(const rex_interfaces::msg::RoverStatus::SharedPtr
 }
 
 /**
- * @brief Convert `/cmd_vel` Twist messages into the internal RoverControl shape.
+ * @brief Converts autonomous velocity commands into rover control commands.
  *
- * This is only applied when the node is in `AUTONOMY_CONTROL` mode. The
- * mapping converts linear.x and angular.z into the two primary control
- * primitives supported by the rover (advance and spin).
+ * Maps forward velocity and yaw rate to advance, spin, or turning commands.
+ * Turning-axis values are constrained to the configured steering range.
+ *
+ * @param msg Incoming velocity command.
  */
 void RoverNode::cmdVelAutoCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
     if (control_mode_ == AUTONOMY_CONTROL) {

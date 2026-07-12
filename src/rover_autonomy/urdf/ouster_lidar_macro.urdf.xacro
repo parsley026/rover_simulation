@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<robot name="ouster_os1"
+       xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:macro name="ouster_os1"
+    params="sensor_name parent base_frame lidar_frame imu_frame
+            sensor_pos_x sensor_pos_y sensor_pos_z
+            sensor_roll sensor_pitch sensor_yaw">
+
+<xacro:property name="M_PI" value="3.1415926535897931"/>
+
+<!-- Base frame -->
+<link name="${base_frame}"/>
+
+<joint name="${sensor_name}_mount_joint" type="fixed">
+    <parent link="${parent}"/>
+    <child link="${base_frame}"/>
+    <origin xyz="${sensor_pos_x} ${sensor_pos_y} ${sensor_pos_z}"
+            rpy="${sensor_roll} ${sensor_pitch} ${sensor_yaw}"/>
+</joint>
+
+<!-- Sensor body -->
+<link name="${sensor_name}_frame"/>
+
+<joint name="${sensor_name}_base_joint" type="fixed">
+    <parent link="${base_frame}"/>
+    <child link="${sensor_name}_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+</joint>
+
+<!-- LiDAR frame -->
+<link name="${lidar_frame}"/>
+
+<joint name="${sensor_name}_lidar_joint" type="fixed">
+    <parent link="${sensor_name}_frame"/>
+    <child link="${lidar_frame}"/>
+    <origin xyz="0 0 0.03618" rpy="0 0 0"/>
+</joint>
+
+<!-- IMU frame -->
+<link name="${imu_frame}"/>
+
+<joint name="${sensor_name}_imu_joint" type="fixed">
+    <parent link="${sensor_name}_frame"/>
+    <child link="${imu_frame}"/>
+    <origin xyz="0.006253 -0.011775 0.007645" rpy="0 0 0"/>
+</joint>
+
+</xacro:macro>
+
+</robot>

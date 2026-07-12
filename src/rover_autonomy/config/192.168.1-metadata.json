@@ -1,0 +1,174 @@
+{
+    "beam_intrinsics": 
+    {
+        "beam_altitude_angles": 
+        [
+            14.933,
+            12.774,
+            10.647,
+            8.539,
+            6.446,
+            4.344,
+            2.253,
+            0.136,
+            -1.946,
+            -4.036,
+            -6.135,
+            -8.253,
+            -10.368,
+            -12.496,
+            -14.666,
+            -16.872
+        ],
+        "beam_azimuth_angles": 
+        [
+            -3.372,
+            -3.307,
+            -3.277,
+            -3.234,
+            -3.22,
+            -3.188,
+            -3.167,
+            -3.114,
+            -3.111,
+            -3.103,
+            -3.067,
+            -3.058,
+            -3.046,
+            -3.052,
+            -3.037,
+            -3.046
+        ],
+        "lidar_origin_to_beam_origin_mm": 12.163
+    },
+    "calibration_status": 
+    {
+        "reflectivity": 
+        {
+            "timestamp": "",
+            "valid": false
+        }
+    },
+    "config_params": 
+    {
+        "azimuth_window": 
+        [
+            135000,
+            225000
+        ],
+        "columns_per_packet": 16,
+        "lidar_mode": "1024x10",
+        "multipurpose_io_mode": "OFF",
+        "nmea_baud_rate": "BAUD_9600",
+        "nmea_ignore_valid_char": 0,
+        "nmea_in_polarity": "ACTIVE_HIGH",
+        "nmea_leap_seconds": 0,
+        "operating_mode": "NORMAL",
+        "phase_lock_enable": false,
+        "phase_lock_offset": 0,
+        "signal_multiplier": 1,
+        "sync_pulse_in_polarity": "ACTIVE_HIGH",
+        "sync_pulse_out_angle": 360,
+        "sync_pulse_out_frequency": 1,
+        "sync_pulse_out_polarity": "ACTIVE_HIGH",
+        "sync_pulse_out_pulse_width": 10,
+        "timestamp_mode": "TIME_FROM_INTERNAL_OSC",
+        "udp_dest": "192.168.1.20",
+        "udp_port_imu": 7503,
+        "udp_port_lidar": 7502,
+        "udp_profile_imu": "LEGACY",
+        "udp_profile_lidar": "RNG19_RFL8_SIG16_NIR16"
+    },
+    "imu_intrinsics": 
+    {
+        "imu_to_sensor_transform": 
+        [
+            1,
+            0,
+            0,
+            6.253,
+            0,
+            1,
+            0,
+            -11.775,
+            0,
+            0,
+            1,
+            7.645,
+            0,
+            0,
+            0,
+            1
+        ]
+    },
+    "lidar_data_format": 
+    {
+        "column_window": 
+        [
+            384,
+            640
+        ],
+        "columns_per_frame": 1024,
+        "columns_per_packet": 16,
+        "pixel_shift_by_row": 
+        [
+            -10,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9,
+            -9
+        ],
+        "pixels_per_column": 16,
+        "udp_profile_imu": "LEGACY",
+        "udp_profile_lidar": "RNG19_RFL8_SIG16_NIR16"
+    },
+    "lidar_intrinsics": 
+    {
+        "lidar_to_sensor_transform": 
+        [
+            -1,
+            0,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            36.18,
+            0,
+            0,
+            0,
+            1
+        ]
+    },
+    "ouster-sdk": 
+    {
+        "client_version": "ouster_client 0.11.1",
+        "output_source": "collect_metadata"
+    },
+    "sensor_info": 
+    {
+        "build_date": "2022-09-21T17:47:45Z",
+        "build_rev": "v2.4.0",
+        "image_rev": "ousteros-image-prod-aries-v2.4.0+20220921174636",
+        "initialization_id": 9599938,
+        "prod_line": "OS-1-16-A0",
+        "prod_pn": "840-101396-03",
+        "prod_sn": "991838000680",
+        "status": "RUNNING"
+    }
+}

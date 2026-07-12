@@ -1,0 +1,8 @@
+odom_analyzer:
+  ros__parameters:
+    ground_truth_topic: /perfect/odom
+    kinematic_topics:
+      - /kinematic/odometry
+      
+      - /camera_00/odom
+      - /lidar_00/odom

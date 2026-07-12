@@ -71,8 +71,8 @@
         <link name="${name}_imu_frame"/>
 
         <xacro:lidar_sensor
-            name="${name}_lidar_sensor" 
-            parent="${name}_link" 
+            name="${name}_lidar" 
+            parent="${name}_lidar_frame" 
 
             lidar_topic="${name}"
             fps="10"

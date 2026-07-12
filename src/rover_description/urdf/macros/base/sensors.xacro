@@ -23,6 +23,8 @@
         
         <topic>${camera_topic}</topic>
 
+        <gz_frame_id>${frame_id}</gz_frame_id>
+        
         <camera>
           <horizontal_fov>${h_fov}</horizontal_fov>
           
@@ -70,6 +72,8 @@
         <update_rate>${fps}</update_rate>
 
         <topic>${imu_topic}</topic>
+        
+        <gz_frame_id>${frame_id}</gz_frame_id>
 
         <imu>
           <frame_id>${frame_id}</frame_id>

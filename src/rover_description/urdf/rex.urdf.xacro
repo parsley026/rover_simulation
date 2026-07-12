@@ -31,9 +31,9 @@
     <origin xyz="0.40 0.0 0.15" rpy="0 0 0" />
   </xacro:ouster_os1_lidar> -->
 
-  <xacro:include filename="$(find rover_description)/urdf/macros/assembly/camera/hivision_camera_assembly.xacro"/>
+  <!-- <xacro:include filename="$(find rover_description)/urdf/macros/assembly/camera/hivision_camera_assembly.xacro"/>
   <xacro:hivision_camera name="camera_xx" parent_link="base_link">
     <origin xyz="0.40 0.0 0.10" rpy="0 0 0" />
-  </xacro:hivision_camera>
+  </xacro:hivision_camera> -->
 
 </robot>

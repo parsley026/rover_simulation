@@ -2,6 +2,12 @@
 
 #include <cmath>
 
+/**
+ * @brief Maps a drive VESC identifier to its wheel index.
+ *
+ * @param vesc_id Drive VESC identifier.
+ * @return std::size_t Wheel index from 0 to 3; returns 0 for an unrecognized identifier.
+ */
 std::size_t HardwareInterface::vescIdToDriveWheelIndex(uint8_t vesc_id) {
     switch (vesc_id) {
         case 0x50: return 0; // front_left
@@ -12,6 +18,12 @@ std::size_t HardwareInterface::vescIdToDriveWheelIndex(uint8_t vesc_id) {
     }
 }
 
+/**
+ * @brief Maps a VESC steering identifier to its turn-wheel index.
+ *
+ * @param vesc_id VESC identifier for the steering actuator.
+ * @return std::size_t Corresponding turn-wheel index, or `0` for an unrecognized identifier.
+ */
 std::size_t HardwareInterface::vescIdToTurnWheelIndex(uint8_t vesc_id) {
     switch (vesc_id) {
         case 0x60: return 0; // front_left
@@ -39,10 +51,14 @@ double HardwareInterface::metersPerSecondFromErpm(double erpm, std::size_t wheel
 }
 
 /**
- * @brief Convert linear speed (m/s) to a hardware drive set_value (ERPM-like).
+ * @brief Converts a linear wheel speed into a hardware drive command.
  *
- * This preserves the original drive scale used by the codebase and applies
- * a sign-based offset `min_erpm_` to ensure non-zero command magnitudes.
+ * Applies the configured drive conversion, minimum ERPM offset, and
+ * wheel-specific drive polarity.
+ *
+ * @param mps Linear wheel speed in meters per second.
+ * @param wheel_index Zero-based wheel index used to select drive polarity.
+ * @return Hardware drive set-value in ERPM-like units.
  */
 double HardwareInterface::driveSetFromMetersPerSecond(double mps, std::size_t wheel_index) const {
     // preserve original drive_scale: 30.0 / wheel_radius / M_PI * poles_pairs_number * motor_gear_ratio
@@ -60,10 +76,11 @@ double HardwareInterface::driveSetFromMetersPerSecond(double mps, std::size_t wh
 }
 
 /**
- * @brief Convert steering angle (rad) to the hardware steering set-unit.
+ * @brief Converts a steering angle to the hardware steering set-unit.
  *
- * Legacy code used degrees; this function converts radians to degrees and
- * applies configured polarity inversion for left/right wheels.
+ * @param rad Steering angle in radians.
+ * @param wheel_index Index of the wheel receiving the command.
+ * @return Steering set-unit value in degrees, with configured wheel-side polarity applied.
  */
 double HardwareInterface::steeringSetFromRadians(double rad, std::size_t wheel_index) const {
     double deg = rad * 180.0 / M_PI;
@@ -74,10 +91,11 @@ double HardwareInterface::steeringSetFromRadians(double rad, std::size_t wheel_i
 }
 
 /**
- * @brief Map a hardware `precise_pos` reading to a steering set-value, applying polarity.
+ * @brief Converts a steering position reading to a steering set-value with wheel-specific polarity.
  *
- * This function preserves the default mapping while allowing inverting
- * the reported value for wheels where the encoder/polarity is reversed.
+ * @param precise_pos Steering encoder position.
+ * @param wheel_index Wheel index used to select the steering polarity.
+ * @return The steering set-value, with polarity applied for the specified wheel.
  */
 double HardwareInterface::steeringSetFromPrecisePos(double precise_pos, std::size_t wheel_index) const {
     double val = precise_pos; // preserve default behavior

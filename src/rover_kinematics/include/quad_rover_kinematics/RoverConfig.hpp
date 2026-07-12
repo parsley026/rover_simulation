@@ -43,10 +43,9 @@ struct RoverConfig {
     RoverConfig() { resetDefaults(); }
 
     /**
-     * @brief Reset all values to conservative defaults suitable for simulation.
+     * @brief Resets all configuration fields to conservative, simulation-friendly defaults.
      *
-     * @note This is called by the constructor and by `loadFromYaml()` to ensure
-     * meaningful values are present before validation.
+     * Sets the configuration to an uninitialized state so it can be loaded or modified again.
      */
     void resetDefaults() {
         wheelbase_ = 1.0; // meters
@@ -74,14 +73,14 @@ struct RoverConfig {
     }
 
     /**
-     * @brief Load configuration values from a parsed YAML node.
+     * @brief Applies supported configuration values from a parsed YAML node.
      *
-     * This method will copy values into the structure and leave the
-     * object mutable until `loadFromFile()` is called which performs
-     * final validation and marks the object as initialized.
+     * Resets existing values to defaults before applying available overrides. The
+     * configuration remains mutable until successfully loaded and validated from a
+     * file.
      *
-     * @param config YAML node parsed from a file or parameter server.
-     * @return true if the node was read (does not guarantee validation).
+     * @param config Parsed YAML configuration node.
+     * @return true if the node is valid and the configuration is mutable, false otherwise.
      */
     bool loadFromYaml(const YAML::Node& config) {
         if (!config) {
@@ -146,14 +145,15 @@ struct RoverConfig {
     }
 
     /**
-     * @brief Load configuration from a YAML file and validate.
+     * @brief Loads configuration from a YAML file and validates it.
      *
-     * This function loads the YAML file, applies values and runs `validate()`.
-     * If validation passes the `initialized_` flag is set and the object
-     * should be treated as immutable by runtime components.
+     * Marks the configuration as initialized only after the file is loaded and
+     * all validation checks pass.
      *
      * @param path Filesystem path to the YAML configuration file.
-     * @return true on successful load and validation.
+     * @return `true` if the configuration is loaded and valid, `false` if the file
+     *         cannot be parsed, the YAML configuration is rejected, or validation
+     *         fails.
      */
     bool loadFromFile(const std::string& path) {
         try {
@@ -168,11 +168,10 @@ struct RoverConfig {
     }
 
     /**
-     * @brief Simple sanity checks for configuration values.
+     * @brief Checks whether the configuration satisfies basic validity requirements.
      *
-     * Ensures positive lengths and correct covariance vector sizes.
-     *
-     * @return true if values are sensible.
+     * @return `true` if the geometry and timing values are greater than zero and both
+     *         covariance vectors contain exactly six elements, `false` otherwise.
      */
     bool validate() const {
         if (wheelbase_ <= 0.0) return false;

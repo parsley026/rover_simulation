@@ -10,6 +10,15 @@ from launch.conditions import IfCondition
 from launch_ros.parameter_descriptions import ParameterValue
 
 def _check_float(s: str) -> bool:
+    """
+    Determine whether a string can be converted to a floating-point number.
+    
+    Parameters:
+        s (str): The string to evaluate.
+    
+    Returns:
+        bool: `true` if the string can be converted to a floating-point number, `false` otherwise.
+    """
     try:
         float(s)
         return True
@@ -17,6 +26,15 @@ def _check_float(s: str) -> bool:
         return False
 
 def _parse_pose(s: str) -> list[str]:
+    """
+    Parse a pose string into three coordinate values.
+    
+    Parameters:
+        s (str): Pose string containing three space-separated numeric coordinates.
+    
+    Returns:
+        list[str]: The parsed coordinate strings, or ['0', '0', '1.36'] when the input is invalid.
+    """
     clean_string = s.strip().lower()
     coords = clean_string.split(" ")
     if (not clean_string or len(coords) != 3 or 
@@ -25,6 +43,15 @@ def _parse_pose(s: str) -> list[str]:
     return coords
 
 def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
+    """
+    Create the launch actions for publishing the robot state, spawning the robot in Gazebo, and optionally resetting the world.
+    
+    Parameters:
+    	context (LaunchContext): Launch context used to resolve launch configurations.
+    
+    Returns:
+    	list[Any]: Launch actions configured according to the launch arguments.
+    """
     model_file = LaunchConfiguration('model-file')
     pose = LaunchConfiguration('pose')
     reset_robot_arg = LaunchConfiguration('reset-robot')
@@ -80,6 +107,12 @@ def launch_setup(context: LaunchContext, *_, **__) -> list[Any]:
     return [robot_state_publisher, spawn_entity, reset_robot]
 
 def generate_launch_description() -> LaunchDescription:
+    """
+    Create the launch description and configurable arguments for spawning the robot in Gazebo.
+    
+    Returns:
+    	LaunchDescription: Launch actions for configuring and starting the robot simulation.
+    """
     pkg_project_description = get_package_share_directory('rover_description')
     
     return LaunchDescription([

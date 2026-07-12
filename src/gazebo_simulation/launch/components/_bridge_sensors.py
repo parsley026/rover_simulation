@@ -5,6 +5,13 @@ from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
+    """
+    Create a launch description for the sensor bridge node.
+    
+    Returns:
+        LaunchDescription: Launch actions that declare the simulation-time setting
+        and start the configured ROS-Gazebo sensor bridge.
+    """
     pkg_gazebo = get_package_share_directory('gazebo_simulation')
     
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')

@@ -28,6 +28,12 @@ from nav2_common.launch import RewrittenYaml
 
 def generate_launch_description():
     # Get the launch directory
+    """
+    Build a ROS 2 launch description for the Nav2 navigation stack.
+    
+    Returns:
+    	LaunchDescription: Launch actions and arguments for starting Nav2 nodes either as separate processes or as composable nodes, with namespace, parameter, lifecycle, respawn, and logging configuration.
+    """
     bringup_dir = get_package_share_directory('nav2_bringup')
 
     namespace = LaunchConfiguration('namespace')

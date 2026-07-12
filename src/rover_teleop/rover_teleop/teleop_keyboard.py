@@ -10,6 +10,13 @@ from rover_teleop.rover_commander import RoverCommander, AUTONOMY_CONTROL, USER_
 
 class TeleopKeyboard(RoverCommander):
     def __init__(self):
+        """
+        Initialize the keyboard teleoperation node and its control state.
+        
+        The node declares velocity limit and adjustment step parameters, initializes
+        velocity and axis values to zero, and saves the current terminal settings for
+        later restoration.
+        """
         super().__init__('teleop_keyboard')
         
         self.declare_parameter('max_vel', 1.0)
@@ -25,6 +32,12 @@ class TeleopKeyboard(RoverCommander):
         self.settings = termios.tcgetattr(sys.stdin)
 
     def get_key(self):
+        """
+        Read and return one keyboard character from standard input when available.
+        
+        Returns:
+        	str: The available character, or an empty string if no input is received within the polling interval.
+        """
         tty.setraw(sys.stdin.fileno())
         rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
         key = sys.stdin.read(1) if rlist else ''
@@ -32,6 +45,14 @@ class TeleopKeyboard(RoverCommander):
         return key
 
     def run_keyboard_loop(self):
+        """
+        Process keyboard input to control rover velocity, steering, drive mode, and control mode.
+        
+        Keyboard commands adjust the velocity and axis values within their configured limits,
+        stop the rover, select a wheel mode, or switch between manual and autonomy control.
+        Manual drive commands are published while manual control is active. The terminal
+        settings are restored when the loop exits.
+        """
         print("Control the rover:")
         print("  w/x : Increase/Decrease velocity")
         print("  a/d : Increase/Decrease x_axis (Steering)")
@@ -76,6 +97,12 @@ class TeleopKeyboard(RoverCommander):
             print("\nShutting down Teleop...")
 
 def main(args=None):
+    """
+    Start the ROS 2 keyboard teleoperation node and manage its shutdown.
+    
+    Parameters:
+    	args: Optional arguments passed to ROS 2 initialization.
+    """
     rclpy.init(args=args)
     node = TeleopKeyboard()
     

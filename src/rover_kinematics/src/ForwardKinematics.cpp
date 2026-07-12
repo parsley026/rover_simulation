@@ -20,12 +20,9 @@ ForwardKinematics::ForwardKinematics(const RoverConfig& config) {
 }
 
 /**
- * @brief Apply a new RoverConfig and update derived geometry/covariances.
+ * @brief Applies a rover configuration and refreshes derived parameters and output message settings.
  *
- * Copies the provided configuration and updates internal parameters such as
- * wheelbase (L_), track width (W_), wheel radius and covariance defaults.
- *
- * @param config RoverConfig instance to apply.
+ * @param config Configuration values to apply.
  */
 void ForwardKinematics::setConfig(const RoverConfig& config) {
     config_ = config;
@@ -47,7 +44,9 @@ void ForwardKinematics::setConfig(const RoverConfig& config) {
 }
 
 /**
- * @brief Update pose covariance diagonal and refresh odometry parameters.
+ * @brief Sets the pose covariance diagonal and refreshes the odometry covariance.
+ *
+ * @param pose_covariance Pose covariance diagonal values.
  */
 void ForwardKinematics::setPoseCovariance(const std::vector<double>& pose_covariance) {
     pose_covariance_diagonal_ = pose_covariance;
@@ -55,7 +54,9 @@ void ForwardKinematics::setPoseCovariance(const std::vector<double>& pose_covari
 }
 
 /**
- * @brief Update twist covariance diagonal and refresh odometry parameters.
+ * @brief Sets the twist covariance diagonal and refreshes the odometry covariance.
+ *
+ * @param twist_covariance Covariance values for the twist diagonal.
  */
 void ForwardKinematics::setTwistCovariance(const std::vector<double>& twist_covariance) {
     twist_covariance_diagonal_ = twist_covariance;
@@ -73,7 +74,10 @@ void ForwardKinematics::setFrames(const std::string& odom_frame_id, const std::s
 }
 
 /**
- * @brief Update allowed steering radius (min/max) used by the estimator.
+ * @brief Sets the minimum and maximum steering radii used by the estimator.
+ *
+ * @param min_radius Minimum allowed steering radius.
+ * @param max_radius Maximum allowed steering radius.
  */
 void ForwardKinematics::setSteeringRadius(double min_radius, double max_radius) {
     min_steering_radius_ = min_radius;
@@ -130,7 +134,7 @@ void ForwardKinematics::reset() {
 }
 
 /**
- * @brief Populate default odometry fields (frame ids and covariance layout).
+ * @brief Initializes odometry frame identifiers, fixed planar fields, and covariance matrices.
  */
 void ForwardKinematics::setOdometryParam() {
     odometry_.header.frame_id = odom_frame_id_;
@@ -171,25 +175,16 @@ void ForwardKinematics::setTFParam() {
 }
 
 /**
- * @brief Perform a single forward kinematics estimation update.
+ * @brief Estimates body velocity and updates the rover pose from wheel feedback.
  *
- * Steps:
- * 1. Convert wheel steering values (degrees/heuristic) to radians.
- * 2. Compute per-wheel body-frame velocity components using wheel speeds and steering.
- * 3. Ensure Ceres residual blocks are initialized and set measured values.
- * 4. Solve a small nonlinear least-squares problem for (v_x, v_y, omega).
- * 5. Compute parameter covariance using `ceres::Covariance` and map to
- *    odometry twist/pose covariances (approximate propagation).
- * 6. Integrate body-frame velocities to update pose and output odometry + TF.
+ * Integrates the estimated motion and populates the odometry and transform
+ * outputs, including their covariance values. Updates with a non-positive
+ * elapsed time produce an invalid estimate. Changes to wheelbase or track
+ * width after initialization are not reflected in persistent residual geometry.
  *
- * Important safety notes:
- * - If the timestep `dt` is non-positive the update is skipped and an
- *   invalid estimate is returned.
- * - Geometry changes require rebuilding the persistent Ceres residuals.
- *
- * @param feedback Per-wheel drive and steering feedback message.
- * @param timestamp Timestamp to use in output messages.
- * @return OdometryEstimate containing odometry, transform, and validity flag.
+ * @param feedback Per-wheel drive speed and steering feedback.
+ * @param timestamp Timestamp associated with the measurement and outputs.
+ * @return Odometry estimate containing the updated odometry, transform, and validity flag.
  */
 OdometryEstimate ForwardKinematics::update(const rex_interfaces::msg::Wheels& feedback, const rclcpp::Time& timestamp) {
     OdometryEstimate estimate;

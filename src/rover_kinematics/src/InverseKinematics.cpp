@@ -5,6 +5,13 @@ constexpr double kMinSteerRadius = 1.0;
 constexpr double kMaxSteerRadius = 5.0;
 constexpr double kWheelSpeedConversion = 30.0 / M_PI;
 
+/**
+ * @brief Replaces values whose magnitude is below a threshold with zero.
+ *
+ * @param value Value to evaluate.
+ * @param epsilon Magnitude threshold.
+ * @return 0.0 if the magnitude of value is less than epsilon; otherwise, value.
+ */
 inline double clampToZero(double value, double epsilon = 1e-9) {
     return std::fabs(value) < epsilon ? 0.0 : value;
 }
@@ -25,10 +32,11 @@ void InverseKinematics::setConfig(const RoverConfig& config) {
 }
 
 /**
- * @brief Compute a bounded steering angle in the range [-pi/2, pi/2].
+ * @brief Folds an angle computed from Cartesian components into the steering range.
  *
- * This helper wraps std::atan2 and folds angles outside the principal
- * steering domain into a reversible equivalent to avoid large jump discontinuities.
+ * @param y The component corresponding to the angle's sine.
+ * @param x The component corresponding to the angle's cosine.
+ * @return The resulting angle in radians, within [-pi/2, pi/2].
  */
 double InverseKinematics::tangent360(double y, double x) const {
     double angle_rad = std::atan2(y, x);
@@ -99,11 +107,15 @@ WheelCommand InverseKinematics::computeAdvance(double radius_m, double drive_m_s
 }
 
 /**
- * @brief Compute wheel commands to perform a crab (lateral) translation.
+ * @brief Computes wheel commands for uniform-direction translation.
  *
- * The algorithm computes a single steering angle applied to all wheels and
- * assigns equal speeds so the vehicle translates without rotation when
- * mechanically feasible.
+ * All wheels receive the same steering angle and drive speed. Negative
+ * vertical direction input is treated as zero.
+ *
+ * @param vector_x Translation direction component along the x-axis.
+ * @param vector_y Translation direction component along the y-axis.
+ * @param drive_m_s Drive speed for each wheel.
+ * @return Wheel commands with equal steering angles and drive speeds.
  */
 WheelCommand InverseKinematics::computeCrab(double vector_x, double vector_y, double drive_m_s) const {
     WheelCommand command;
@@ -116,10 +128,10 @@ WheelCommand InverseKinematics::computeCrab(double vector_x, double vector_y, do
 }
 
 /**
- * @brief Compute wheel commands for in-place spin rotation.
+ * @brief Computes wheel commands for in-place rotation.
  *
- * The steering angles are chosen so wheels are oriented to maximize rotational
- * leverage and wheel speeds are set proportionally to the requested angular rate.
+ * @param angular_rate_rad_s Requested angular rate in radians per second.
+ * @return WheelCommand Steering angles and drive speeds for each wheel.
  */
 WheelCommand InverseKinematics::computeSpin(double angular_rate_rad_s) const {
     WheelCommand command;

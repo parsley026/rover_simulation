@@ -6,6 +6,16 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 
 def generate_launch_description() -> LaunchDescription:
     
+    """
+    Compose the Gazebo simulation launch description for the selected world and robot.
+    
+    The launch description declares arguments for simulation time, world filename,
+    robot model filename, and spawn pose, then includes the Gazebo server, bridge,
+    and robot-spawning launch components.
+    
+    Returns:
+        LaunchDescription: The configured launch description.
+    """
     pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
     pkg_project_description = get_package_share_directory('rover_description')

@@ -8,6 +8,16 @@ from launch.conditions import IfCondition
 def generate_launch_description() -> LaunchDescription:
     
     # --- Package Directories ---
+    """
+    Builds a ROS 2 launch description for a Gazebo rover simulation.
+    
+    The launch description starts Gazebo, bridges simulation data, spawns the
+    selected rover model at the configured pose, and optionally launches the rover
+    kinematics components.
+    
+    Returns:
+        LaunchDescription: The configured simulation launch actions.
+    """
     pkg_project_gazebo_worlds = get_package_share_directory('gazebo_worlds')
     pkg_project_gazebo = get_package_share_directory('gazebo_simulation')
     pkg_project_description = get_package_share_directory('rover_description')

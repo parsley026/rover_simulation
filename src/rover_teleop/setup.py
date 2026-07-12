@@ -5,6 +5,15 @@ from setuptools import find_packages, setup
 package_name = 'rover_teleop'
 
 def get_files(path):
+    """
+    Collect all file paths under a directory recursively.
+    
+    Parameters:
+    	path (str): Root directory to search.
+    
+    Returns:
+    	list: File paths found under the specified directory.
+    """
     return [f for f in glob.glob(f'{path}/**/*', recursive=True) if os.path.isfile(f)]
 
 config_files = get_files('config')

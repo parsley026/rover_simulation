@@ -23,9 +23,9 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': [
-            # CRITICAL: This registers your executable
-            'odom_analyzer = rover_toolbox.odom_analyzer:main', 
-        ],
-    },
+    'console_scripts': [
+        'odom_analyzer = rover_toolbox.odom_analyzer:main',
+        'validator = rover_toolbox.kinematics_validator:main',
+    ],
+},
 )

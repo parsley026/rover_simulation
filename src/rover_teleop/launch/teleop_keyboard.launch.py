@@ -15,7 +15,7 @@ def generate_launch_description():
     """
     max_vel_arg = DeclareLaunchArgument('max_vel', default_value='1.0', description='Maximum speed limit')
     step_size_arg = DeclareLaunchArgument('step_size', default_value='0.05', description='Acceleration step size')
-    odom_topic_arg = DeclareLaunchArgument('odom_topic', default_value='/kinematic/odometry', description='Odometry topic to track')
+    odom_topic_arg = DeclareLaunchArgument('odom_topic', default_value='/kinematic/odom', description='Odometry topic to track')
 
     # Launch the keyboard teleop node
     teleop_node = Node(

@@ -23,7 +23,7 @@ def generate_launch_description() -> LaunchDescription:
     pkg_project_description = get_package_share_directory('rover_description')
     
     # New packages
-    pkg_rover_kinematics = get_package_share_directory('quad_rover_kinematics')
+    pkg_rover_kinematics = get_package_share_directory('rover_kinematics')
     pkg_rover_kinematics_bridge = get_package_share_directory('rover_kinematics_bridge')
 
     # --- Declare Launch Arguments ---

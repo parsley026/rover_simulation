@@ -1,11 +1,10 @@
-#include "quad_rover_kinematics/HardwareInterface.hpp"
-
+#include "rover_kinematics/HardwareInterface.hpp"
 #include <cmath>
 
 /**
  * @brief Maps a drive VESC identifier to its wheel index.
  *
- * @param vesc_id Drive VESC identifier.
+ * @param vesc_id VESC identifier for the drive actuator.
  * @return std::size_t Wheel index from 0 to 3; returns 0 for an unrecognized identifier.
  */
 std::size_t HardwareInterface::vescIdToDriveWheelIndex(uint8_t vesc_id) {
@@ -19,10 +18,10 @@ std::size_t HardwareInterface::vescIdToDriveWheelIndex(uint8_t vesc_id) {
 }
 
 /**
- * @brief Maps a VESC steering identifier to its turn-wheel index.
+ * @brief Maps a steering VESC identifier to its wheel index.
  *
  * @param vesc_id VESC identifier for the steering actuator.
- * @return std::size_t Corresponding turn-wheel index, or `0` for an unrecognized identifier.
+ * @return std::size_t Wheel index from 0 to 3; returns 0 for an unrecognized identifier.
  */
 std::size_t HardwareInterface::vescIdToTurnWheelIndex(uint8_t vesc_id) {
     switch (vesc_id) {
@@ -36,41 +35,61 @@ std::size_t HardwareInterface::vescIdToTurnWheelIndex(uint8_t vesc_id) {
 
 /**
  * @brief Map reported ERPM-like value to linear speed (m/s).
- *
- * Formula used (legacy behaviour): mps = erpm * pi / 30 * wheel_radius / poles_pairs_number
- * Polarity inversions configured in `RoverConfig` are applied per-wheel.
+ * * Pipeline: Motor ERPM -> Mechanical RPM -> Angular Velocity (rad/s) -> Linear Speed (m/s)
  */
 double HardwareInterface::metersPerSecondFromErpm(double erpm, std::size_t wheel_index) const {
-    // preserve original behaviour: mps = erpm * pi / 30 * wheel_radius / poles_pairs_number
-    double mps = erpm * M_PI / 30.0 * config_.wheel_radius_ / static_cast<double>(config_.poles_pairs_number_);
-    // apply drive polarity inversion if configured
+    
+    // Step 1: Convert Electrical RPM (ERPM) to Mechanical RPM
+    double poles = static_cast<double>(config_.poles_pairs_number_);
+    double mech_rpm = erpm / (poles * config_.motor_gear_ratio_);
+
+    // Step 2: Convert Mechanical RPM to Angular Velocity (rad/s)
+    // Formula: RPM * (2 * PI / 60) simplifies to RPM * (PI / 30)
+    double angular_velocity_rad_s = mech_rpm * (M_PI / 30.0);
+
+    // Step 3: Convert Angular Velocity to Linear Speed (m/s)
+    // Formula: v = omega * r
+    double mps = angular_velocity_rad_s * config_.wheel_radius_;
+
+    // Step 4: Apply drive polarity inversion if configured
     bool is_right = (wheel_index == 1 || wheel_index == 3);
-    if (is_right && config_.invert_right_drive_) mps = -mps;
-    if (!is_right && config_.invert_left_drive_) mps = -mps;
+    if ( is_right && config_.invert_right_drive_) mps = -mps;
+    if (!is_right && config_.invert_left_drive_ ) mps = -mps;
+    
     return mps;
 }
 
 /**
  * @brief Converts a linear wheel speed into a hardware drive command.
- *
- * Applies the configured drive conversion, minimum ERPM offset, and
- * wheel-specific drive polarity.
- *
- * @param mps Linear wheel speed in meters per second.
- * @param wheel_index Zero-based wheel index used to select drive polarity.
- * @return Hardware drive set-value in ERPM-like units.
+ * * Pipeline: Linear Speed (m/s) -> Angular Velocity (rad/s) -> Mechanical RPM -> Motor ERPM
  */
 double HardwareInterface::driveSetFromMetersPerSecond(double mps, std::size_t wheel_index) const {
-    // preserve original drive_scale: 30.0 / wheel_radius / M_PI * poles_pairs_number * motor_gear_ratio
-    double drive_scale = 30.0 / config_.wheel_radius_ / M_PI * static_cast<double>(config_.poles_pairs_number_) * config_.motor_gear_ratio_;
-    double base = mps * drive_scale;
-    double sign_offset = (base >= 0.0) ? 1.0 : -1.0;
-    double set_value = base + sign_offset * config_.min_erpm_;
+    
+    // Bug fix: Strictly enforce zero velocity to prevent static friction offset creep
+    if (std::fabs(mps) < 1e-6) {
+        return 0.0; 
+    }
 
-    // apply drive inversion per wheel
+    // Step 1: Convert Linear Speed (m/s) to Angular Velocity (rad/s)
+    // Formula: omega = v / r
+    double angular_velocity_rad_s = mps / config_.wheel_radius_;
+
+    // Step 2: Convert Angular Velocity to Mechanical RPM
+    // Formula: rad/s * (60 / 2 * PI) simplifies to rad/s * (30 / PI)
+    double mech_rpm = angular_velocity_rad_s * (30.0 / M_PI);
+
+    // Step 3: Convert Mechanical RPM to Electrical RPM (ERPM)
+    double poles = static_cast<double>(config_.poles_pairs_number_);
+    double target_erpm = mech_rpm * poles * config_.motor_gear_ratio_;
+
+    // Step 4: Apply minimum ERPM offset to overcome static friction
+    double sign_offset = (target_erpm > 0.0) ? 1.0 : -1.0;
+    double set_value = target_erpm + (sign_offset * config_.min_erpm_);
+
+    // Step 5: Apply drive polarity inversion if configured
     bool is_right = (wheel_index == 1 || wheel_index == 3);
-    if (is_right && config_.invert_right_drive_) set_value = -set_value;
-    if (!is_right && config_.invert_left_drive_) set_value = -set_value;
+    if ( is_right && config_.invert_right_drive_) set_value = -set_value;
+    if (!is_right && config_.invert_left_drive_ ) set_value = -set_value;
 
     return set_value;
 }
@@ -83,10 +102,12 @@ double HardwareInterface::driveSetFromMetersPerSecond(double mps, std::size_t wh
  * @return Steering set-unit value in degrees, with configured wheel-side polarity applied.
  */
 double HardwareInterface::steeringSetFromRadians(double rad, std::size_t wheel_index) const {
-    double deg = rad * 180.0 / M_PI;
+    double deg = rad * (180.0 / M_PI);
+    
     bool is_right = (wheel_index == 1 || wheel_index == 3);
-    if (is_right && config_.invert_right_steering_) deg = -deg;
-    if (!is_right && config_.invert_left_steering_) deg = -deg;
+    if ( is_right && config_.invert_right_steering_) deg = -deg;
+    if (!is_right && config_.invert_left_steering_ ) deg = -deg;
+    
     return deg;
 }
 
@@ -98,9 +119,11 @@ double HardwareInterface::steeringSetFromRadians(double rad, std::size_t wheel_i
  * @return The steering set-value, with polarity applied for the specified wheel.
  */
 double HardwareInterface::steeringSetFromPrecisePos(double precise_pos, std::size_t wheel_index) const {
-    double val = precise_pos; // preserve default behavior
+    double val = precise_pos; 
+    
     bool is_right = (wheel_index == 1 || wheel_index == 3);
-    if (is_right && config_.invert_right_steering_) val = -val;
-    if (!is_right && config_.invert_left_steering_) val = -val;
+    if ( is_right && config_.invert_right_steering_) val = -val;
+    if (!is_right && config_.invert_left_steering_ ) val = -val;
+    
     return val;
 }

@@ -28,16 +28,20 @@
 
 ---
 
-wheels_distance_length: 0.90  # From URDF arm pivot offsets
-wheels_distance_width: 0.654  # From URDF swivel offsets
-wheel_diameter: 0.25          # From URDF cylinder radius (0.125 * 2)
+wheels_distance_length: 0.900
+wheels_distance_width:  0.654
+wheel_diameter: 0.25
+
 poles_pair_number: 15         
 motor_gear_ratio: 1.0        
-min_erpm: 0.0                
+min_erpm: 0.0
+max_erpm: 100000.0             
 velocity_limit: 1.0          
 publish_rate: 20.0           
 use_sim_time: true           
 feedback_timeout_sec: 0.5    
+
+max_mechanical_angle: 1.57
 
 max_steering_radius: 5.0    
 min_steering_radius: 1.0     
@@ -49,6 +53,28 @@ base_frame_id: '/base_link'
 
 odom_frame_id: '/odom'      
 enable_odom_tf: false
+
+use_measurement_timestamp: false
+
+huber_loss_threshold: 0.5
+twist_ema_alpha: 0.8
+se2_integration_omega_threshold: 1.0e-4
+
+solver_max_num_iterations: 200
+solver_function_tolerance: 1.0e-8
+solver_gradient_tolerance: 1.0e-10
+solver_parameter_tolerance: 1.0e-9
+solver_minimizer_progress_to_stdout: false
+solver_linear_solver_type: 'DENSE_QR'
+solver_trust_region_strategy_type: 'DOGLEG'
+
+enable_dynamic_wheel_weighting: false
+wheel_quality_low_erpm_threshold: 500.0
+wheel_quality_high_current_threshold: 20.0
+wheel_quality_high_duty_threshold: 0.85
+wheel_quality_min_weight: 0.0
+
+cmd_vel_autonomy_topic: '/cmd_vel'
 
 ---
 

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "quad_rover_kinematics/RoverConfig.hpp"
+#include "rover_kinematics/KinematicsConfig.hpp"
 
 /**
  * @class HardwareInterface
@@ -13,7 +13,7 @@
  * @details
  * HardwareInterface encapsulates hardware-specific conversions and polarity
  * handling required to send and interpret messages to/from the VESC motor
- * controllers. It uses `RoverConfig` fields such as `wheel_radius_`,
+ * controllers. It uses `KinematicsConfig` fields WheelCommand as `wheel_radius_`,
  * `poles_pairs_number_` and `motor_gear_ratio_` to perform conversions.
  *
  * Conventions and units:
@@ -22,7 +22,7 @@
  *   legacy ERPM-based command space used by the rover's CAN bridge.
  * - Steering values are represented as degrees or hardware-specific
  *   `precise_pos` depending on the source; this class preserves polarity
- *   inversions configured in `RoverConfig`.
+ *   inversions configured in `KinematicsConfig`.
  *
  * Thread-safety: stateless conversion functions are safe to call from multiple
  * threads as long as the underlying `config_` is not mutated concurrently.
@@ -34,14 +34,14 @@ public:
      * @brief Construct and set configuration.
      * @param cfg Rover configuration describing geometry and polarity.
      */
-    explicit HardwareInterface(const RoverConfig &cfg) { setConfig(cfg); }
+    explicit HardwareInterface(const KinematicsConfig &cfg) { setConfig(cfg); }
 
     /**
  * @brief Stores configuration used by subsequent unit conversions.
  *
  * @param cfg Configuration containing conversion parameters and polarity settings.
  */
-    void setConfig(const RoverConfig &cfg) { config_ = cfg; }
+    void setConfig(const KinematicsConfig &cfg) { config_ = cfg; }
 
     /**
      * @brief Convert linear speed (m/s) to hardware drive set value (ERPM-like).
@@ -67,11 +67,11 @@ public:
      */
     double metersPerSecondFromErpm(double erpm, std::size_t wheel_index) const;
 
-    /**
+    /**cout 
      * @brief Convert steering angle in radians to hardware steering units.
      *
      * The legacy implementation used degrees; polarity inversions configured
-     * in `RoverConfig` are applied.
+     * in `KinematicsConfig` are applied.
      *
      * @param rad Steering angle in radians.
      * @param wheel_index Wheel index used to determine steering polarity.
@@ -106,5 +106,5 @@ public:
     static std::size_t vescIdToTurnWheelIndex(uint8_t vesc_id);
 
 private:
-    RoverConfig config_;
+    KinematicsConfig config_;
 };

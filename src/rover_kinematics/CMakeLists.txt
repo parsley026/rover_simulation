@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(quad_rover_kinematics)
+project(rover_kinematics)
 
-# Set the C++ standard to C++17
+# Set the C++ standard to C++20
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
@@ -33,9 +33,9 @@ find_package(Ceres REQUIRED)
 # Declare a C++ executable
 add_executable(${PROJECT_NAME}_node
   src/main.cpp
-  src/RoverNode.cpp
-  src/InverseKinematics.cpp
-  src/ForwardKinematics.cpp
+  src/KinematicsNode.cpp
+  src/KinematicsSolver.cpp
+  src/KinematicsEstimator.cpp
   src/HardwareInterface.cpp
 )
 

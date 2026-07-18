@@ -150,3 +150,24 @@
 #   ros_type_name: "sensor_msgs/msg/CameraInfo"
 #   gz_type_name: "gz.msgs.CameraInfo"
 #   direction: GZ_TO_ROS
+
+# # Add the noisy left camera
+# - ros_topic_name: "/camera_00/left/image_noisy"
+#   gz_topic_name: "/camera_00/left/image_raw/noisy"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS
+
+# # Add the noisy right camera
+# - ros_topic_name: "/camera_00/right/image_noisy"
+#   gz_topic_name: "/camera_00/right/image_raw/noisy"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS
+
+# # Add the noisy RGBD camera
+# - ros_topic_name: "/camera_00/rgb/image_noisy"
+#   gz_topic_name: "/camera_00/rgbd/noisy"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS

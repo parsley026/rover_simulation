@@ -175,6 +175,36 @@ std::array<WheelVelocity, 4> KinematicsEstimator::extractWheelVectors(
     };
 }
 
+// std::array<WheelVelocity, 4> KinematicsEstimator::extractWheelVectors(
+//     const rex_interfaces::msg::Wheels& feedback) const 
+// {
+//     // 1. Explicit Unit Conversion
+//     auto degreesToRadians = [](double deg) {
+//         return deg * (M_PI / 180.0);
+//     };
+
+//     // 2. Separate Deadband Logic
+//     auto applyDeadband = [](double value, double threshold) {
+//         return std::abs(value) > threshold ? value : 0.0;
+//     };
+
+//     // 3. Velocity Vector Calculation
+//     auto wheelVel = [&](double speed, double steer_rad) -> WheelVelocity {
+//         return {speed * std::cos(steer_rad), speed * std::sin(steer_rad)};
+//     };
+
+//     // Set deadband to ~0.03 m/s (filters out the micro-slip from Gazebo suspension)
+//     const double DEADBAND_MPS = 0.03;
+
+//     // Note: Array initialization now matches standard layout: [FL, FR, RL, RR]
+//     return {
+//         wheelVel(applyDeadband(feedback.front_left.drive.set_value, DEADBAND_MPS),  degreesToRadians(feedback.front_left.turn.set_value)),
+//         wheelVel(applyDeadband(feedback.front_right.drive.set_value, DEADBAND_MPS), degreesToRadians(feedback.front_right.turn.set_value)),
+//         wheelVel(applyDeadband(feedback.rear_left.drive.set_value, DEADBAND_MPS),   degreesToRadians(feedback.rear_left.turn.set_value)),
+//         wheelVel(applyDeadband(feedback.rear_right.drive.set_value, DEADBAND_MPS),  degreesToRadians(feedback.rear_right.turn.set_value))
+//     };
+// }
+
 SolverResult KinematicsEstimator::solveBodyTwist(
     const std::array<WheelVelocity, 4>& wheel_vectors) 
 {

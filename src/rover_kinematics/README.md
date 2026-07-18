@@ -68,7 +68,7 @@ Navigate to the workspace directory and build the package using colcon:
 
 ```bash
 cd ~/kinematics_ws
-colcon build --packages-select quad_rover_kinematics
+colcon build --packages-select rover_kinematics
 ```
 
 ## Running the Package
@@ -77,7 +77,7 @@ Source the workspace and run the node:
 
 ```bash
 source ~/kinematics_ws/install/setup.bash
-ros2 run quad_rover_kinematics quad_rover_kinematics_node
+ros2 run rover_kinematics rover_kinematics_node
 ```
 
 ## Configuration
@@ -113,13 +113,13 @@ The odometry estimator has been extracted into a dedicated forward-kinematics co
 - Estimator API: `OdometryEstimate update(const rex_interfaces::msg::Wheels& feedback, const rclcpp::Time& timestamp)`
 - Internal state: wheel feedback history, body pose, body twist, timestamp, covariance setup, and the Ceres solver guesses
 - Solver ownership: the estimator owns its own Ceres `Problem` and solver configuration per update call, so the ROS node does not manage solver state
-- Dependency graph: `Rover -> Kinematics -> ForwardKinematics` and `Kinematics -> InverseKinematics`
-- Files modified: `include/quad_rover_kinematics/ForwardKinematics.hpp`, `src/ForwardKinematics.cpp`, `include/quad_rover_kinematics/kinematics.h`, `src/kinematics.cpp`, and `CMakeLists.txt`
+- Dependency graph: `Rover -> Kinematics -> KinematicsEstimator` and `Kinematics -> KinematicsSolver`
+- Files modified: `include/rover_kinematics/KinematicsEstimator.hpp`, `src/KinematicsEstimator.cpp`, `include/rover_kinematics/kinematics.h`, `src/kinematics.cpp`, and `CMakeLists.txt`
 - Moved responsibilities: steering-angle conversion, wheel velocity projection, Ceres optimization, pose integration, timestamp handling, covariance initialization, and odometry/TF message population are now owned by the estimator
 
 ## Nodes
 
-### quad_rover_kinematics_node
+### rover_kinematics_node
 
 This node handles the kinematic calculations and control for the quad rover.
 

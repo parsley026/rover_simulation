@@ -29,6 +29,7 @@ publish_period_(rclcpp::Duration::from_seconds(0.05)) {
     rear_right_drive_feedback_pub_ = this->create_publisher<rex_interfaces::msg::VescStatus>("/CAN/RX/vesc_status", rclcpp::QoS(10).reliable());
     front_left_drive_feedback_pub_ = this->create_publisher<rex_interfaces::msg::VescStatus>("/CAN/RX/vesc_status", rclcpp::QoS(10).reliable());
     front_right_drive_feedback_pub_ = this->create_publisher<rex_interfaces::msg::VescStatus>("/CAN/RX/vesc_status", rclcpp::QoS(10).reliable());
+    
     rear_left_turn_feedback_pub_ = this->create_publisher<rex_interfaces::msg::VescStatus>("/CAN/RX/vesc_status", rclcpp::QoS(10).reliable());
     rear_right_turn_feedback_pub_ = this->create_publisher<rex_interfaces::msg::VescStatus>("/CAN/RX/vesc_status", rclcpp::QoS(10).reliable());
     front_left_turn_feedback_pub_ = this->create_publisher<rex_interfaces::msg::VescStatus>("/CAN/RX/vesc_status", rclcpp::QoS(10).reliable());

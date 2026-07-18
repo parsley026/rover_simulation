@@ -112,9 +112,7 @@ lidar_00_odom_remappings = [
 
 #
 
-robot_localization_params_file_efk = '/home/rex/raptor_ws/src/playground/config/efk_filter.yaml'
-
-robot_localization_params_file_ufk = '/home/rex/raptor_ws/src/playground/config/efk_filter.yaml'
+robot_localization_params_file_efk = '/home/raptors/Desktop/rover_simulation/src/rover_autonomy/config/efk_filter.yaml'
 
 #
 
@@ -237,18 +235,6 @@ slam_remappings = [
 ]
 
 def launch_setup(context, *args, **kwargs):
-
-    """
-    Build the RTAB-Map launch actions for the configured camera, LiDAR, and mapping components.
-    
-    Parameters:
-        context: Launch context used to evaluate launch configurations.
-        *args: Additional launch setup arguments.
-        **kwargs: Additional launch setup keyword arguments.
-    
-    Returns:
-        list: Launch actions for enabled camera and LiDAR odometry nodes and the mapping node.
-    """
     enable_camera_00 = LaunchConfiguration('enable_camera_00')
     enable_lidar_00  = LaunchConfiguration('enable_lidar_00')
 
@@ -289,23 +275,14 @@ def launch_setup(context, *args, **kwargs):
     ]
 
     nodes = [
-        # Node(
-        #     package='robot_localization',
-        #     executable='ekf_node',
-        #     name='ekf_filter_node',
-        #     namespace='localization',
-        #     output='screen',
-        #     parameters=[robot_localization_params_file_efk]
-        # ),
-        # Node(
-        #     package='robot_localization',
-        #     executable='ukf_node',
-        #     name='ukf_filter_node',
-        #     namespace='',
-        #     output='screen',
-        #     parameters=[robot_localization_params_file_ufk]
-        # ),
-        
+        Node(
+            package='robot_localization',
+            executable='ekf_node',
+            name='ekf_filter_node',
+            namespace='localization',
+            output='screen',
+            parameters=[robot_localization_params_file_efk]
+        ),
     ]
 
     mapping = [

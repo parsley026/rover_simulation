@@ -1,5 +1,5 @@
 launch:
   - node:
-      pkg: quad_rover_kinematics
-      exec: quad_rover_kinematics_node
-      name: quad_rover_kinematics_node
+      pkg: rover_kinematics
+      exec: rover_kinematics_node
+      name: rover_kinematics_node

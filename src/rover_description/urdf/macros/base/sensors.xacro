@@ -50,6 +50,13 @@
           <camera_info_topic>${camera_info_topic}</camera_info_topic>
         </camera>
 
+        <!-- <plugin filename="libcustom_camera_noise_plugin.so" name="custom_camera_noise_plugin">
+          <param1>0.1</param1>
+          <param2>0.05</param2>
+
+          <topic>${camera_topic}</topic>
+        </plugin> -->
+
         <frame_id>${frame_id}</frame_id>
       </sensor>
     </gazebo>
@@ -141,7 +148,7 @@
 
             <mean>${noise_mean}</mean>
             <stddev>${noise_stddev}</stddev>
-        </noise>
+          </noise>
 
         <frame_id>${frame_id}</frame_id>
         </lidar>

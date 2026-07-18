@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>quad_rover_kinematics</name>
+  <name>rover_kinematics</name>
   <version>0.0.0</version>
-  <description>The quad_rover_kinematics package</description>
+  <description>The rover_kinematics package</description>
 
   <maintainer email="wmkuchar@gmail.com">Bitnut01</maintainer>
 

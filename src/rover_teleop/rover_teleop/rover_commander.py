@@ -31,7 +31,7 @@ class RoverCommander(Node):
         """
         super().__init__(node_name)
         
-        self.declare_parameter('odom_topic',    '/kinematic/odometry')
+        self.declare_parameter('odom_topic',    '/kinematic/odom')
         self.declare_parameter('control_topic', '/MQTT/RoverControl')
         self.declare_parameter('status_topic',  '/MQTT/RoverStatus')
         

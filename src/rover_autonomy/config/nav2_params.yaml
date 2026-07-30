@@ -48,8 +48,8 @@ controller_server:
 
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
-      required_movement_radius: 0.5
-      movement_time_allowance: 10.0
+      required_movement_radius: 0.2
+      movement_time_allowance: 30.0
     general_goal_checker:
       stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
@@ -67,25 +67,25 @@ controller_server:
       model_dt: 0.05
       batch_size: 2000
       
-      ax_max: 3.0 
-      ax_min: -3.0 
-      az_max: 2.0   
+      ax_max: 3.0
+      ax_min: -3.0
+      az_max: 2.0
       
-      vx_max: 1.5   
-      vx_min: -1.5  
-      vy_max: 0.0  
+      vx_max: 1.5
+      vx_min: -1.5
+      vy_max: 0.0
       
-      wz_max: 1.8  
+      wz_max: 1.8
       
-      vx_std: 0.3   
-      vy_std: 0.0   
-      wz_std: 0.4  
+      vx_std: 0.3
+      vy_std: 0.0
+      wz_std: 0.4
       
       iteration_count: 1
       temperature: 0.3
       
       motion_model: "Ackermann"
-      Ackermann:                 
+      Ackermann:
         plugin: "mppi::AckermannMotionModel"
         min_turning_r: 1.0
       TrajectoryVisualizer:
@@ -95,7 +95,8 @@ controller_server:
         plugin: "mppi::DefaultOptimalTrajectoryValidator"
         collision_lookahead_time: 2.0
       critics:
-        ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
+        ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic",
+         "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       ConstraintCritic:
         enabled: true
         cost_weight: 4.0
@@ -259,8 +260,8 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [1.5, 0.0, 1.8]
-    min_velocity: [-1.5, 0.0, -1.8]
+    max_velocity: [1.5, 0.0, 5.0]
+    min_velocity: [-1.5, 0.0, -5.0]
     max_accel: [3.0, 0.0, 4.0] 
     max_decel: [-3.0, 0.0, -4.0]
     odom_topic: "odom"
@@ -273,7 +274,7 @@ collision_monitor:
     cmd_vel_in_topic: "cmd_vel_smoothed"
     cmd_vel_out_topic: "cmd_vel"
     state_topic: "collision_monitor_state"
-    transform_tolerance: 0.2
+    transform_tolerance: 1.0
     polygons: ["FootprintApproach"]
     FootprintApproach:
       type: "polygon"

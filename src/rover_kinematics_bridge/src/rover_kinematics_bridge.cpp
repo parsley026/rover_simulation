@@ -91,7 +91,9 @@ void rover_kinematics_bridge::feedbackCallback(const sensor_msgs::msg::JointStat
     for (size_t i = 0; i < msg->name.size(); ++i) {
         auto it = joint_map.find(msg->name[i]);
         if (it != joint_map.end()) {
-            it->second(this, msg->position[i], msg->velocity[i]);
+            const double pos = (i < msg->position.size()) ? msg->position[i] : 0.0;
+            const double vel = (i < msg->velocity.size()) ? msg->velocity[i] : 0.0;
+            it->second(this, pos, vel);
         }
     }
 }

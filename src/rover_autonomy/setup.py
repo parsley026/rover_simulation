@@ -43,6 +43,7 @@ setup(
         'console_scripts': [
             'topography_global_node = rover_autonomy.topography_global_node:main',
             'topography_local_node = rover_autonomy.topography_local_node:main',
+            'spin_after_goal_node = rover_autonomy.spin_after_goal_node:main',
         ],
     },
 )

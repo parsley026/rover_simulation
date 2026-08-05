@@ -43,8 +43,11 @@ feedback_timeout_sec: 0.5
 
 max_mechanical_angle: 1.57
 
-max_steering_radius: 5.0    
-min_steering_radius: 1.0     
+max_steering_radius: 5.0  
+# Zmiana do testowania symetrycznego ackermann  
+#min_steering_radius: 1.0
+min_steering_radius: 0.55
+
 
 pose_covariance_diagonal:  [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]  
 twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]

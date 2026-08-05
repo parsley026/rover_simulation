@@ -53,8 +53,14 @@ controller_server:
     general_goal_checker:
       stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
+
+      #błedy przy niedokłądnym kącie dotarcia do celu
+      #xy_goal_tolerance: 0.25
+      #yaw_goal_tolerance: 0.25
+
+      xy_goal_tolerance: 1.0 
+      yaw_goal_tolerance: 1.8
+
       path_length_tolerance: 1.0
     PathHandler:
       plugin: "nav2_controller::FeasiblePathHandler"
@@ -87,7 +93,11 @@ controller_server:
       motion_model: "Ackermann"
       Ackermann:
         plugin: "mppi::AckermannMotionModel"
-        min_turning_r: 1.0
+        # Zmiana do testowania symetrycznego ackermann
+        #min_turning_r: 1.0
+        min_turning_r: 0.55
+
+
       TrajectoryVisualizer:
         trajectory_step: 5
         time_step: 3
@@ -212,7 +222,11 @@ planner_server:
       max_on_approach_iterations: 1000
       max_planning_time: 2.0
       motion_model_for_search: "DUBIN" # or "REEDS_SHEPP" if you want it to plan paths in reverse
-      minimum_turning_radius: 1.0
+
+      # Zmiana z 1 do 0.55 do testowania symetrycznego ackermann
+      # minimum_turning_radius: 1.0
+      minimum_turning_radius: 0.55
+
       reverse_penalty: 2.1
 
 smoother_server:
@@ -249,19 +263,20 @@ waypoint_follower:
   ros__parameters:
     loop_rate: 20
     stop_on_failure: false
+    # konfiguracja zadania po dotarciu z jednego z punktów
     waypoint_task_executor_plugin: "wait_at_waypoint"
     wait_at_waypoint:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: true
-      waypoint_pause_duration: 200
+      waypoint_pause_duration: 15000 # 15 sekund przerwy, aby skrypt pythona zdążył zrobić obrót
 
 velocity_smoother:
   ros__parameters:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [1.5, 0.0, 5.0]
-    min_velocity: [-1.5, 0.0, -5.0]
+    max_velocity: [1.5, 0.0, 1.8]
+    min_velocity: [-1.5, 0.0, -1.8]
     max_accel: [3.0, 0.0, 4.0] 
     max_decel: [-3.0, 0.0, -4.0]
     odom_topic: "odom"
@@ -274,7 +289,7 @@ collision_monitor:
     cmd_vel_in_topic: "cmd_vel_smoothed"
     cmd_vel_out_topic: "cmd_vel"
     state_topic: "collision_monitor_state"
-    transform_tolerance: 1.0
+    transform_tolerance: 0.2
     polygons: ["FootprintApproach"]
     FootprintApproach:
       type: "polygon"

@@ -32,7 +32,7 @@
     <child link="swivel_left" />
     <origin xyz="0 0.2735 0" rpy="0 0 0" />
     <axis xyz="0 1 0"/>
-    <limit effort="1000.0" lower="-1" upper="1" velocity="5.0"/>
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
     <dynamics friction="1.0" damping="0.1"/> 
   </joint>
   <link name="swivel_left">
@@ -62,7 +62,7 @@
     <child link="arm_left" />
     <origin xyz="0 0.0535 0" rpy="0 0 0" />
     <!-- <axis xyz="0 1 0"/>
-    <limit effort="1000.0" lower="-1" upper="1" velocity="5.0"/> -->
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/> -->
     </joint> 
   <link name="arm_left">
     <visual>
@@ -118,7 +118,7 @@
     <child link="steer_front_left" />
     <origin xyz="0 0 -0.055" rpy="0 0 0" />
     <axis xyz="0 0 1"/>
-    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="5.0"/> 
+    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="0.76"/> 
   </joint>
   <link name="steer_front_left">
     <visual>
@@ -206,7 +206,7 @@
     <child link="steer_rear_left" />
     <origin xyz="0 0 -0.055" rpy="0 0 0" />
     <axis xyz="0 0 1"/>
-    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="5.0"/>   </joint>
+    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="0.76"/>   </joint>
   <link name="steer_rear_left">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -265,7 +265,7 @@
     <child link="swivel_right" />
     <origin xyz="0 -0.2735 0" rpy="0 0 0" />
     <axis xyz="0 1 0"/>
-    <limit effort="1000.0" lower="-1" upper="1" velocity="5.0"/>
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/>
     <dynamics friction="1.0" damping="0.1"/> 
     <!-- <mimic joint="base_link_to_swivel_left" multiplier="-1" offset="0"/> -->
   </joint>
@@ -296,7 +296,7 @@
     <child link="arm_right" />
     <origin xyz="0 -0.0535 0" rpy="0 0 0" />
     <!-- <axis xyz="0 1 0"/>
-    <limit effort="1000.0" lower="-1" upper="1" velocity="5.0"/> --> 
+    <limit effort="1000.0" lower="-1" upper="1" velocity="0.5"/> --> 
   </joint> 
   <link name="arm_right">
     <visual>
@@ -352,7 +352,7 @@
     <child link="steer_front_right" />
     <origin xyz="0 0 -0.055" rpy="0 0 0" />
     <axis xyz="0 0 1"/>
-    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="5.0"/>   </joint>
+    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="0.76"/>   </joint>
   <link name="steer_front_right">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -438,7 +438,7 @@
     <child link="steer_rear_right" />
     <origin xyz="0 0 -0.055" rpy="0 0 0" />
     <axis xyz="0 0 1"/>
-    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="5.0"/>   </joint>
+    <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="0.76"/>   </joint>
   <link name="steer_rear_right">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

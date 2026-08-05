@@ -12,7 +12,7 @@
       <child link="steer_${name}"/>
       <origin xyz="${x} 0 -0.05" rpy="0 0 0"/>
       <axis xyz="0 0 1"/>
-      <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="5.0"/>
+      <limit effort="10.0" lower="-3.14159265" upper="3.14159265" velocity="0.76"/>
     </joint>
 
     <!-- Steering shaft -->
@@ -105,7 +105,7 @@
       <child link="swivel_${side}"/>
       <origin xyz="0 ${base_y} 0" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
-      <limit effort="1000.0" lower="-1.15" upper="1.15" velocity="5.0"/>
+      <limit effort="1000.0" lower="-1.15" upper="1.15" velocity="0.6"/>
       <dynamics friction="1.0" damping="0.1"/>
     </joint>
 
@@ -174,7 +174,7 @@
       <child link="arm_front_${side}"/>
       <origin xyz="0.05 0 0" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
-      <limit effort="500.0" lower="-0.7" upper="0.7" velocity="5.0"/>
+      <limit effort="500.0" lower="-0.7" upper="0.7" velocity="0.6"/>
       <dynamics friction="0.3" damping="0.05"/>
     </joint>
 
@@ -210,7 +210,7 @@
       <child link="arm_rear_${side}"/>
       <origin xyz="-0.05 0 0" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
-      <limit effort="500.0" lower="-0.7" upper="0.7" velocity="5.0"/>
+      <limit effort="500.0" lower="-0.7" upper="0.7" velocity="0.6"/>
       <dynamics friction="0.3" damping="0.05"/>
     </joint>
 

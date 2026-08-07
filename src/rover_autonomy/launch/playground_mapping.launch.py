@@ -110,11 +110,15 @@ lidar_00_odom_remappings = [
     ("odom", "/lidar_00/odom"),
 ]
 
-#
+from ament_index_python.packages import get_package_share_directory
+import os
 
-robot_localization_params_file_efk = '/home/raptors/Desktop/rover_simulation/src/rover_autonomy/config/efk_filter.yaml'
+robot_localization_params_file_efk = os.path.join(
+    get_package_share_directory('rover_autonomy'),
+    'config',
+    'efk_filter.yaml'
+)
 
-#
 
 slam_parameters = {
     'qos': 1,
@@ -235,8 +239,26 @@ slam_remappings = [
 ]
 
 def launch_setup(context, *args, **kwargs):
-    enable_camera_00 = LaunchConfiguration('enable_camera_00')
-    enable_lidar_00  = LaunchConfiguration('enable_lidar_00')
+    enable_camera_00   = LaunchConfiguration('enable_camera_00')
+    enable_lidar_00    = LaunchConfiguration('enable_lidar_00')
+    database_path_val  = LaunchConfiguration('database_path').perform(context)
+    localization_val   = LaunchConfiguration('localization').perform(context).lower() in ['true', '1']
+    delete_db_val      = LaunchConfiguration('delete_db_on_start').perform(context).lower() in ['true', '1']
+
+    # Kopia slownika parametrow ze zmodyfikowanymi wartosciami dla zapisu/odczytu
+    local_slam_parameters = dict(slam_parameters)
+    local_slam_parameters['database_path'] = database_path_val
+
+    if localization_val:
+        local_slam_parameters['Mem/IncrementalMemory'] = 'False'
+        local_slam_parameters['Mem/InitWMWithAllNodes'] = 'True'
+    else:
+        local_slam_parameters['Mem/IncrementalMemory'] = 'True'
+        local_slam_parameters['Mem/InitWMWithAllNodes'] = 'False'
+
+    node_arguments = []
+    if delete_db_val and not localization_val:
+        node_arguments.append('--delete_db_on_start')
 
     camera_00_nodes = [
         Node(
@@ -292,9 +314,9 @@ def launch_setup(context, *args, **kwargs):
             name='rtabmap_slam',
             namespace='mapping',
             output='screen',
-            parameters=[slam_parameters],
+            parameters=[local_slam_parameters],
             remappings=slam_remappings,
-            arguments=['--delete_db_on_start']
+            arguments=node_arguments
         ),
     ]
 
@@ -303,17 +325,21 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     """
-    Create the launch description for the mapping system.
+    Create the launch description for the mapping system with database load/save configuration.
     
     Returns:
-        LaunchDescription: A launch description containing camera and LiDAR enablement arguments and the launch-time setup function.
+        LaunchDescription: A launch description containing camera, LiDAR, and database management arguments.
     """
     declared_arguments = [
-        DeclareLaunchArgument('enable_camera_00', default_value='true'),
-        DeclareLaunchArgument('enable_lidar_00',  default_value='true'),
+        DeclareLaunchArgument('enable_camera_00',   default_value='true', description='Enable camera node and odometry'),
+        DeclareLaunchArgument('enable_lidar_00',    default_value='true', description='Enable LiDAR node and odometry'),
+        DeclareLaunchArgument('database_path',      default_value='~/.ros/rtabmap.db', description='Path to RTAB-Map database file for saving/loading'),
+        DeclareLaunchArgument('localization',       default_value='false', description='Enable localization mode (read existing map without updating)'),
+        DeclareLaunchArgument('delete_db_on_start', default_value='true', description='Delete database on startup before mapping'),
     ]
 
     return LaunchDescription(
         declared_arguments + [OpaqueFunction(function=launch_setup)]
     )
+
     

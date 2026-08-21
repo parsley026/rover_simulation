@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 """
-path_recorder.py
-=========================================================
-Ten plik zawiera DWIE wersje algorytmu cofania. 
-Wersja 1: Pure Pursuit (AKTUALNIE WŁĄCZONA) - idealnie zoptymalizowana pod Symetrycznego Ackermanna.
+Wersja 1: Pure Pursuit (AKTUALNIE WŁĄCZONA)
 Wersja 2: Tape Recorder (ZAKOMENTOWANA NA DOLE).
 """
 
@@ -20,16 +17,13 @@ from geometry_msgs.msg import Twist, PoseStamped
 from std_srvs.srv import Trigger
 
 
-# ==============================================================================
-# WERSJA 1: PURE PURSUIT ZOPTYMALIZOWANY DLA SYMETRYCZNEGO ACKERMANNA
-# ==============================================================================
 
 class PathRecorderNode(Node):
 
     def __init__(self):
         super().__init__('path_recorder')
 
-        # ── Parametry ─────────────────────────────────────────────────────
+        # Parametry
         self.declare_parameter('odom_topic',          '/kinematic/odom')
         self.declare_parameter('cmd_vel_topic',       '/cmd_vel')
         self.declare_parameter('max_path_length_m',   10.0)
@@ -180,7 +174,6 @@ class PathRecorderNode(Node):
             self._stop_recovery('TIMEOUT')
             return
 
-        # Krótszy lookahead pod symetrycznego Ackermanna (ciaśniejszy skręt, 4 koła skrętne)
         lookahead_dist = 0.5
         
         with self._lock:
@@ -205,28 +198,23 @@ class PathRecorderNode(Node):
             self._stop_recovery('DONE')
             return
 
-        # Kąt do punktu docelowego dla tyłu pojazdu
         angle_to_target_back = math.atan2(-dy, -dx)
         angle_err = self._normalize_angle(angle_to_target_back - self._yaw)
 
-        # Matematyczny wzór Pure Pursuit dla sterowania trajektorią
+        # Sterowanie trajektorią
         # curvature (k) = 2 * sin(alpha) / L_ld
         curvature = 2.0 * math.sin(angle_err) / max(dist, 0.1)
 
-        # Dynamiczna kontrola prędkości (wolniej na zakrętach)
+        # Dynamiczna kontrola prędkości
         if abs(angle_err) > math.radians(45):
             linear_x = -self._rev_speed * 0.5
         else:
             linear_x = -self._rev_speed
 
-        # angular_z (rad/s)
-        # Bierzemy moduł z prędkości (abs) i zachowujemy znak krzywizny.
-        # Ponieważ węzeł kinematyki w Gazebo sztywno mapuje angular.z na wychylenie kół,
-        # brak minusa na początku zagwarantuje, że przy cofaniu kierownica skręci
-        # tak, aby tył (a nie przód) skierował się do punktu.
+        #Sprawdzić czy w na łaziku nie będzie trzeba dodać minusa
+        #angular_z = -abs(linear_x) * curvature
         angular_z = abs(linear_x) * curvature
         
-        # Limitowanie max skrętu (zapobiega ostrym bączkom)
         angular_z = max(-1.0, min(1.0, angular_z))
 
         twist = Twist()
@@ -274,11 +262,7 @@ if __name__ == '__main__':
 
 
 """
-# ==============================================================================
 # WERSJA 2: TAPE RECORDER (ZAKOMENTOWANA)
-# ==============================================================================
-# Aby z niej skorzystać, skopiuj jej zawartość na górę pliku i podmień klasę
-# PathRecorderNode. 
 
 class PathRecorderNodeTape(Node):
 

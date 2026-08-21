@@ -1,37 +1,28 @@
-#include <rclcpp/rclcpp.hpp>
+#include "rover_kinematics/ros/kinematics_node.hpp"
 #include <rclcpp/executors/multi_threaded_executor.hpp>
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include "rover_kinematics/KinematicsNode.hpp"
-
+#include <rclcpp/rclcpp.hpp>
 
 /**
- * @brief Program entry point for the `rover_kinematics` node.
+ * @brief Standalone entry point for rover_kinematics_node.
  *
- * Initializes ROS 2, constructs a `KinematicsNode` configured from the package's
- * `config/rover_config.yaml` file and spins a multi-threaded executor.
+ * Uses a 4-thread MultiThreadedExecutor so that the odometry timer, VESC
+ * feedback callbacks, and service callbacks can run concurrently.
+ *
+ * Alternatively, KinematicsNode can be loaded into a container process for
+ * zero-copy intra-process communication:
+ *   ros2 launch rover_kinematics rover_kinematics_component.launch.py
  */
-int main(int argc, char** argv)
-{
-    // Initialize ROS 2
-    rclcpp::init(argc, argv);
+int main(int argc, char ** argv) {
+  rclcpp::init(argc, argv);
 
-    // Get the config file path
-    std::string package_share_directory = ament_index_cpp::get_package_share_directory("rover_kinematics");
-    std::string cfg_pkg_path = package_share_directory + "/config/rover_config.yaml";
+  // Config path is resolved from ament_index inside the constructor.
+  auto node = std::make_shared<KinematicsNode>(rclcpp::NodeOptions());
 
-    // Create the Rover node
-    auto node = std::make_shared<KinematicsNode>(rclcpp::NodeOptions(), cfg_pkg_path);
+  rclcpp::executors::MultiThreadedExecutor executor(
+      rclcpp::ExecutorOptions(), 4 /* threads */);
+  executor.add_node(node);
+  executor.spin();
 
-    // Create a multi-threaded executor
-    rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 4 /* number of threads */);
-
-    // Add your node to the executor
-    executor.add_node(node);
-
-    // Spin. This will block until shutdown.
-    executor.spin();
-
-    // Cleanup
-    rclcpp::shutdown();
-    return 0;
+  rclcpp::shutdown();
+  return 0;
 }

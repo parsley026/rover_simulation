@@ -1,0 +1,43 @@
+global_topography_node:
+  ros__parameters:
+    filters:
+      filter1:
+        name: inpaint
+        type: gridMapFilters/SlidingWindowMathExpressionFilter
+        params:
+          input_layer: elevation
+          output_layer: elevation_smooth
+          expression: meanOfFinites(elevation)
+          compute_empty_cells: true
+          edge_handling: crop
+          window_size: 7
+      filter2:
+        name: surface_normals
+        type: gridMapFilters/NormalVectorsFilter
+        params:
+          input_layer: elevation_smooth
+          output_layers_prefix: normal_vectors_
+          radius: 0.3
+          normal_vector_positive_axis: z
+      filter3:
+        name: slope
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: slope
+          expression: "acos(normal_vectors_z)"
+      filter4:
+        name: roughness
+        type: gridMapFilters/SlidingWindowMathExpressionFilter
+        params:
+          input_layer: elevation_smooth
+          output_layer: roughness
+          expression: "sqrt(sumOfFinites(square(elevation_smooth - meanOfFinites(elevation_smooth))) / (numberOfFinites(elevation_smooth) - 1.0))"
+          window_length: 0.6
+          compute_empty_cells: false
+          edge_handling: crop
+      filter5:
+        name: traversability_cost
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: cost
+          expression: "(slope/0.7)*0.4 + (roughness/0.2)*0.4 + (variance/0.2)*0.2"

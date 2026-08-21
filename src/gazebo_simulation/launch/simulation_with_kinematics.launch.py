@@ -106,7 +106,7 @@ def generate_launch_description() -> LaunchDescription:
 
     rover_kinematics = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([pkg_rover_kinematics, 'launch', 'qrk.yaml'])
+            PathJoinSubstitution([pkg_rover_kinematics, 'launch', 'base.yaml'])
         ),
         condition=IfCondition(run_kinematics)
     )

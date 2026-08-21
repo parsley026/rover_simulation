@@ -1,0 +1,7 @@
+[INFO] [launch]: All log files can be found below /home/raptors/distroboxes/ubuntu2404-rover-simulation/.ros/log/2026-07-28-23-04-02-334832-raptr-szastajhfasta-448204
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [topography_node-1]: process started with pid [448216]
+[INFO] [topography_node-2]: process started with pid [448217]
+[topography_node-1] [INFO] [1785272642.705020594] [local_topography_node]: TopographyNode initialized in local mode.
+[topography_node-2] [INFO] [1785272642.705005718] [global_topography_node]: TopographyNode initialized in global mode.
+[topography_node-1] [INFO] [1785272643.862185584] [local_topography_node]: Layers present: elevation, variance,  | Cost subs: 0

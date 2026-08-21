@@ -1,0 +1,46 @@
+/**:
+  ros__parameters:
+    sensor_hostname: '192.168.1.22'
+    udp_dest: '192.168.1.20'
+    mtp_dest: ''
+    mtp_main: false
+    
+    timestamp_mode: 'TIME_FROM_ROS_TIME'
+
+    lidar_mode: '1024x20'
+    
+    ptp_utc_tai_offset: -37.0
+    metadata: ''
+
+    sensor_frame: lidar_00_link
+    
+    lidar_port: 7502
+    udp_profile_lidar: 'RNG19_RFL8_SIG16_NIR16'
+    lidar_frame: lidar_00_lidar_frame
+    
+    imu_port: 7503
+    udp_profile_imu: 'LEGACY'
+    imu_frame: lidar_00_imu_frame
+    
+    point_cloud_frame: points
+    
+    pub_static_tf: false
+    proc_mask: IMG|PCL|IMU|SCAN|TLM
+    scan_ring: 0
+    use_system_default_qos: true
+    point_type: original
+    azimuth_window_start: 135000
+    azimuth_window_end: 225000
+    persist_config: false
+    attempt_reconnect: false
+    dormant_period_between_reconnects: 1.0
+    max_failed_reconnect_attempts: 2147483647
+    auto_start: false
+    organized: true
+    destagger: true
+    min_range: 0.5
+    max_range: 10.0
+    min_scan_valid_columns_ratio: 0.0
+    v_reduction: 1
+    mask_path: ''
+    rviz: false

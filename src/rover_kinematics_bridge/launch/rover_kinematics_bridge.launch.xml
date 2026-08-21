@@ -1,10 +1,36 @@
 <launch>
-  <node pkg="rover_kinematics_bridge" 
-        exec="rover_kinematics_bridge_node" 
-        name="rover_kinematics_bridge_node" 
+  <!--
+    Bridge operating mode — select one of three architectural modes:
+
+      simulation    Classic virtual testing. No hardware required.
+                    rover_kinematics -> Gazebo -> fake VescStatus feedback.
+
+      digital_shadow  One-way observer. Gazebo passively reflects the physical
+                      rover's actual state. Real VescStatus -> Gazebo only.
+                      No commands forwarded; no fake feedback published.
+
+      digital_twin    Bidirectional synchronisation.
+                      Measured state (hardware VescStatus) drives Gazebo with
+                      priority. Predicted state (IK commands) propagates as a
+                      continuity fallback when hardware feedback is stale.
+
+    Override at launch time (takes precedence over bridge_config.yaml):
+      ros2 launch rover_kinematics_bridge rover_kinematics_bridge.launch.xml \
+          mode:=digital_shadow
+  -->
+  <arg name="mode" default="simulation"
+       description="Bridge mode: 'simulation' | 'digital_shadow' | 'digital_twin'"/>
+
+  <node pkg="rover_kinematics_bridge"
+        exec="rover_kinematics_bridge_node"
+        name="rover_kinematics_bridge_node"
         output="screen">
-    
-    <param name="use_sim_time" value="true"/>
-    
+
+    <!-- Load all parameters from the config file -->
+    <param from="$(find-pkg-share rover_kinematics_bridge)/config/bridge_config.yaml"/>
+
+    <!-- Allow launch-time mode override (takes precedence over YAML value) -->
+    <param name="mode" value="$(var mode)"/>
+
   </node>
 </launch>

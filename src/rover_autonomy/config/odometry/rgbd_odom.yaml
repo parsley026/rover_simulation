@@ -1,0 +1,15 @@
+/**:
+  ros__parameters:
+    subscribe_rgbd: true
+    frame_id: base_link
+    odom_frame_id: odom
+    publish_tf: false
+    approx_sync: true
+    approx_sync_max_interval: 0.01
+    publish_null_when_lost: false
+    Odom/ResetCountdown: "1"
+    wait_imu_to_init: false
+    qos: 1
+    qos_image: 2
+    qos_camera_info: 2
+    use_sim_time: false

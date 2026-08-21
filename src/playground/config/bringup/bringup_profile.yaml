@@ -1,0 +1,35 @@
+bringup:
+  ros__parameters:
+    # Mode toggles
+    use_sim_time: false
+    use_ukf: false
+
+    # Subsystem activation toggles
+    launch_description: true
+    launch_camera_00: true
+    launch_lidar_00: true
+    launch_camera_00_odom: false
+    launch_lidar_00_odom: false
+    launch_localization: false
+    launch_mapping: false
+
+    # Subsystem configuration files (relative to playground package share or absolute paths)
+    camera_00_config: "config/sensors/oak_d_pro.yaml"
+    lidar_00_config: "config/sensors/ouster_os.yaml"
+    camera_00_odom_config: "config/odometry/rgbd_odom.yaml"
+    lidar_00_odom_config: "config/odometry/icp_odom.yaml"
+    ekf_config: "config/localization/ekf_filter.yaml"
+    ukf_config: "config/localization/ukf_filter.yaml"
+    mapping_config: "config/mapping/rtabmap_slam.yaml"
+
+    # ---------------------------------------------------------------
+    # Camera decode settings
+    # Enables the multithreaded decoder node (cpu_image_decoder or
+    # gpu_image_decoder) in place of the single-threaded
+    # image_transport republish nodes.  See playground/components/.
+    # ---------------------------------------------------------------
+    camera_00_enable_decode: true       # true = decoder node; false = republish fallback
+    camera_00_decode_backend: "cpu"     # "cpu" | "gpu"
+    camera_00_decode_threads: 4         # ThreadPoolExecutor workers (cpu mode only)
+    camera_00_decode_queue_size: 5      # subscriber / publisher queue depth
+    camera_00_decode_gpu_vendor: "auto" # "auto" | "nvidia" | "amd"  (gpu mode only)

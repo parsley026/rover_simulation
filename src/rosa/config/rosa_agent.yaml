@@ -1,0 +1,81 @@
+rosa_agent:
+  ros__parameters:
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # LLM Backend
+    # Options: 'vllm' | 'ollama' | 'openai' | 'azure' | 'anthropic'
+    #
+    # 'vllm' and 'openai' use the same ChatOpenAI driver — the difference is just
+    # where llm_base_url points.  Use 'vllm' for any OpenAI-compatible local server
+    # (vLLM Docker, LM Studio, llama.cpp, etc.).
+    # ─────────────────────────────────────────────────────────────────────────────
+    llm_backend: "vllm"
+
+    # Model name as reported by the server.
+    # vLLM:    must exactly match the HuggingFace model ID used at container start
+    # ollama:  name from `ollama list` (e.g. qwen2.5:7b)
+    # openai:  gpt-4o | gpt-4o-mini
+    model: "Qwen/Qwen2.5-Coder-3B-Instruct-AWQ"
+
+    # Base URL of the LLM API endpoint.
+    #   vLLM Docker container → http://localhost:8000/v1
+    #   Ollama               → http://localhost:11434   (no /v1)
+    #   Real OpenAI          → leave empty (driver uses api.openai.com automatically)
+    llm_base_url: "http://localhost:8000/v1"
+
+    # API key.
+    #   vLLM: any non-empty string works — the container ignores the value.
+    #   openai/azure/anthropic: set your real key here or via env variable.
+    api_key: "sk-no-key-required"
+
+    # Sampling temperature. 0.0 = deterministic (strongly recommended for robotics).
+    temperature: 0.0
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ROS Configuration
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    # Target ROS version: 1 or 2
+    ros_version: 2
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ROSA Agent Behaviour
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    # Enable streaming mode for token-by-token output (astream).
+    # Set to false to use blocking invoke() instead.
+    streaming: true
+
+    # Print verbose AgentExecutor output to the terminal.
+    verbose: false
+
+    # Maximum number of tool-call iterations per query before the agent gives up.
+    max_iterations: 100
+
+    # Keep chat history across queries (multi-turn conversation).
+    # Set to false to treat every query as independent.
+    accumulate_chat_history: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Quick-switch profiles — copy the block above and change these three lines:
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Ollama (local, no Docker):
+#   llm_backend: "ollama"
+#   model: "qwen2.5:7b"
+#   llm_base_url: "http://localhost:11434"
+#   api_key: "sk-no-key-required"
+#
+# Real OpenAI:
+#   llm_backend: "openai"
+#   model: "gpt-4o"
+#   llm_base_url: ""
+#   api_key: "sk-your-real-openai-key"
+#
+# Anthropic:
+#   llm_backend: "anthropic"
+#   model: "claude-3-5-sonnet-20241022"
+#   llm_base_url: ""
+#   api_key: "sk-ant-your-key"
+

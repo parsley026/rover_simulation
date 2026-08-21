@@ -1,0 +1,24 @@
+/**:
+  ros__parameters:
+    qos: 1
+    qos_image: 2
+    qos_camera_info: 2
+    frame_id: base_link
+    odom_frame_id: odom
+    publish_tf: false
+    subscribe_scan_cloud: true
+    approx_sync: true
+    approx_sync_max_interval: 0.01
+    publish_null_when_lost: false
+    wait_imu_to_init: false
+    queue_size_odom: 200
+    Icp/MaxTranslation: "5"
+    Icp/VoxelSize: "0.4"
+    Icp/MaxCorrespondenceDistance: "4.0"
+    Icp/PointToPlaneK: "20"
+    Odom/Strategy: "0"
+    OdomF2M/ScanSubtractRadius: "0.5"
+    OdomLOAM/Sensor: "2"
+    OdomLOAM/Resolution: "0.4"
+    ground_normals_up: true
+    use_sim_time: false

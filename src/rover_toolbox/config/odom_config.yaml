@@ -3,6 +3,6 @@ odom_analyzer:
     ground_truth_topic: /perfect/odom
     kinematic_topics:
       - /kinematics/odom
-      
-      # - /camera_00/odom
-      # - /lidar_00/odom
+      - /camera_00/odom
+      - /lidar_00/odom
+      - /localization/odometry/filtered

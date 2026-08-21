@@ -19,6 +19,11 @@ find_package(std_msgs REQUIRED)
 add_executable(${PROJECT_NAME}_node
   src/main.cpp
   src/rover_kinematics_bridge.cpp
+  src/core/conversions.cpp
+  src/gazebo/gazebo_command_publisher.cpp
+  src/bridge_modes/simulation_mode.cpp
+  src/bridge_modes/digital_shadow_mode.cpp
+  src/bridge_modes/digital_twin_mode.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_node PUBLIC include
@@ -51,7 +56,7 @@ install(
   DESTINATION include
 )
 
-install(DIRECTORY launch
+install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}/
 )
 

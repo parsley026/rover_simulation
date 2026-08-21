@@ -7,8 +7,7 @@ int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
 
     // Create the rover_kinematics_bridge node
-    
-    auto node = std::make_shared<rover_kinematics_bridge>(rclcpp::NodeOptions());
+    auto node = std::make_shared<rover_kinematics_bridge::rover_kinematics_bridge>(rclcpp::NodeOptions());
 
     // Define the loop rate (frequency in Hz)
     rclcpp::Rate loop_rate(50); // 50 Hz

@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<robot name="ouster_lidar" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="ouster_lidar" params="lidar_name parent_frame 
+                                               lidar_pos_x:=0.0 lidar_pos_y:=0.0 lidar_pos_z:=0.0 
+                                               lidar_roll:=0.0  lidar_pitch:=0.0 lidar_yaw:=0.0 
+                                               baseline:=0.075">
+        
+        <xacro:property name="M_PI" value="3.1415926535897931" />
+
+        <joint name="${lidar_name}_base_joint" type="fixed">
+            <parent link="${parent_frame}" />
+            <child link="${lidar_name}_link" />
+            <origin xyz="${lidar_pos_x} ${lidar_pos_y} ${lidar_pos_z}" rpy="${lidar_roll} ${lidar_pitch} ${lidar_yaw}" />
+        </joint>
+
+        <link name="${lidar_name}_link">
+        </link>
+
+        <link name="${lidar_name}_model_origin" />
+        <joint name="${lidar_name}_model_origin_joint" type="fixed">
+            <parent link="${lidar_name}_link" />
+            <child link="${lidar_name}_model_origin" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${lidar_name}_imu_frame" />
+        <joint name="${lidar_name}_imu_joint" type="fixed">
+            <parent link="${lidar_name}_link" />
+            <child link="${lidar_name}_imu_frame" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${lidar_name}_lidar_frame" />
+        <joint name="${lidar_name}_lidar_joint" type="fixed">
+            <parent link="${lidar_name}_link" />
+            <child link="${lidar_name}_lidar_frame" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${lidar_name}_lidar_optical_frame" />
+        <joint name="${lidar_name}_lidar_optical_joint" type="fixed">
+            <parent link="${lidar_name}_lidar_frame" />
+            <child link="${lidar_name}_lidar_optical_frame" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+    </xacro:macro>
+
+    <xacro:arg name="lidar_name" default="lidar_00"/>
+    <xacro:arg name="parent_frame" default="base_link"/>
+    
+    <link name="$(arg parent_frame)"/>
+    <xacro:ouster_lidar lidar_name="$(arg lidar_name)" parent_frame="$(arg parent_frame)" />
+</robot>

@@ -1,0 +1,35 @@
+bringup:
+  ros__parameters:
+    # Mode toggles
+    use_sim_time: true
+    use_ukf: false
+
+    # Subsystem activation toggles (mirrors rover_autonomy playground_mapping.launch.py)
+    launch_description: false
+    launch_camera_00: false
+    launch_lidar_00: false
+    launch_camera_00_odom: true
+    launch_lidar_00_odom: true
+    launch_localization: true
+    launch_mapping: true
+    delete_db_on_start: true
+
+    # Subsystem configuration files (relative to playground package share or absolute paths)
+    camera_00_config: "config/sensors/oak_d_pro.yaml"
+    lidar_00_config: "config/sensors/ouster_os.yaml"
+    camera_00_odom_config: "config/odometry/rgbd_odom.yaml"
+    lidar_00_odom_config: "config/odometry/icp_odom.yaml"
+    ekf_config: "config/localization/ekf_filter_sim.yaml"
+    ukf_config: "config/localization/ukf_filter.yaml"
+    mapping_config: "config/mapping/rtabmap_slam.yaml"
+
+    # ---------------------------------------------------------------
+    # Camera decode settings
+    # Cameras are disabled in sim (launch_camera_00: false), so
+    # enable_decode is false.  These values are kept for parity.
+    # ---------------------------------------------------------------
+    camera_00_enable_decode: false      # cameras off in sim
+    camera_00_decode_backend: "cpu"
+    camera_00_decode_threads: 4
+    camera_00_decode_queue_size: 5
+    camera_00_decode_gpu_vendor: "auto"

@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<robot name="depthai_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="depthai_camera" params="camera_name parent_frame 
+                                               cam_pos_x:=0.0 cam_pos_y:=0.0 cam_pos_z:=0.0 
+                                               cam_roll:=0.0  cam_pitch:=0.0 cam_yaw:=0.0 
+                                               baseline:=0.075">
+        
+        <xacro:property name="M_PI" value="3.1415926535897931" />
+
+        <joint name="${camera_name}_base_joint" type="fixed">
+            <parent link="${parent_frame}" />
+            <child link="${camera_name}_link" />
+            <origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}" rpy="${cam_roll} ${cam_pitch} ${cam_yaw}" />
+        </joint>
+
+        <link name="${camera_name}_link">
+        </link>
+
+        <link name="${camera_name}_model_origin" />
+        <joint name="${camera_name}_model_origin_joint" type="fixed">
+            <parent link="${camera_name}_link" />
+            <child link="${camera_name}_model_origin" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${camera_name}_imu_frame" />
+        <joint name="${camera_name}_imu_joint" type="fixed">
+            <parent link="${camera_name}_link" />
+            <child link="${camera_name}_imu_frame" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${camera_name}_rgb_camera_frame" />
+        <joint name="${camera_name}_rgb_camera_joint" type="fixed">
+            <parent link="${camera_name}_link" />
+            <child link="${camera_name}_rgb_camera_frame" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${camera_name}_rgb_camera_optical_frame" />
+        <joint name="${camera_name}_rgb_camera_optical_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+            <parent link="${camera_name}_rgb_camera_frame" />
+            <child link="${camera_name}_rgb_camera_optical_frame" />
+        </joint>
+
+        <link name="${camera_name}_left_camera_frame" />
+        <joint name="${camera_name}_left_camera_joint" type="fixed">
+            <parent link="${camera_name}_link" />
+            <child link="${camera_name}_left_camera_frame" />
+            <origin xyz="0 ${baseline/2} 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${camera_name}_left_camera_optical_frame" />
+        <joint name="${camera_name}_left_camera_optical_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+            <parent link="${camera_name}_left_camera_frame" />
+            <child link="${camera_name}_left_camera_optical_frame" />
+        </joint>
+
+        <link name="${camera_name}_right_camera_frame" />
+        <joint name="${camera_name}_right_camera_joint" type="fixed">
+            <parent link="${camera_name}_link" />
+            <child link="${camera_name}_right_camera_frame" />
+            <origin xyz="0 -${baseline/2} 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="${camera_name}_right_camera_optical_frame" />
+        <joint name="${camera_name}_right_camera_optical_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+            <parent link="${camera_name}_right_camera_frame" />
+            <child link="${camera_name}_right_camera_optical_frame" />
+        </joint>
+
+    </xacro:macro>
+
+    <xacro:arg name="camera_name" default="camera_00"/>
+    <xacro:arg name="parent_frame" default="base_link"/>
+    
+    <link name="$(arg parent_frame)"/>
+    <xacro:depthai_camera camera_name="$(arg camera_name)" parent_frame="$(arg parent_frame)" />
+</robot>

@@ -1,0 +1,20 @@
+nav2_param_calculator:
+  ros__parameters:
+    # --- Rover Geometry ---
+    wheelbase_length: 0.900
+    track_width: 0.654
+    vesc_to_radians_multiplier: 1.0  # Update this if you have a known conversion
+
+    # --- Test Constraints ---
+    test_max_linear_vel: 1.0       # [m/s] Forward/Reverse speed during tests
+    test_max_angular_vel: 2.0      # [rad/s] Max rotation rate (keeps ICR outside chassis)
+    phase_timeout_sec: 10.0        # [s] Max time to wait in a single phase
+
+    # --- Data Filtering ---
+    velocity_noise_deadband: 0.0001  # [m/s] Threshold to overcome static friction
+    ema_alpha: 0.2                 # Smoothing factor for acceleration calculation
+    sustain_window_msgs: 5         # Number of messages a peak must be held to be valid
+    
+    # --- Output ---
+    yaml_output_path: '/tmp/nav2_params.yaml'
+    teleop_topic: '/teleop_cmd_vel'

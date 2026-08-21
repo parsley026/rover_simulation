@@ -25,6 +25,8 @@ set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 gz_find_package(gz-common5 REQUIRED)
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 
+include_directories(include)
+
 add_library(differential_plugin SHARED src/differential_plugin.cpp)
 set_property(TARGET differential_plugin PROPERTY CXX_STANDARD 17)
 
@@ -41,6 +43,42 @@ ament_target_dependencies(differential_plugin
   rclcpp
 )
 ament_export_libraries(differential_plugin)
+
+# ---- VESC Drive Plugin ----
+add_library(vesc_drive_plugin SHARED src/VescDrivePlugin.cpp)
+set_property(TARGET vesc_drive_plugin PROPERTY CXX_STANDARD 17)
+
+target_link_libraries(vesc_drive_plugin
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-common${GZ_COMMON_VER}::gz-common${GZ_COMMON_VER}
+  ${gazebo_ros_LIBRARIES}
+  rclcpp::rclcpp
+)
+
+ament_target_dependencies(vesc_drive_plugin
+  ros_gz
+  rclcpp
+)
+ament_export_libraries(vesc_drive_plugin)
+
+# ---- VESC Steer Plugin ----
+add_library(vesc_steer_plugin SHARED src/VescSteerPlugin.cpp)
+set_property(TARGET vesc_steer_plugin PROPERTY CXX_STANDARD 17)
+
+target_link_libraries(vesc_steer_plugin
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-common${GZ_COMMON_VER}::gz-common${GZ_COMMON_VER}
+  ${gazebo_ros_LIBRARIES}
+  rclcpp::rclcpp
+)
+
+ament_target_dependencies(vesc_steer_plugin
+  ros_gz
+  rclcpp
+)
+ament_export_libraries(vesc_steer_plugin)
 
 add_library(custom_camera_noise_plugin SHARED src/CustomCameraNoisePlugin.cpp)
 set_property(TARGET custom_camera_noise_plugin PROPERTY CXX_STANDARD 17)
@@ -60,7 +98,11 @@ ament_target_dependencies(custom_camera_noise_plugin
 ament_export_libraries(custom_camera_noise_plugin)
 
 install(
-  TARGETS differential_plugin custom_camera_noise_plugin
+  TARGETS
+    differential_plugin
+    custom_camera_noise_plugin
+    vesc_drive_plugin
+    vesc_steer_plugin
   LIBRARY DESTINATION lib
 )
 

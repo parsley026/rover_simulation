@@ -1,0 +1,64 @@
+rover_kinematics_bridge_node:
+  ros__parameters:
+
+    # ---------------------------------------------------------------------------
+    # Bridge operating mode
+    # ---------------------------------------------------------------------------
+    #
+    #  "simulation"
+    #       Classic virtual testing — no physical hardware present.
+    #       rover_kinematics -> bridge -> Gazebo joint controllers
+    #       Gazebo joint_states -> bridge -> fake VescStatus -> rover_kinematics
+    #
+    #  "digital_shadow"
+    #       One-way observer — Gazebo reflects the physical rover's actual state.
+    #       Real hardware VescStatus (from CAN bridge) -> bridge -> Gazebo joint controllers
+    #       The bridge does NOT publish fake VescStatus; the real CAN bridge handles
+    #       rover_kinematics feedback. No command subscription.
+    #
+    #  "digital_twin"
+    #       Bidirectional synchronisation — the simulation mirrors measured hardware state
+    #       under normal operation and propagates the predicted (command-derived) state
+    #       as a continuity fallback during temporary communication loss.
+    #
+    #       Measured state (priority): real VescStatus -> Gazebo
+    #       Predicted state (fallback): rover_kinematics IK commands -> Gazebo
+    #       Physical execution: rover_kinematics commands are independently consumed
+    #       by the hardware CAN bridge; this bridge does not relay them to the real world.
+    #
+    mode: "simulation"
+
+    # ---------------------------------------------------------------------------
+    # Motor parameters -- must match rover_config.yaml in rover_kinematics
+    # ---------------------------------------------------------------------------
+
+    # Number of electrical pole-pairs in the drive motors.
+    # Conversion:  ERPM = mechanical_RPM * pole_numbers * motor_gear_ratio
+    # Must match poles_pair_number in rover_config.yaml.
+    pole_numbers: 7
+
+    # Gear reduction between the motor shaft and the wheel hub.
+    # Must match motor_gear_ratio in rover_config.yaml.
+    motor_gear_ratio: 31.0
+
+    invert_left_steering: true
+    invert_right_steering: true
+
+    # ---------------------------------------------------------------------------
+    # Bridge timer rate
+    # ---------------------------------------------------------------------------
+
+    # Rate (Hz) at which the timer flushes the double-buffer and dispatches.
+    # Should be >= rover_kinematics publish_rate (default 20 Hz).
+    publish_rate: 20.0
+
+    # ---------------------------------------------------------------------------
+    # Digital-twin continuity fallback
+    # ---------------------------------------------------------------------------
+
+    # Maximum age (seconds) of hardware VescStatus before the twin falls back from
+    # propagating the measured state to propagating the predicted state.
+    # Only used in digital_twin mode.
+    hardware_timeout_sec: 0.5
+
+    use_sim_time: true

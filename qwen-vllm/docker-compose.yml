@@ -1,0 +1,37 @@
+services:
+  qwen-coder-api:
+    # Official vLLM image — highly optimized for CUDA
+    image: vllm/vllm-openai:latest
+    container_name: qwen-vllm-server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Maps your local HF cache so the model isn't re-downloaded on restart
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # AWQ quantization + VRAM safety limits for RTX 3060 (6 GB)
+    #
+    # Root cause of previous OOM: CUDAGraph warm-up capture consumed VRAM on top of
+    # model weights (1.95 GB) + activations (0.6 GB) + KV cache (2.22 GB) = too much.
+    #
+    # Fixes applied:
+    #   --enforce-eager          : disables CUDAGraph capture entirely → no warmup OOM
+    #   --kv-cache-memory 1.47g  : pins KV cache to what vLLM itself recommended
+    #   --max-model-len 4096     : halves context window, frees ~0.75 GB extra headroom
+    command: >
+      --model Qwen/Qwen2.5-Coder-3B-Instruct-AWQ
+      --quantization awq
+      --max-model-len 8192
+      --gpu-memory-utilization 0.85
+      --kv-cache-memory 1578230887
+      --enforce-eager
+      --enable-auto-tool-choice
+      --tool-call-parser xlam
+

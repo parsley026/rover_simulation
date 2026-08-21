@@ -1,0 +1,155 @@
+# ArUco Landmark Database
+# ========================
+# Maps ArUco marker ID → known pose in the MAP frame.
+#
+# Competition spec:
+#   Dictionary : DICT_5X5_100  (aruco_ros default: DICT_5X5_250 — set to 100)
+#   Marker IDs : 51 – 64
+#   Marker size : 0.150 m  (150 mm, printed on A4)
+#   Visible from: all 4 sides of the marker stand
+#
+# Coordinate convention:
+#   x, y, z  — marker centre in metres, map frame (ENU: x=East, y=North)
+#   roll/pitch — usually 0.0 for wall-mounted / upright markers
+#   yaw        — direction the marker FACE points INTO the scene (radians)
+#                i.e., a rover facing the marker is looking in the
+#                opposite direction (yaw + π from the marker's yaw)
+#
+# Fill in real values from your competition site survey or pre-run
+# calibration. The node logs a WARNING for any detected ID not listed here.
+# ============================================================
+
+marker_size_m: 0.150
+aruco_dictionary: "DICT_5X5_100"
+
+landmarks:
+  # ----------------------------------------------------------
+  # Gate / Waypoint Markers — IDs 51–64
+  # All values are 0.0 PLACEHOLDERS: replace with survey data.
+  # ----------------------------------------------------------
+
+  51:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 51 — placeholder"
+
+  52:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 52 — placeholder"
+
+  53:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 53 — placeholder"
+
+  54:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 54 — placeholder"
+
+  55:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 55 — placeholder"
+
+  56:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 56 — placeholder"
+
+  57:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 57 — placeholder"
+
+  58:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 58 — placeholder"
+
+  59:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 59 — placeholder"
+
+  60:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 60 — placeholder"
+
+  61:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 61 — placeholder"
+
+  62:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 62 — placeholder"
+
+  63:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 63 — placeholder"
+
+  64:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+    description: "Marker 64 — placeholder"

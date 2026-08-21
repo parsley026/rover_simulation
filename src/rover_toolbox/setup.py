@@ -26,6 +26,9 @@ setup(
     'console_scripts': [
         'odom_analyzer = rover_toolbox.odom_analyzer:main',
         'validator = rover_toolbox.kinematics_validator:main',
+        'kinematics_monitor = rover_toolbox.kinematics_monitor:main',
+        'twist_grapher = rover_toolbox.twist_grapher:main',
+        'nav2_param_calculator = rover_toolbox.nav2_param_calculator:main',
     ],
 },
 )

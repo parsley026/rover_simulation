@@ -1,0 +1,48 @@
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 30.0
+    sensor_timeout: 0.1
+    
+    # Unlocks Z, Roll, and Pitch for 3D simulation rough terrain topography
+    two_d_mode: false               
+    # Disabled in simulation to avoid conflict with Gazebo's odometry TF publisher
+    publish_tf: false               
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+
+    # 1. KINEMATIC ODOMETRY (Wheels from simulated VESC drive controllers)
+    odom0: /kinematics/odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  true,  false, # Fusing vx, vy
+                   false, false, true,  # Fusing yaw velocity
+                   false, false, false]
+    odom0_queue_size: 10
+    odom0_differential: false
+    odom0_relative: false
+
+    # 2. CAMERA 00 ODOMETRY (3D Spatial RGBD Odometry)
+    odom1: /camera_00/odom
+    odom1_config: [true,  true,  true,  # Fusing absolute X, Y, Z
+                   true,  true,  true,  # Fusing absolute Roll, Pitch, Yaw
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    odom1_queue_size: 10
+    odom1_differential: false       
+    odom1_relative: true            
+
+    # 3. LIDAR 00 ODOMETRY (3D Spatial ICP Odometry)
+    odom2: /lidar_00/odom           
+    odom2_config: [true,  true,  true,  # Fusing absolute X, Y, Z
+                   true,  true,  true,  # Fusing absolute Roll, Pitch, Yaw
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    odom2_queue_size: 10
+    odom2_differential: false
+    odom2_relative: true            

@@ -4,7 +4,7 @@
   <name>rover_description</name>
   <version>0.0.0</version>
   <description>Package containing the rex robot description and related plugins.</description>
-  <maintainer email="wmkuchar@gmail.com">bitnut</maintainer>
+  <maintainer email="me@email.com">me_name</maintainer>
   <license>TODO: License declaration</license>
 
   <!-- Build tool dependency -->

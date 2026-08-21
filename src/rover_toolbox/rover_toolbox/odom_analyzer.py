@@ -7,6 +7,7 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 import message_filters
 import math
+import functools
 from ament_index_python.packages import get_package_share_directory, PackageNotFoundError
 
 class OdomAnalyzer(Node):
@@ -15,27 +16,22 @@ class OdomAnalyzer(Node):
     Strictly driven by a ROS 2 YAML parameter file.
     """
     def __init__(self):
-        """
-        Initialize the odometry analyzer, configure its topics, and set up synchronized subscriptions and per-topic error metrics.
-        
-        Raises:
-            SystemExit: If the default package or configuration file cannot be found, or the resulting topic configuration is invalid.
-        """
+        # 1. CRITICAL: Initialize the ROS 2 Node first!
         super().__init__('odom_analyzer')
         self.metrics = {}
 
-        # Declare parameters with empty defaults to force user configuration
+        # 2. Declare parameters with empty defaults to force user configuration
         self.declare_parameter('ground_truth_topic', '')
         self.declare_parameter('kinematic_topics', [''])
 
-        # Fetch values from the parameter server
+        # 3. Fetch values from the parameter server
         self.gt_topic = self.get_parameter('ground_truth_topic').value
         
         # Retrieve the list and filter out any empty strings
         raw_kin_topics = self.get_parameter('kinematic_topics').value
         self.kin_topics = [t for t in raw_kin_topics if t]
 
-        # FALLBACK LOGIC: Exit immediately if the config wasn't provided or is empty
+        # 4. FALLBACK LOGIC: Load YAML if CLI params are missing
         if not self.gt_topic or not self.kin_topics:
             self.get_logger().info("No CLI parameters found. Loading default YAML from package...")
             
@@ -44,11 +40,9 @@ class OdomAnalyzer(Node):
                 pkg_share = get_package_share_directory(package_name)
                 yaml_path = os.path.join(pkg_share, 'config', 'odom_config.yaml')
                 
-                # --- THIS WAS THE MISSING PART ---
                 with open(yaml_path, 'r') as f:
                     config = yaml.safe_load(f)
                 
-                # Extract parameters from the standard ROS 2 YAML structure
                 node_params = config.get('odom_analyzer', {}).get('ros__parameters', {})
                 self.gt_topic = node_params.get('ground_truth_topic', '')
                 self.kin_topics = node_params.get('kinematic_topics', [])
@@ -64,29 +58,34 @@ class OdomAnalyzer(Node):
         if not self.gt_topic or not self.kin_topics:
             self.get_logger().fatal("Configuration is invalid! Check your odom_config.yaml structure.")
             sys.exit(1)
-        # ---------------------------------
 
         self.get_logger().info(f"Ground Truth: '{self.gt_topic}'")
         self.get_logger().info(f"Comparing against {len(self.kin_topics)} topics: {self.kin_topics}")
 
-        # 1. Create a subscriber for the Ground Truth
+        # 5. Create a single subscriber for the Ground Truth
         self.sub_gt = message_filters.Subscriber(self, Odometry, self.gt_topic)
-        subs = [self.sub_gt]
 
-        # 2. Create subscribers dynamically for every kinematic topic
-        for topic in self.kin_topics:
-            sub = message_filters.Subscriber(self, Odometry, topic)
-            subs.append(sub)
-
-        # 3. Synchronize ALL of them (GT + N Kinematic topics)
-        self.ts = message_filters.ApproximateTimeSynchronizer(subs, queue_size=20, slop=0.05)
-        self.ts.registerCallback(self.sync_callback)
-
-        # 4. Dictionary to track metrics for each topic independently
+        # 6. Dictionary to track metrics for each topic independently
         self.metrics = {
             topic: {'samples': 0, 'sum_sq_err_pos': 0.0, 'sum_sq_err_yaw': 0.0}
             for topic in self.kin_topics
         }
+
+        # 7. Create INDEPENDENT synchronizers for each topic
+        self.syncers = []
+        for topic in self.kin_topics:
+            sub_kin = message_filters.Subscriber(self, Odometry, topic)
+            
+            # Pair just the ground truth and THIS specific kinematic topic
+            ts = message_filters.ApproximateTimeSynchronizer(
+                [self.sub_gt, sub_kin], 
+                queue_size=50, 
+                slop=0.1  
+            )
+            
+            # Pass the topic name into the callback so it knows which metric to update
+            ts.registerCallback(functools.partial(self.sync_callback, topic_name=topic))
+            self.syncers.append(ts)
 
     def get_yaw_from_quaternion(self, q):
         """
@@ -102,53 +101,45 @@ class OdomAnalyzer(Node):
         cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
         return math.atan2(siny_cosp, cosy_cosp)
 
-    def sync_callback(self, *msgs):
+    def sync_callback(self, msg_gt, msg_kin, topic_name):
         """
-        Process synchronized ground-truth and kinematic odometry messages to update per-topic error metrics.
-        
-        Parameters:
-            *msgs: A ground-truth odometry message followed by kinematic odometry messages in the configured topic order.
+        Process a single paired ground-truth and kinematic message.
         """
-        msg_gt = msgs[0]
-        kin_msgs = msgs[1:]
-
+        # Ground Truth Data
         x_gt = msg_gt.pose.pose.position.x
         y_gt = msg_gt.pose.pose.position.y
         yaw_gt = self.get_yaw_from_quaternion(msg_gt.pose.pose.orientation)
 
-        # Iterate through the synchronized kinematic messages
-        for i, msg_kin in enumerate(kin_msgs):
-            topic_name = self.kin_topics[i]
+        # Kinematic Data
+        x_kin = msg_kin.pose.pose.position.x
+        y_kin = msg_kin.pose.pose.position.y
+        yaw_kin = self.get_yaw_from_quaternion(msg_kin.pose.pose.orientation)
+
+        # Calculate Errors
+        error_x = x_kin - x_gt
+        error_y = y_kin - y_gt
+        error_pos = math.hypot(error_x, error_y)
+        
+        error_yaw = yaw_kin - yaw_gt
+        error_yaw = math.atan2(math.sin(error_yaw), math.cos(error_yaw)) 
+
+        # Update Metrics for THIS specific topic
+        self.metrics[topic_name]['samples'] += 1
+        self.metrics[topic_name]['sum_sq_err_pos'] += (error_pos ** 2)
+        self.metrics[topic_name]['sum_sq_err_yaw'] += (error_yaw ** 2)
+
+        samples = self.metrics[topic_name]['samples']
+
+        # Print every 20 samples to avoid terminal spam
+        if samples % 20 == 0:
+            rmse_pos = math.sqrt(self.metrics[topic_name]['sum_sq_err_pos'] / samples)
+            rmse_yaw = math.sqrt(self.metrics[topic_name]['sum_sq_err_yaw'] / samples)
             
-            x_kin = msg_kin.pose.pose.position.x
-            y_kin = msg_kin.pose.pose.position.y
-            yaw_kin = self.get_yaw_from_quaternion(msg_kin.pose.pose.orientation)
-
-            # Calculate Errors
-            error_x = x_kin - x_gt
-            error_y = y_kin - y_gt
-            error_pos = math.hypot(error_x, error_y)
-            
-            error_yaw = yaw_kin - yaw_gt
-            error_yaw = math.atan2(math.sin(error_yaw), math.cos(error_yaw)) 
-
-            # Update Metrics
-            self.metrics[topic_name]['samples'] += 1
-            self.metrics[topic_name]['sum_sq_err_pos'] += (error_pos ** 2)
-            self.metrics[topic_name]['sum_sq_err_yaw'] += (error_yaw ** 2)
-
-            samples = self.metrics[topic_name]['samples']
-
-            # Print every 20 samples to avoid terminal spam
-            if samples % 20 == 0:
-                rmse_pos = math.sqrt(self.metrics[topic_name]['sum_sq_err_pos'] / samples)
-                rmse_yaw = math.sqrt(self.metrics[topic_name]['sum_sq_err_yaw'] / samples)
-                
-                self.get_logger().info(
-                    f"[{topic_name}] (Sample {samples})\n"
-                    f"  Inst Error -> Pos: {error_pos:.4f} m | Yaw: {math.degrees(error_yaw):.2f}°\n"
-                    f"  RMSE       -> Pos: {rmse_pos:.4f} m | Yaw: {math.degrees(rmse_yaw):.2f}°\n"
-                )
+            self.get_logger().info(
+                f"[{topic_name}] (Sample {samples})\n"
+                f"  Inst Error -> Pos: {error_pos:.4f} m | Yaw: {math.degrees(error_yaw):.2f}°\n"
+                f"  RMSE       -> Pos: {rmse_pos:.4f} m | Yaw: {math.degrees(rmse_yaw):.2f}°\n"
+            )
 
 def main(args=None):
     """

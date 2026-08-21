@@ -38,40 +38,150 @@
         <bogieJoint>arm_pivot_left_to_arm_rear_left</bogieJoint>
         <bogieJoint>arm_pivot_right_to_arm_front_right</bogieJoint>
         <bogieJoint>arm_pivot_right_to_arm_rear_right</bogieJoint>
-        <bogieSpring>100.0</bogieSpring>
-        <bogieDamping>10.0</bogieDamping>
+        <bogieSpring>1000</bogieSpring>
+        <bogieDamping>100</bogieDamping>
       </plugin>
 
-      <!-- ===== Steering controllers (position) ===== -->
+      <!-- ===== Steering controllers — REX VESC Steer Plugin ===== -->
+      <!-- <xacro:steer_vesc_controller
+          joint="arm_front_left_to_steer_front_left"
+          cmd_topic="/model/rex/joint/arm_front_left_to_steer_front_left/0/cmd_pos"
+          fault_vesc_id="96"/>
+      <xacro:steer_vesc_controller
+          joint="arm_rear_left_to_steer_rear_left"
+          cmd_topic="/model/rex/joint/arm_rear_left_to_steer_rear_left/0/cmd_pos"
+          fault_vesc_id="99"/>
+      <xacro:steer_vesc_controller
+          joint="arm_front_right_to_steer_front_right"
+          cmd_topic="/model/rex/joint/arm_front_right_to_steer_front_right/0/cmd_pos"
+          fault_vesc_id="97"/>
+      <xacro:steer_vesc_controller
+          joint="arm_rear_right_to_steer_rear_right"
+          cmd_topic="/model/rex/joint/arm_rear_right_to_steer_rear_right/0/cmd_pos"
+          fault_vesc_id="98"/> -->
+
+      <!-- ===== Drive controllers — REX VESC Drive Plugin ===== -->
+      <!-- <xacro:drive_vesc_controller
+          joint="steer_front_left_to_wheel_front_left"
+          cmd_topic="/model/rex/joint/steer_front_left_to_wheel_front_left/cmd_vel"
+          fault_vesc_id="80"/>
+      <xacro:drive_vesc_controller
+          joint="steer_rear_left_to_wheel_rear_left"
+          cmd_topic="/model/rex/joint/steer_rear_left_to_wheel_rear_left/cmd_vel"
+          fault_vesc_id="82"/>
+      <xacro:drive_vesc_controller
+          joint="steer_front_right_to_wheel_front_right"
+          cmd_topic="/model/rex/joint/steer_front_right_to_wheel_front_right/cmd_vel"
+          fault_vesc_id="81"/>
+      <xacro:drive_vesc_controller
+          joint="steer_rear_right_to_wheel_rear_right"
+          cmd_topic="/model/rex/joint/steer_rear_right_to_wheel_rear_right/cmd_vel"
+          fault_vesc_id="83"/> -->
+
+      
+      <!-- ===== STOCK CONTROLLER FALLBACK (disabled — uncomment to revert) ===== -->
+
       <xacro:steer_position_controller joint="arm_front_left_to_steer_front_left"/>
       <xacro:steer_position_controller joint="arm_rear_left_to_steer_rear_left"/>
       <xacro:steer_position_controller joint="arm_front_right_to_steer_front_right"/>
       <xacro:steer_position_controller joint="arm_rear_right_to_steer_rear_right"/>
 
-      <!-- ===== Drive controllers (velocity/force) ===== -->
       <xacro:wheel_drive_controller joint="steer_front_left_to_wheel_front_left"/>
       <xacro:wheel_drive_controller joint="steer_rear_left_to_wheel_rear_left"/>
       <xacro:wheel_drive_controller joint="steer_front_right_to_wheel_front_right"/>
       <xacro:wheel_drive_controller joint="steer_rear_right_to_wheel_rear_right"/>
 
+      <!-- ========================================================================= -->
+     
+
     </gazebo>
   </xacro:macro>
 
 
-  <!-- Helper: one steering position controller -->
+  <!-- ==========================================================================
+       VESC Steer Plugin macro
+       Wraps VescSteerPlugin with core parameters pre-filled.
+
+       Advanced feature tags (add inside the plugin element to enable):
+         <enable_stiction>true</enable_stiction>
+           <static_friction_torque>0.5</static_friction_torque>
+           <deadband_rad>0.01</deadband_rad>
+         <enable_slew_rate>true</enable_slew_rate>
+           <max_acceleration>2.0</max_acceleration>
+         <enable_encoder_noise>true</enable_encoder_noise>
+           <encoder_cpr>4096</encoder_cpr>
+           <noise_std_dev>0.0005</noise_std_dev>
+         <enable_stall_detection>true</enable_stall_detection>
+           <stall_velocity_threshold>0.01</stall_velocity_threshold>
+           <stall_time_sec>0.5</stall_time_sec>
+  ========================================================================== -->
+  <xacro:macro name="steer_vesc_controller" params="joint cmd_topic fault_vesc_id">
+    <plugin filename="libvesc_steer_plugin.so"
+            name="rover_description::VescSteerPlugin">
+      <joint_name>${joint}</joint_name>
+      <cmd_topic>${cmd_topic}</cmd_topic>
+      <!-- Core PID — matched to previous gz-sim-joint-position-controller tuning -->
+      <p_gain>10.0</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.01</d_gain>
+      <max_velocity>0.76</max_velocity>
+      <max_effort>10.0</max_effort>
+      <fault_vesc_id>${fault_vesc_id}</fault_vesc_id>
+    </plugin>
+  </xacro:macro>
+
+
+  <!-- ==========================================================================
+       VESC Drive Plugin macro
+       Wraps VescDrivePlugin with core parameters pre-filled.
+
+       Advanced feature tags (add inside the plugin element to enable):
+         <enable_torque_curve>true</enable_torque_curve>
+           <nominal_voltage>22.2</nominal_voltage>
+           <kv_rating>300.0</kv_rating>
+           <motor_resistance>0.05</motor_resistance>
+         <enable_current_limits>true</enable_current_limits>
+           <max_motor_current_amp>40.0</max_motor_current_amp>
+           <torque_constant>0.05</torque_constant>
+         <enable_encoder_noise>true</enable_encoder_noise>
+           <encoder_cpr>4096</encoder_cpr>
+           <noise_std_dev>0.001</noise_std_dev>
+         <enable_stall_detection>true</enable_stall_detection>
+           <stall_velocity_threshold>0.01</stall_velocity_threshold>
+           <stall_time_sec>0.5</stall_time_sec>
+  ========================================================================== -->
+  <xacro:macro name="drive_vesc_controller" params="joint cmd_topic fault_vesc_id">
+    <plugin filename="libvesc_drive_plugin.so"
+            name="rover_description::VescDrivePlugin">
+      <joint_name>${joint}</joint_name>
+      <cmd_topic>${cmd_topic}</cmd_topic>
+      <!-- Core PID — matched to previous gz-sim-joint-controller tuning -->
+      <p_gain>0.45</p_gain>
+      <i_gain>0.35</i_gain>
+      <d_gain>0.0001</d_gain>
+      <max_effort>45.0</max_effort>
+      <fault_vesc_id>${fault_vesc_id}</fault_vesc_id>
+    </plugin>
+  </xacro:macro>
+
+
+  <!-- ==========================================================================
+       STOCK CONTROLLER macros — kept for reference / easy revert
+  ========================================================================== -->
+
+  <!-- Stock: steering position controller (gz-sim built-in) -->
   <xacro:macro name="steer_position_controller" params="joint">
     <plugin filename="gz-sim-joint-position-controller-system"
             name="gz::sim::systems::JointPositionController">
       <joint_name>${joint}</joint_name>
       <use_velocity_commands>true</use_velocity_commands>
       <joint_index>0</joint_index>
-      <cmd_max> 1.5</cmd_max>
-      <cmd_min>-1.5</cmd_min>
+      <cmd_max> 0.76</cmd_max>
+      <cmd_min>-0.76</cmd_min>
     </plugin>
   </xacro:macro>
 
-
-  <!-- Helper: one wheel drive controller -->
+  <!-- Stock: wheel drive controller (gz-sim built-in) -->
   <xacro:macro name="wheel_drive_controller" params="joint">
     <plugin filename="gz-sim-joint-controller-system"
             name="gz::sim::systems::JointController">

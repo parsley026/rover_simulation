@@ -1,0 +1,90 @@
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0
+    # Set to true for rovers/ground robots to ignore Z, roll, and pitch
+    two_d_mode: true  
+    publish_tf: true
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    # world_frame: map  — enables map→odom offset correction via absolute inputs
+    # (ArUco pose0 requires this so corrections propagate to Nav2's global frame)
+    world_frame: map
+
+    # -----------------------------------------------------------
+    # ODOM 0: Kinematic Wheel Odometry (High Trust)
+    # Using: X velocity, Y velocity, Yaw velocity
+    # -----------------------------------------------------------
+    # odom0: /kinematics/odom
+    # odom0_config: [false, false, false,
+    #                false, false, false,
+    #                true,  true,  false,
+    #                false, false, true,
+    #                false, false, false]
+    # odom0_queue_size: 10
+    # odom0_differential: false
+
+    # -----------------------------------------------------------
+    # ODOM 1: LiDAR Odometry
+    # Using: X, Y, Yaw position (Differential Mode)
+    # -----------------------------------------------------------
+    odom0: /lidar_00/odom
+    odom0_config: [true,  true,  false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    odom0_queue_size: 10
+    odom0_differential: true
+    odom0_relative: false
+    # Increase covariance to account for the stationary drift
+    odom1_pose_rejection_threshold: 2.0 
+
+    # -----------------------------------------------------------
+    # ODOM 2: Camera 00 Visual Odometry
+    # Using: X, Y, Yaw position (Differential Mode)
+    # -----------------------------------------------------------
+    odom1: /camera_00/odom
+    odom1_config: [true,  true,  false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    odom1_queue_size: 10
+    odom1_differential: true
+    odom1_pose_rejection_threshold: 2.0
+
+    # -----------------------------------------------------------
+    # IMU 0: LiDAR IMU
+    # Using: Yaw velocity ONLY (Quarantining broken acceleration)
+    # -----------------------------------------------------------
+    imu0: /lidar_00/imu
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, true,
+                  false, false, false]
+    imu0_queue_size: 10
+    imu0_differential: true
+    imu0_remove_gravitational_acceleration: true
+
+    # -----------------------------------------------------------
+    # POSE 0: ArUco Absolute Localization Correction
+    # Using: X, Y absolute + Yaw absolute
+    # Non-differential: each detection is an absolute map-frame pose.
+    # Covariance is distance-scaled by aruco_localization_node so the
+    # EKF automatically weights far markers less than close ones.
+    # pose0_rejection_threshold: Mahalanobis gate — increase if EKF
+    # rejects valid corrections; decrease to be more selective.
+    # -----------------------------------------------------------
+    pose0: /aruco/pose
+    pose0_config: [true,  true,  false,   # X, Y  (not Z — 2D mode)
+                   false, false, true,    # Yaw   (not roll/pitch)
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose0_queue_size: 5
+    pose0_differential: false
+    pose0_relative: false
+    pose0_rejection_threshold: 2.0

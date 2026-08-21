@@ -32,16 +32,19 @@ wheels_distance_length: 0.900
 wheels_distance_width:  0.654
 wheel_diameter: 0.25
 
-poles_pair_number: 15         
-motor_gear_ratio: 1.0        
-min_erpm: 0.0
-max_erpm: 100000.0             
+poles_pair_number: 7         
+motor_gear_ratio: 31.0        
+
+min_erpm: 450.0
+max_erpm: 100000.0
+
 velocity_limit: 1.0          
 publish_rate: 20.0           
 use_sim_time: true           
 feedback_timeout_sec: 0.5    
 
-max_mechanical_angle: 1.57
+max_mechanical_angle:  1.57
+min_mechanical_angle: -1.57
 
 max_steering_radius: 5.0    
 min_steering_radius: 1.0     
@@ -74,7 +77,22 @@ wheel_quality_high_current_threshold: 20.0
 wheel_quality_high_duty_threshold: 0.85
 wheel_quality_min_weight: 0.0
 
+invert_left_drive: false
+invert_right_drive: false
+invert_left_steering: true
+invert_right_steering: true
+
+# ── Steering coherence safety ──────────────────────────────────────────────────
+# Fits a rigid-body twist to the four steering feedback angles each cycle.
+# If the mean normalised residual exceeds the threshold, drive is suppressed
+# until the wheels realign (e.g. when exiting spin mode).
+# Range: (0.0, 1.0].  Lower = stricter.  0.15 blocks drive when wheels are
+# more than ~22° incoherent on average.
+enable_coherence_safety: true
+steering_coherence_threshold: 0.15
+
 cmd_vel_autonomy_topic: '/cmd_vel'
+# cmd_vel_autonomy_topic: '/cmd_vel_smoothed'
 
 ---
 

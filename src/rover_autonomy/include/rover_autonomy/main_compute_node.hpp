@@ -1,0 +1,62 @@
+#ifndef ROVER_AUTONOMY__MAIN_COMPUTE_NODE_HPP_
+#define ROVER_AUTONOMY__MAIN_COMPUTE_NODE_HPP_
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "rover_autonomy/parameter_manager.hpp"
+#include "rover_autonomy/camera_subsystem_manager.hpp"
+#include "rover_autonomy/lidar_subsystem_manager.hpp"
+#include "rover_autonomy/description_subsystem_manager.hpp"
+#include "rover_autonomy/odometry_subsystem_manager.hpp"
+#include "rover_autonomy/localization_and_mapping_subsystem_manager.hpp"
+#include "rover_autonomy/subsystem_manager.hpp"
+
+#include <memory>
+#include <vector>
+
+namespace rover_autonomy
+{
+
+class MainComputeNode : public rclcpp_lifecycle::LifecycleNode
+{
+public:
+  explicit MainComputeNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  virtual ~MainComputeNode();
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_configure(const rclcpp_lifecycle::State & previous_state) override;
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_activate(const rclcpp_lifecycle::State & previous_state) override;
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
+
+private:
+  // The COO — owns all parameter declaration and resolution
+  std::unique_ptr<ParameterManager> param_manager_;
+
+  // Subsystem instances — always created, enabled_ flag governs behavior
+  std::unique_ptr<CameraSubsystemManager> camera_subsystem_;
+  std::unique_ptr<LidarSubsystemManager> lidar_subsystem_;
+  std::unique_ptr<DescriptionSubsystemManager> description_subsystem_;
+  std::unique_ptr<OdometrySubsystemManager> odometry_subsystem_;
+  std::unique_ptr<LocalizationAndMappingSubsystemManager> mapping_subsystem_;
+
+  // Supervisor loop roster — all subsystems registered here regardless of enabled state
+  std::vector<SubsystemManager*> all_subsystems_;
+
+  // Recovery callback fired by ParameterManager when a config param changes at runtime
+  void on_subsystem_config_changed(const std::string & subsystem_name);
+};
+
+}  // namespace rover_autonomy
+
+#endif  // ROVER_AUTONOMY__MAIN_COMPUTE_NODE_HPP_

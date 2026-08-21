@@ -43,6 +43,7 @@ setup(
         'console_scripts': [
             'topography_global_node = rover_autonomy_outdated.topography_global_node:main',
             'topography_local_node = rover_autonomy_outdated.topography_local_node:main',
+            'path_recorder = rover_autonomy_outdated.path_recorder:main',
         ],
     },
 )

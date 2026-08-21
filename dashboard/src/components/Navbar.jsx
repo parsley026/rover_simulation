@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useRos } from '../context/RosContext';
-import { Cpu, HardDrive, Zap, Radio, AlertCircle } from 'lucide-react';
+import { Cpu, HardDrive, Zap, Radio, AlertCircle, Settings } from 'lucide-react';
 
 export default function Navbar() {
   const { connectionStatus, getTopic, reconnect } = useRos();
@@ -47,6 +48,40 @@ export default function Navbar() {
         <Radio size={24} style={{ color: 'var(--accent-cyan)' }} />
         <span>ROSA Command Center <small style={{ fontWeight: 400, fontSize: '0.75rem', color: 'var(--text-muted)' }}>AI-First Stage 1</small></span>
       </div>
+
+      {/* Page Navigation */}
+      <nav style={{ display: 'flex', gap: '4px' }}>
+        <NavLink
+          to="/"
+          end
+          style={({ isActive }) => ({
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '8px',
+            textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem',
+            color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+            background: isActive ? 'rgba(0,242,254,0.1)' : 'transparent',
+            border: `1px solid ${isActive ? 'rgba(0,242,254,0.25)' : 'transparent'}`,
+            transition: 'all 0.2s ease',
+          })}
+        >
+          Dashboard
+        </NavLink>
+        <NavLink
+          to="/config"
+          style={({ isActive }) => ({
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '8px',
+            textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem',
+            color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+            background: isActive ? 'rgba(0,242,254,0.1)' : 'transparent',
+            border: `1px solid ${isActive ? 'rgba(0,242,254,0.25)' : 'transparent'}`,
+            transition: 'all 0.2s ease',
+          })}
+        >
+          <Settings size={15} />
+          Config
+        </NavLink>
+      </nav>
 
       <div className="nav-metrics">
         {/* GPU VRAM Metric Pill (RTX 3060) */}

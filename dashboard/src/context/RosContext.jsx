@@ -15,7 +15,8 @@ export const RosProvider = ({ children, url = 'ws://localhost:9090' }) => {
   const rosRef = useRef(null);
   const isInitializedRef = useRef(false);
   const reconnectTimeoutRef = useRef(null);
-  
+  const rosTimeRef = useRef({ sec: 0, nanosec: 0 });
+
   const [connectionStatus, setConnectionStatus] = useState('CONNECTING'); // 'CONNECTED', 'CLOSED', 'ERROR', 'CONNECTING'
   const [lastError, setLastError] = useState(null);
 
@@ -35,6 +36,18 @@ export const RosProvider = ({ children, url = 'ws://localhost:9090' }) => {
         console.log('[RosContext] WebSocket connected to gateway at:', url);
         setConnectionStatus('CONNECTED');
         setLastError(null);
+
+        // Subscribe to /clock to track simulation time for message headers
+        const clockTopic = new ROSLIB.Topic({
+          ros,
+          name: '/clock',
+          messageType: 'rosgraph_msgs/Clock',
+        });
+        clockTopic.subscribe((msg) => {
+          if (msg?.clock) {
+            rosTimeRef.current = { sec: msg.clock.sec, nanosec: msg.clock.nanosec ?? 0 };
+          }
+        });
       });
 
       ros.on('error', (err) => {
@@ -110,12 +123,20 @@ export const RosProvider = ({ children, url = 'ws://localhost:9090' }) => {
     return false;
   }, [getTopic]);
 
+  // Returns current ROS/sim time from /clock (falls back to wall time if clock not yet received)
+  const getRosTime = useCallback(() => {
+    if (rosTimeRef.current.sec > 0) return rosTimeRef.current;
+    const now = Date.now();
+    return { sec: Math.floor(now / 1000), nanosec: (now % 1000) * 1e6 };
+  }, []);
+
   const value = {
     ros: rosRef.current,
     connectionStatus,
     lastError,
     getTopic,
     publish,
+    getRosTime,
     reconnect: connectToRos
   };
 

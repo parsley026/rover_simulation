@@ -394,3 +394,39 @@ body {
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
 }
+
+/* Nav2 Control form inputs */
+.nav2-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  width: 100%;
+  transition: all 0.2s ease;
+  -moz-appearance: textfield;
+}
+
+.nav2-input::-webkit-inner-spin-button,
+.nav2-input::-webkit-outer-spin-button {
+  opacity: 0.5;
+}
+
+.nav2-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav2-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.nav2-form-card {
+  border-radius: 12px;
+  overflow: hidden;
+}

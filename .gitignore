@@ -24,3 +24,5 @@ build/
 frames*
 
 qwen-vllm
+
+src/gazebo_worlds/models/mars_yard

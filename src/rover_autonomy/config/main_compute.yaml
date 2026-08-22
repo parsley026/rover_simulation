@@ -4,13 +4,13 @@ main_compute:
     use_sim_time: true
 
     # -- 
-    launch_description: true
-    launch_camera_00: true
-    launch_lidar_00: true
-    launch_camera_00_odom: false
-    launch_lidar_00_odom: false
-    launch_localization: false
-    launch_mapping: false
+    launch_description: false
+    launch_camera_00: false
+    launch_lidar_00: false
+    launch_camera_00_odom: true
+    launch_lidar_00_odom: true
+    launch_localization: true
+    launch_mapping: true
 
     # -- subsystem config files
     camera_00_config: "config/camera/camera.yaml"

@@ -131,6 +131,12 @@ public:
                                 double angle_tolerance_deg = 2.5);
 
 private:
+  // ── Layered Safety Checks ────────────────────────────────────────────────
+  bool isMechanicallySafe(const rex_interfaces::msg::Wheels &feedback) const;
+  bool isSteeringCoherent(const rex_interfaces::msg::Wheels &target,
+                          const rex_interfaces::msg::Wheels &feedback) const;
+  double getPhysicalAngleRad(double measured_value, std::size_t wheel_index) const;
+
   void initCmdVelBuffer();
   void initFeedbackBuffer();
 
@@ -237,6 +243,7 @@ private:
 
   std::atomic<int64_t> initialization_time_ns_{0};
   std::atomic<int64_t> last_feedback_time_ns_{0};
+  std::atomic<int64_t> last_cmd_vel_time_ns_{0};
   std::atomic<int64_t> last_kinematics_active_time_ns_{0};
   
   std::atomic<bool>      feedback_stale_{false};

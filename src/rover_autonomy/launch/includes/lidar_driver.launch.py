@@ -70,6 +70,7 @@ def launch_setup(context, *args, **kwargs):
             ('tf', '/tf'),
             ('tf_static', '/tf_static')
         ],
+        condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
     )
 
     ouster_node = LifecycleNode(

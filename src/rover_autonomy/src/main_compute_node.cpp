@@ -26,6 +26,7 @@ MainComputeNode::MainComputeNode(const rclcpp::NodeOptions & options)
   auto desc_config = param_manager_->get_description_config();
   auto odom_config = param_manager_->get_odometry_config();
   auto mapping_config = param_manager_->get_mapping_config();
+  auto nav_config = param_manager_->get_navigation_config();
 
   // 3. Instantiate subsystems — ALWAYS created; enabled_ governs behavior, not construction
   camera_subsystem_ = std::make_unique<CameraSubsystemManager>(this, camera_config);
@@ -43,6 +44,9 @@ MainComputeNode::MainComputeNode(const rclcpp::NodeOptions & options)
   mapping_subsystem_ = std::make_unique<LocalizationAndMappingSubsystemManager>(this, mapping_config);
   all_subsystems_.push_back(mapping_subsystem_.get());
 
+  navigation_subsystem_ = std::make_unique<NavigationSubsystemManager>(this, nav_config);
+  all_subsystems_.push_back(navigation_subsystem_.get());
+
   RCLCPP_INFO(get_logger(), "MainComputeNode created. Subsystems registered: %zu", all_subsystems_.size());
 }
 
@@ -50,8 +54,9 @@ void MainComputeNode::on_subsystem_config_changed(const std::string & subsystem_
 {
   RCLCPP_WARN(get_logger(), "Config changed for subsystem '%s'. Triggering recovery...", subsystem_name.c_str());
 
-  // [EXTENSION POINT]: Find the subsystem by name and call recover().
-  // Example: if (subsystem_name == "description") { description_subsystem_->recover(); }
+  if (subsystem_name == "description") { description_subsystem_->recover(); }
+  else if (subsystem_name == "mapping") { mapping_subsystem_->recover(); }
+  else if (subsystem_name == "navigation") { navigation_subsystem_->recover(); }
 }
 
 MainComputeNode::~MainComputeNode()
@@ -95,8 +100,8 @@ MainComputeNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Deactivating MainComputeNode...");
 
-  for (auto * sub : all_subsystems_) {
-    sub->on_deactivate();
+  for (auto it = all_subsystems_.rbegin(); it != all_subsystems_.rend(); ++it) {
+    (*it)->on_deactivate();
   }
 
   RCLCPP_INFO(get_logger(), "Deactivation successful.");
@@ -108,8 +113,8 @@ MainComputeNode::on_cleanup(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up MainComputeNode...");
 
-  for (auto * sub : all_subsystems_) {
-    sub->on_cleanup();
+  for (auto it = all_subsystems_.rbegin(); it != all_subsystems_.rend(); ++it) {
+    (*it)->on_cleanup();
   }
 
   RCLCPP_INFO(get_logger(), "Cleanup successful.");
@@ -121,9 +126,9 @@ MainComputeNode::on_shutdown(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Shutting down MainComputeNode...");
 
-  for (auto * sub : all_subsystems_) {
-    sub->on_deactivate();
-    sub->on_cleanup();
+  for (auto it = all_subsystems_.rbegin(); it != all_subsystems_.rend(); ++it) {
+    (*it)->on_deactivate();
+    (*it)->on_cleanup();
   }
 
   RCLCPP_INFO(get_logger(), "Shutdown successful.");

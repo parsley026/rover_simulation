@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.conditions import UnlessCondition
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration, Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -37,13 +38,15 @@ def launch_setup(context, *args, **kwargs):
             package="robot_state_publisher",
             executable="robot_state_publisher",
             parameters=[mount_description, {'use_sim_time': use_sim_time}],
+            condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
         ),
         Node(
             name='mount_joint_state_publisher',
             namespace='',
             package='joint_state_publisher',
             executable='joint_state_publisher',
-            parameters=[mount_description, {'use_sim_time': use_sim_time}]
+            parameters=[mount_description, {'use_sim_time': use_sim_time}],
+            condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
         ),
     ]
 

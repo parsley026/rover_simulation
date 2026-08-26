@@ -1,7 +1,7 @@
 #ifndef ROVER_AUTONOMY__ODOMETRY_SUBSYSTEM_MANAGER_HPP_
 #define ROVER_AUTONOMY__ODOMETRY_SUBSYSTEM_MANAGER_HPP_
 
-#include "rover_autonomy/composite_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/composite_subsystem_manager.hpp"
 #include "rover_autonomy/parameter_manager.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 

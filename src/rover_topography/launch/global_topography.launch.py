@@ -16,12 +16,14 @@ def generate_launch_description():
         description='Path to parameter YAML config file for rover topography nodes'
     )
 
+    global_filters = os.path.join(pkg_dir, 'config', 'global_mapping_filters.yaml')
+
     global_node = Node(
         package='rover_topography',
-        executable='global_topography_node',
+        executable='topography_node',
         name='global_topography_node',
         output='screen',
-        parameters=[LaunchConfiguration('config')]
+        parameters=[LaunchConfiguration('config'), global_filters]
     )
 
     return LaunchDescription([

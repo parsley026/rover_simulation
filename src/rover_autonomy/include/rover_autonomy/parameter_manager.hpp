@@ -22,11 +22,25 @@ struct SubsystemConfig {
   std::map<std::string, std::string> launch_args;
 };
 
+// Typed contract handed from COO to Camera subsystem.
+struct CameraConfig {
+  SubsystemConfig driver;
+  SubsystemConfig decompression;
+  SubsystemConfig post_processing;
+};
+
 // Typed contract handed from COO to Odometry composite subsystem.
 struct OdometryConfig {
   SubsystemConfig camera_odom;
   SubsystemConfig lidar_odom;
   SubsystemConfig localization;
+};
+
+// Typed contract handed from COO to Mapping composite subsystem.
+struct MappingConfig {
+  SubsystemConfig mapping;
+  SubsystemConfig local_topography;
+  SubsystemConfig global_topography;
 };
 
 // Callback the ParameterManager uses to alert the CEO that a config changed.
@@ -51,17 +65,21 @@ public:
   // [[nodiscard]]: call once and store the result.
   [[nodiscard]] OdometryConfig get_odometry_config() const;
 
-  // Returns a fully resolved SubsystemConfig for the camera subsystem.
+  // Returns a fully resolved CameraConfig for the camera subsystem.
   // [[nodiscard]]: call once and store the result.
-  [[nodiscard]] SubsystemConfig get_camera_config() const;
+  [[nodiscard]] CameraConfig get_camera_config() const;
 
   // Returns a fully resolved SubsystemConfig for the lidar subsystem.
   // [[nodiscard]]: call once and store the result.
   [[nodiscard]] SubsystemConfig get_lidar_config() const;
 
-  // Returns a fully resolved SubsystemConfig for the mapping subsystem.
+  // Returns a fully resolved MappingConfig for the mapping subsystem.
   // [[nodiscard]]: call once and store the result.
-  [[nodiscard]] SubsystemConfig get_mapping_config() const;
+  [[nodiscard]] MappingConfig get_mapping_config() const;
+
+  // Returns a fully resolved SubsystemConfig for the navigation subsystem.
+  // [[nodiscard]]: call once and store the result.
+  [[nodiscard]] SubsystemConfig get_navigation_config() const;
 
   // Returns a fully resolved SubsystemConfig for the description subsystem.
   // [[nodiscard]]: call once and store the result; never call repeatedly.

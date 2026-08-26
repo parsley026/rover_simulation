@@ -5,12 +5,13 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "rover_autonomy/parameter_manager.hpp"
-#include "rover_autonomy/camera_subsystem_manager.hpp"
-#include "rover_autonomy/lidar_subsystem_manager.hpp"
-#include "rover_autonomy/description_subsystem_manager.hpp"
-#include "rover_autonomy/odometry_subsystem_manager.hpp"
-#include "rover_autonomy/localization_and_mapping_subsystem_manager.hpp"
-#include "rover_autonomy/subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/camera_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/lidar_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/description_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/odometry_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/localization_and_mapping_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/navigation_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/subsystem_manager.hpp"
 
 #include <memory>
 #include <vector>
@@ -49,6 +50,7 @@ private:
   std::unique_ptr<DescriptionSubsystemManager> description_subsystem_;
   std::unique_ptr<OdometrySubsystemManager> odometry_subsystem_;
   std::unique_ptr<LocalizationAndMappingSubsystemManager> mapping_subsystem_;
+  std::unique_ptr<NavigationSubsystemManager> navigation_subsystem_;
 
   // Supervisor loop roster — all subsystems registered here regardless of enabled state
   std::vector<SubsystemManager*> all_subsystems_;

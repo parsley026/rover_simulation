@@ -18,13 +18,14 @@ find_package(tf2_msgs REQUIRED)
 add_library(main_compute_component SHARED
   src/main_compute_node.cpp
   src/parameter_manager.cpp
-  src/process_subsystem_manager.cpp
-  src/composite_subsystem_manager.cpp
-  src/camera_subsystem_manager.cpp
-  src/lidar_subsystem_manager.cpp
-  src/description_subsystem_manager.cpp
-  src/odometry_subsystem_manager.cpp
-  src/localization_and_mapping_subsystem_manager.cpp
+  src/subsystems/process_subsystem_manager.cpp
+  src/subsystems/composite_subsystem_manager.cpp
+  src/subsystems/camera_subsystem_manager.cpp
+  src/subsystems/lidar_subsystem_manager.cpp
+  src/subsystems/description_subsystem_manager.cpp
+  src/subsystems/odometry_subsystem_manager.cpp
+  src/subsystems/localization_and_mapping_subsystem_manager.cpp
+  src/subsystems/navigation_subsystem_manager.cpp
 )
 
 target_include_directories(main_compute_component PUBLIC

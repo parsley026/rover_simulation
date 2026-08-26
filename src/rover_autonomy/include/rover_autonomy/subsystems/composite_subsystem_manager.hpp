@@ -1,8 +1,8 @@
 #ifndef ROVER_AUTONOMY__COMPOSITE_SUBSYSTEM_MANAGER_HPP_
 #define ROVER_AUTONOMY__COMPOSITE_SUBSYSTEM_MANAGER_HPP_
 
-#include "rover_autonomy/subsystem_manager.hpp"
-#include "rover_autonomy/process_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/process_subsystem_manager.hpp"
 #include <vector>
 #include <memory>
 #include "rclcpp/rclcpp.hpp"

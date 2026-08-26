@@ -1,4 +1,4 @@
-#include "rover_autonomy/process_subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/process_subsystem_manager.hpp"
 #include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>

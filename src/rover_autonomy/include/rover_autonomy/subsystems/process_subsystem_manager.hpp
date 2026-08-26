@@ -1,7 +1,7 @@
 #ifndef ROVER_AUTONOMY__PROCESS_SUBSYSTEM_MANAGER_HPP_
 #define ROVER_AUTONOMY__PROCESS_SUBSYSTEM_MANAGER_HPP_
 
-#include "rover_autonomy/subsystem_manager.hpp"
+#include "rover_autonomy/subsystems/subsystem_manager.hpp"
 #include "rover_autonomy/parameter_manager.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"

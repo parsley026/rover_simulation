@@ -5,6 +5,9 @@ import Navbar from './components/Navbar';
 import ChatPanel from './components/ChatPanel';
 import TelemetryInspector from './components/TelemetryInspector';
 import ConfigPage from './pages/ConfigPage';
+import MapPage from './pages/MapPage';
+import NavigationPage from './pages/NavigationPage';
+import RecoveryPage from './pages/RecoveryPage';
 import './index.css';
 
 function DashboardHome() {
@@ -25,6 +28,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<DashboardHome />} />
             <Route path="/config" element={<ConfigPage />} />
+            <Route path="/map" element={<MapPage />} />
+            <Route path="/navigation" element={<NavigationPage />} />
+            <Route path="/recovery" element={<RecoveryPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

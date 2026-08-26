@@ -1,0 +1,169 @@
+.recovery-page {
+  color: var(--text-main);
+}
+
+.recovery-card {
+  padding: 24px;
+  background: rgba(30, 10, 10, 0.4);
+  border: 1px solid rgba(255, 100, 100, 0.2);
+  margin-bottom: 24px;
+}
+
+.recovery-header h2 {
+  margin: 0 0 4px 0;
+  color: #fca5a5;
+  font-size: 1.4rem;
+}
+
+.recovery-header p {
+  margin: 0 0 24px 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.big-red-button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+}
+
+.big-red-button:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.big-red-button:active:not(.disabled) {
+  transform: translateY(1px);
+}
+
+.big-red-button.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  background: #475569;
+  box-shadow: none;
+}
+
+.spinner {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.sequence-tracker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 32px;
+  padding: 0 16px;
+}
+
+.track-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+  width: 120px;
+  text-align: center;
+}
+
+.track-step span {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.track-step.active {
+  opacity: 1;
+  color: var(--accent-cyan);
+}
+
+.track-step.completed {
+  opacity: 1;
+  color: var(--status-emerald);
+}
+
+.step-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 2px solid transparent;
+}
+
+.track-step.active .step-icon {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.1);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+}
+
+.track-step.completed .step-icon {
+  background: var(--status-emerald);
+  color: #000;
+}
+
+.track-line {
+  flex: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 12px;
+  margin-bottom: 24px;
+}
+
+.recovery-console {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.console-header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.console-output {
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  max-height: 200px;
+  overflow-y: auto;
+  color: #e2e8f0;
+}
+
+.log-line {
+  margin-bottom: 4px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+
+.log-line:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}

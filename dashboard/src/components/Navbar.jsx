@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useRos } from '../context/RosContext';
-import { Cpu, HardDrive, Zap, Radio, AlertCircle, Settings } from 'lucide-react';
+import { Cpu, HardDrive, Zap, Radio, AlertCircle, Settings, MapPin } from 'lucide-react';
 
 export default function Navbar() {
   const { connectionStatus, getTopic, reconnect } = useRos();
@@ -80,6 +80,50 @@ export default function Navbar() {
         >
           <Settings size={15} />
           Config
+        </NavLink>
+        <NavLink
+          to="/map"
+          style={({ isActive }) => ({
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '8px',
+            textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem',
+            color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+            background: isActive ? 'rgba(0,242,254,0.1)' : 'transparent',
+            border: `1px solid ${isActive ? 'rgba(0,242,254,0.25)' : 'transparent'}`,
+            transition: 'all 0.2s ease',
+          })}
+        >
+          Map
+        </NavLink>
+        <NavLink
+          to="/navigation"
+          style={({ isActive }) => ({
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '8px',
+            textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem',
+            color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+            background: isActive ? 'rgba(0,242,254,0.1)' : 'transparent',
+            border: `1px solid ${isActive ? 'rgba(0,242,254,0.25)' : 'transparent'}`,
+            transition: 'all 0.2s ease',
+          })}
+        >
+          <MapPin size={15} />
+          Navigation
+        </NavLink>
+        <NavLink
+          to="/recovery"
+          style={({ isActive }) => ({
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '8px',
+            textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem',
+            color: isActive ? '#f87171' : 'var(--text-muted)',
+            background: isActive ? 'rgba(248,113,113,0.1)' : 'transparent',
+            border: `1px solid ${isActive ? 'rgba(248,113,113,0.25)' : 'transparent'}`,
+            transition: 'all 0.2s ease',
+          })}
+        >
+          <AlertCircle size={15} />
+          Recovery
         </NavLink>
       </nav>
 

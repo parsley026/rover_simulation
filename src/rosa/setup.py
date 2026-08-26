@@ -45,6 +45,7 @@ setup(
             'rosa_diag_calc = rosa.diagnostics.diag_calculation:main',
             'rosa_diag_log = rosa.diagnostics.diag_log:main',
             'rosa_diag_sys = rosa.diagnostics.diag_system:main',
+            'web_action_proxy = rosa.web_action_proxy:main',
         ],
     },
 )

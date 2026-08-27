@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRos } from '../context/RosContext';
 import * as ROSLIB from 'roslib';
-import { Info, ChevronDown } from 'lucide-react';
+import { Info, ChevronDown, XCircle } from 'lucide-react';
 import './MapPage.css'; // Wypożyczamy ten sam styl pomarańczowo-czarny
 
 const CollapsibleCategory = ({ title, subtitle, children }) => {
@@ -84,6 +84,24 @@ const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc
     setStatus('No Proxy Configured');
   };
 
+  const handleCancel = () => {
+    if (!ros || connectionStatus !== 'CONNECTED') {
+      setStatus('Error: ROS not connected');
+      return;
+    }
+
+    const cancelService = new ROSLIB.Service({
+      ros: ros,
+      name: `${actionName}/_action/cancel_goal`,
+      serviceType: 'action_msgs/srv/CancelGoal'
+    });
+    cancelService.callService(
+      { goal_info: { goal_id: { uuid: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] }, stamp: { sec: 0, nanosec: 0 } } },
+      () => { setStatus('Cancelled!'); setTimeout(() => setStatus(''), 3000); },
+      (err) => { setStatus(`Cancel error: ${err}`); setTimeout(() => setStatus(''), 4000); }
+    );
+  };
+
   return (
     <div 
       className="service-row"
@@ -111,12 +129,36 @@ const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc
         </div>
       )}
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px' }}>
         <button 
           className="orange-btn"
           onClick={handleFireAction}
         >
           {(proxyService || needsCoordinates) ? 'EXECUTE ACTION' : 'PREPARE ACTION'}
+        </button>
+        <button
+          onClick={handleCancel}
+          style={{
+            background: 'rgba(244, 63, 94, 0.15)',
+            border: '1px solid rgba(244, 63, 94, 0.4)',
+            borderRadius: '6px',
+            padding: '8px 14px',
+            color: '#f43f5e',
+            fontWeight: 700,
+            fontSize: '0.78rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.3)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.15)'; }}
+        >
+          <XCircle size={14} />
+          CANCEL
         </button>
         {status && <span style={{ fontSize: '0.8rem', color: '#f97316' }}>{status}</span>}
       </div>
@@ -160,6 +202,58 @@ export default function NavigationPage() {
             <h1 style={{ margin: '0 0 4px 0', fontSize: '2rem', color: '#fff' }}>Nav2 Actions Control</h1>
             <p style={{ margin: 0, color: '#a3a3a3' }}>Hover over any action server to view details.</p>
           </div>
+        </div>
+
+        {/* Global Cancel All */}
+        <div style={{ marginBottom: '16px' }}>
+          <button
+            onClick={() => {
+              const cancelServices = [
+                '/navigate_to_pose/_action/cancel_goal',
+                '/navigate_through_poses/_action/cancel_goal',
+                '/follow_waypoints/_action/cancel_goal',
+                '/navigation/backup/_action/cancel_goal',
+                '/navigation/spin/_action/cancel_goal',
+                '/navigation/wait/_action/cancel_goal',
+                '/navigation/drive_on_heading/_action/cancel_goal',
+                '/navigation/follow_path/_action/cancel_goal',
+              ];
+              const cancelReq = {
+                goal_info: {
+                  goal_id: { uuid: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+                  stamp: { sec: 0, nanosec: 0 }
+                }
+              };
+              cancelServices.forEach(svcName => {
+                if (ros) {
+                  const svc = new ROSLIB.Service({ ros, name: svcName, serviceType: 'action_msgs/srv/CancelGoal' });
+                  svc.callService(cancelReq, () => {}, () => {});
+                }
+              });
+            }}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '14px 20px',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '1rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              transition: 'all 0.2s ease',
+              letterSpacing: '0.03em',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.15)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(1)'; }}
+          >
+            <XCircle size={20} />
+            CANCEL ALL ACTIONS
+          </button>
         </div>
 
         <CollapsibleCategory 

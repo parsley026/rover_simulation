@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRos } from '../context/RosContext';
-import { Navigation, Target, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
+import * as ROSLIB from 'roslib';
+import { Navigation, Target, CheckCircle2, AlertCircle, RotateCcw, XCircle } from 'lucide-react';
 
 // Convert yaw (degrees) to quaternion z/w components (rotation around Z axis)
 function yawToQuaternion(yawDeg) {
@@ -224,9 +225,84 @@ function PoseForm({ title, icon: Icon, accentColor, onSubmit, submitLabel, disab
   );
 }
 
+function CancelButton({ disabled, onCancel, cancelFeedback }) {
+  const accentColor = 'var(--status-rose)';
+
+  return (
+    <div className="nav2-form-card glass-panel" style={{ border: `1px solid ${accentColor}33`, marginBottom: '20px' }}>
+      <div style={{
+        padding: '14px 20px',
+        borderBottom: `1px solid ${accentColor}22`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        background: `${accentColor}0a`,
+        borderRadius: '12px 12px 0 0',
+      }}>
+        <XCircle size={20} color={accentColor} />
+        <span style={{ fontWeight: 600, fontSize: '1rem', color: accentColor }}>Cancel Navigation</span>
+      </div>
+
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
+          Anuluj aktualnie wykonywaną akcję nawigacji (navigate_to_pose / waypoint follower).
+        </p>
+
+        {cancelFeedback && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 14px', borderRadius: '8px',
+            background: cancelFeedback.type === 'ok' ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)',
+            border: `1px solid ${cancelFeedback.type === 'ok' ? 'var(--status-emerald)' : 'var(--status-rose)'}44`,
+            fontSize: '0.85rem',
+            color: cancelFeedback.type === 'ok' ? 'var(--status-emerald)' : 'var(--status-rose)',
+          }}>
+            {cancelFeedback.type === 'ok' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+            {cancelFeedback.msg}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={disabled}
+          style={{
+            width: '100%',
+            background: disabled
+              ? 'rgba(255,255,255,0.05)'
+              : 'linear-gradient(135deg, #f43f5e, #e11d48)',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '13px 20px',
+            color: disabled ? 'var(--text-muted)' : '#fff',
+            fontWeight: 700,
+            fontSize: '0.95rem',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <XCircle size={18} />
+          Cancel Action
+        </button>
+
+        {disabled && (
+          <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--status-amber)', margin: 0 }}>
+            ⚠ Brak połączenia z rosbridge.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Nav2Control() {
   const { connectionStatus, publish, getRosTime } = useRos();
   const isConnected = connectionStatus === 'CONNECTED';
+  const [cancelFeedback, setCancelFeedback] = useState(null);
 
   // Publish /initialpose  (geometry_msgs/PoseWithCovarianceStamped)
   const sendInitialPose = ({ x, y, quat }) => {
@@ -260,6 +336,40 @@ export default function Nav2Control() {
         orientation: { ...quat },
       },
     });
+  };
+
+  // Cancel all running navigation goals
+  const cancelNavigation = () => {
+    const cancelServices = [
+      '/navigate_to_pose/_action/cancel_goal',
+      '/follow_waypoints/_action/cancel_goal',
+    ];
+    const cancelReq = {
+      goal_info: {
+        goal_id: { uuid: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+        stamp: { sec: 0, nanosec: 0 }
+      }
+    };
+
+    let called = false;
+    cancelServices.forEach(svcName => {
+      if (ros) {
+        const svc = new ROSLIB.Service({
+          ros: ros,
+          name: svcName,
+          serviceType: 'action_msgs/srv/CancelGoal'
+        });
+        svc.callService(cancelReq, () => {}, () => {});
+        called = true;
+      }
+    });
+
+    if (called) {
+      setCancelFeedback({ type: 'ok', msg: 'Wysłano cancel — nawigacja powinna się zatrzymać.' });
+    } else {
+      setCancelFeedback({ type: 'err', msg: 'Brak połączenia z ROS.' });
+    }
+    setTimeout(() => setCancelFeedback(null), 4000);
   };
 
   return (
@@ -299,6 +409,13 @@ export default function Nav2Control() {
         disabled={!isConnected}
       />
 
+      {/* Cancel Navigation */}
+      <CancelButton
+        disabled={!isConnected}
+        onCancel={cancelNavigation}
+        cancelFeedback={cancelFeedback}
+      />
+
       {/* ROS Topic Info */}
       <div style={{
         background: 'rgba(0,0,0,0.25)',
@@ -318,6 +435,10 @@ export default function Nav2Control() {
         <div>
           <span style={{ color: 'var(--accent-purple)' }}>/goal_pose</span>
           {'     '}geometry_msgs/PoseStamped
+        </div>
+        <div>
+          <span style={{ color: 'var(--status-rose)' }}>/navigate_to_pose/_action/cancel_goal</span>
+          {'  '}action_msgs/CancelGoal
         </div>
         <div style={{ marginTop: '6px' }}>frame_id: <span style={{ color: 'var(--status-emerald)' }}>map</span></div>
       </div>

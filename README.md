@@ -25,3 +25,5 @@ ros2 service call /rover_recovery/escape std_srvs/srv/Trigger
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 
 python3 web_action_proxy.py
+
+ros2 run rover_autonomy_outdated path_recorder --ros-args -p odom_topic:=/kinematics/odom -p max_path_length_m:=20.0

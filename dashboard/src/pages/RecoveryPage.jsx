@@ -163,6 +163,55 @@ export default function RecoveryPage() {
         </div>
       </div>
 
+      <div className="glass-panel recovery-card" style={{ marginTop: '24px' }}>
+        <div className="recovery-header">
+          <h2>Path Recorder (Outdated Autonomy)</h2>
+          <p>Requires Node: <code>ros2 run rover_autonomy_outdated path_recorder --ros-args -p odom_topic:=/kinematics/odom</code></p>
+        </div>
+
+        <div className="recovery-content" style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button 
+              className="orange-btn"
+              style={{ flex: 1, padding: '16px', background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+              onClick={() => {
+                if (!ros) { addLog("ERROR: ROS not connected!"); return; }
+                addLog("Triggering Path Recorder Escape...");
+                const svc = new ROSLIB.Service({ ros: ros, name: '/rover_recovery/escape', serviceType: 'std_srvs/srv/Trigger' });
+                svc.callService({}, 
+                  (res) => addLog("Escape triggered successfully! " + (res.message || '')), 
+                  (err) => addLog("Escape failed: " + err)
+                );
+              }}
+            >
+              TRIGGER ESCAPE (REVERSE PATH)
+            </button>
+            <button 
+              className="orange-btn"
+              style={{ flex: 1, padding: '16px', background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}
+              onClick={() => {
+                if (!ros) { addLog("ERROR: ROS not connected!"); return; }
+                addLog("Clearing Recorded Path...");
+                const svc = new ROSLIB.Service({ ros: ros, name: '/rover_recovery/clear', serviceType: 'std_srvs/srv/Trigger' });
+                svc.callService({}, 
+                  (res) => addLog("Path cleared successfully! " + (res.message || '')), 
+                  (err) => {
+                    // Fallback to std_srvs/srv/Empty if Trigger fails
+                    const emptySvc = new ROSLIB.Service({ ros: ros, name: '/rover_recovery/clear', serviceType: 'std_srvs/srv/Empty' });
+                    emptySvc.callService({}, 
+                      () => addLog("Path cleared successfully (via Empty)!"),
+                      (e) => addLog("Clear path failed: " + e)
+                    );
+                  }
+                );
+              }}
+            >
+              CLEAR RECORDED PATH
+            </button>
+          </div>
+        </div>
+      </div>
+
       {logs.length > 0 && (
         <div className="recovery-console">
           <div className="console-header">Recovery Logs</div>

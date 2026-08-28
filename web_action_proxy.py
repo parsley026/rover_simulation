@@ -21,7 +21,7 @@ class WebActionProxy(Node):
         # Subscriber for generic JSON commands from Dashboard
         self.create_subscription(String, '/web/action_command', self.command_callback, 10)
 
-        # 1. Create Action Clients targeting Nav2 servers
+        # Action Clients
         from nav2_msgs.action import NavigateToPose, NavigateThroughPoses, FollowWaypoints, ComputePathToPose, ComputePathThroughPoses
         self._spin_client = ActionClient(self, Spin, '/navigation/spin')
         self._backup_client = ActionClient(self, BackUp, '/navigation/backup')
@@ -33,7 +33,7 @@ class WebActionProxy(Node):
         self._compute_path_client = ActionClient(self, ComputePathToPose, '/navigation/compute_path_to_pose')
         self._compute_path_through_client = ActionClient(self, ComputePathThroughPoses, '/navigation/compute_path_through_poses')
 
-        # 2. Create ROS Services that the React UI will call (Legacy/Simple buttons)
+        # ROS Services to subscribe web app requests
         self.create_service(Empty, '/web/spin_proxy', self.spin_service_callback)
         self.create_service(Empty, '/web/backup_proxy', self.backup_service_callback)
         self.create_service(Empty, '/web/drive_proxy', self.drive_service_callback)
@@ -91,6 +91,8 @@ class WebActionProxy(Node):
             self.publish_status("Navigate to Pose", "error")
             return
 
+
+        #NAVIGATE TO POSE
         from nav2_msgs.action import NavigateToPose
         goal_msg = NavigateToPose.Goal()
         goal_msg.pose = self.create_pose_stamped(data.get('x', 0.0), data.get('y', 0.0), data.get('yaw', 0.0))
@@ -109,6 +111,7 @@ class WebActionProxy(Node):
             self.publish_status("Navigate Through Poses", "error")
             return
 
+        #NAVIGATE THROUGH POSES
         from nav2_msgs.action import NavigateThroughPoses
         goal_msg = NavigateThroughPoses.Goal()
         waypoints = data.get('waypoints', [])
@@ -127,6 +130,7 @@ class WebActionProxy(Node):
             self.publish_status("Follow Waypoints", "error")
             return
 
+        #FOLLOW WAYPOINTS
         from nav2_msgs.action import FollowWaypoints
         goal_msg = FollowWaypoints.Goal()
         waypoints = data.get('waypoints', [])
@@ -145,6 +149,7 @@ class WebActionProxy(Node):
             self.publish_status("Compute Path To Pose", "error")
             return
 
+        # COMPUTE PATH TO POSE
         from nav2_msgs.action import ComputePathToPose
         goal_msg = ComputePathToPose.Goal()
         goal_msg.goal = self.create_pose_stamped(data.get('x', 0.0), data.get('y', 0.0), data.get('yaw', 0.0))
@@ -159,6 +164,7 @@ class WebActionProxy(Node):
             self.publish_status("Compute Path Through Poses", "error")
             return
 
+        # COMPUTE PATH THROUGH POSES
         from nav2_msgs.action import ComputePathThroughPoses
         goal_msg = ComputePathThroughPoses.Goal()
         waypoints = data.get('waypoints', [])

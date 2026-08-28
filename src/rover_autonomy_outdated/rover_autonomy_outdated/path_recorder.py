@@ -26,7 +26,10 @@ class PathRecorderNode(Node):
         # Parametry
         self.declare_parameter('odom_topic',          '/kinematic/odom')
         self.declare_parameter('cmd_vel_topic',       '/cmd_vel')
+
+        # DŁUGOŚĆ COŁANIA
         self.declare_parameter('max_path_length_m',   10.0)
+
         self.declare_parameter('record_interval_m',    0.10)
         self.declare_parameter('reverse_speed',         0.30)
         self.declare_parameter('goal_tolerance_m',      0.20)

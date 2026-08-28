@@ -7,6 +7,7 @@ import TelemetryInspector from './components/TelemetryInspector';
 import ConfigPage from './pages/ConfigPage';
 import MapPage from './pages/MapPage';
 import NavigationPage from './pages/NavigationPage';
+import LocalizationPage from './pages/LocalizationPage';
 import RecoveryPage from './pages/RecoveryPage';
 import './index.css';
 
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/config" element={<ConfigPage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/navigation" element={<NavigationPage />} />
+            <Route path="/localization" element={<LocalizationPage />} />
             <Route path="/recovery" element={<RecoveryPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

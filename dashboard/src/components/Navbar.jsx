@@ -111,6 +111,21 @@ export default function Navbar() {
           Navigation
         </NavLink>
         <NavLink
+          to="/localization"
+          style={({ isActive }) => ({
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '8px',
+            textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem',
+            color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+            background: isActive ? 'rgba(0,242,254,0.1)' : 'transparent',
+            border: `1px solid ${isActive ? 'rgba(0,242,254,0.25)' : 'transparent'}`,
+            transition: 'all 0.2s ease',
+          })}
+        >
+          <MapPin size={15} />
+          Localization
+        </NavLink>
+        <NavLink
           to="/recovery"
           style={({ isActive }) => ({
             display: 'flex', alignItems: 'center', gap: '6px',

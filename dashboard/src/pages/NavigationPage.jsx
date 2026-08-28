@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useRos } from '../context/RosContext';
 import * as ROSLIB from 'roslib';
 import { Info, ChevronDown, XCircle } from 'lucide-react';
-import './MapPage.css'; // Wypożyczamy ten sam styl pomarańczowo-czarny
+import './MapPage.css';
 
 const CollapsibleCategory = ({ title, subtitle, children }) => {
   const [isOpen, setIsOpen] = useState(false);

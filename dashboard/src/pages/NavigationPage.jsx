@@ -30,13 +30,17 @@ function yawToQuaternion(yawDegrees) {
     return { x: 0, y: 0, z: Math.sin(yaw / 2), w: Math.cos(yaw / 2) };
 }
 
-const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc, behaviorUse, onHover }) => {
-  const { ros, connectionStatus, publish, getRosTime } = useRos();
+const ActionRow = ({ title, actionName, proxyService, needsCoordinates, needsMultipleCoordinates, longDesc, behaviorUse, onHover }) => {
+  const { ros, connectionStatus } = useRos();
   const [status, setStatus] = useState('');
 
+  // Single coordinate state
   const [x, setX] = useState(0);
   const [y, setY] = useState(0);
   const [yaw, setYaw] = useState(0);
+
+  // Multiple coordinates state
+  const [waypoints, setWaypoints] = useState([{x: 0, y: 0, yaw: 0}]);
 
   const handleFireAction = () => {
     if (!ros || connectionStatus !== 'CONNECTED') {
@@ -44,8 +48,8 @@ const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc
       return;
     }
 
-    if (needsCoordinates && actionName === '/navigate_to_pose') {
-      setStatus('Triggering NavigateToPose via Proxy...');
+    if (needsCoordinates || needsMultipleCoordinates) {
+      setStatus(`Triggering ${actionName} via Proxy...`);
       
       const cmdTopic = new ROSLIB.Topic({
         ros: ros,
@@ -53,16 +57,22 @@ const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc
         messageType: 'std_msgs/msg/String'
       });
       
-      cmdTopic.publish({
-        data: JSON.stringify({
-          action: actionName,
-          x: parseFloat(x) || 0,
-          y: parseFloat(y) || 0,
-          yaw: parseFloat(yaw) || 0
-        })
-      });
+      const payload = { action: actionName };
       
-      setStatus('Goal Sent successfully!');
+      if (needsCoordinates) {
+        payload.x = parseFloat(x) || 0;
+        payload.y = parseFloat(y) || 0;
+        payload.yaw = parseFloat(yaw) || 0;
+      } else if (needsMultipleCoordinates) {
+        payload.waypoints = waypoints.map(wp => ({
+          x: parseFloat(wp.x) || 0,
+          y: parseFloat(wp.y) || 0,
+          yaw: parseFloat(wp.yaw) || 0
+        }));
+      }
+      
+      cmdTopic.publish({ data: JSON.stringify(payload) });
+      setStatus('Command sent via JSON Proxy!');
       return;
     }
 
@@ -83,6 +93,15 @@ const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc
     console.log(`Triggering action: ${actionName} from UI (Requires Python Proxy Node for ROS 2)`);
     setStatus('No Proxy Configured');
   };
+
+  const updateWaypoint = (index, field, value) => {
+    const newWp = [...waypoints];
+    newWp[index][field] = value;
+    setWaypoints(newWp);
+  };
+
+  const addWaypoint = () => setWaypoints([...waypoints, {x: 0, y: 0, yaw: 0}]);
+  const removeWaypoint = (index) => setWaypoints(waypoints.filter((_, i) => i !== index));
 
   const handleCancel = () => {
     if (!ros || connectionStatus !== 'CONNECTED') {
@@ -128,13 +147,38 @@ const ActionRow = ({ title, actionName, proxyService, needsCoordinates, longDesc
           </label>
         </div>
       )}
+
+      {needsMultipleCoordinates && (
+        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {waypoints.map((wp, i) => (
+            <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+              <span style={{color: '#a3a3a3', fontSize: '0.8rem', paddingBottom: '8px'}}>Pt {i+1}</span>
+              <label style={{ display: 'flex', flexDirection: 'column', color: '#a3a3a3', fontSize: '0.8rem' }}>
+                X <input type="number" step="0.5" value={wp.x} onChange={(e) => updateWaypoint(i, 'x', e.target.value)} style={{ background: '#111', border: '1px solid #333', color: '#fff', padding: '4px 8px', borderRadius: '4px', width: '60px', marginTop: '4px' }} />
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', color: '#a3a3a3', fontSize: '0.8rem' }}>
+                Y <input type="number" step="0.5" value={wp.y} onChange={(e) => updateWaypoint(i, 'y', e.target.value)} style={{ background: '#111', border: '1px solid #333', color: '#fff', padding: '4px 8px', borderRadius: '4px', width: '60px', marginTop: '4px' }} />
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', color: '#a3a3a3', fontSize: '0.8rem' }}>
+                ° Yaw <input type="number" step="15" value={wp.yaw} onChange={(e) => updateWaypoint(i, 'yaw', e.target.value)} style={{ background: '#111', border: '1px solid #333', color: '#fff', padding: '4px 8px', borderRadius: '4px', width: '60px', marginTop: '4px' }} />
+              </label>
+              {waypoints.length > 1 && (
+                <button onClick={() => removeWaypoint(i)} style={{background:'transparent', border:'none', color:'#f43f5e', cursor:'pointer', padding:'4px 0 8px 0'}}><XCircle size={18}/></button>
+              )}
+            </div>
+          ))}
+          <button onClick={addWaypoint} style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', color: '#ccc', padding: '6px', borderRadius: '4px', width: 'fit-content', fontSize: '0.8rem', cursor: 'pointer', marginTop: '4px' }}>
+            + Add Point
+          </button>
+        </div>
+      )}
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
         <button 
           className="orange-btn"
           onClick={handleFireAction}
         >
-          {(proxyService || needsCoordinates) ? 'EXECUTE ACTION' : 'PREPARE ACTION'}
+          {(proxyService || needsCoordinates || needsMultipleCoordinates) ? 'EXECUTE ACTION' : 'PREPARE ACTION'}
         </button>
         <button
           onClick={handleCancel}
@@ -271,6 +315,7 @@ export default function NavigationPage() {
           <ActionRow 
             title="Navigate Through Poses" 
             actionName="/navigate_through_poses" 
+            needsMultipleCoordinates={true}
             longDesc="Navigates through a list of points smoothly, treating them as intermediate checkpoints without stopping at each one."
             behaviorUse="Trigger when the rover needs to follow a specific route or patrol a curved corridor without slowing down."
             onHover={setActiveInfo}
@@ -278,6 +323,7 @@ export default function NavigationPage() {
           <ActionRow 
             title="Follow Waypoints" 
             actionName="/follow_waypoints" 
+            needsMultipleCoordinates={true}
             longDesc="Navigates to a list of points, but strictly stops at each point to execute a task (via waypoint task executors)."
             behaviorUse="Trigger when the rover needs to inspect multiple machines, stopping at each one to take a photo."
             onHover={setActiveInfo}
@@ -298,6 +344,7 @@ export default function NavigationPage() {
           <ActionRow 
             title="Compute Path To Pose" 
             actionName="/navigation/compute_path_to_pose" 
+            needsCoordinates={true}
             longDesc="Asks the Global Planner to calculate a route to a destination and return the path, but does NOT move the rover."
             behaviorUse="Trigger this to preview the route on the UI to let the user approve it before actually driving."
             onHover={setActiveInfo}
@@ -305,6 +352,7 @@ export default function NavigationPage() {
           <ActionRow 
             title="Compute Path Through Poses" 
             actionName="/navigation/compute_path_through_poses" 
+            needsMultipleCoordinates={true}
             longDesc="Calculates the complete route passing through multiple checkpoints without executing it."
             behaviorUse="Preview full patrol routes or multi-point inspections on the map before moving."
             onHover={setActiveInfo}

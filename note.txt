@@ -1,0 +1,13 @@
+/localization/enable
+/localization/reset
+/localization/set_pose
+
+/camera_00/pause_odom
+/camera_00/reset_odom
+/camera_00/reset_odom_to_pose
+/camera_00/resume_odom
+
+/lidar_00/pause_odom
+/lidar_00/reset_odom
+/lidar_00/reset_odom_to_pose
+/lidar_00/resume_odom

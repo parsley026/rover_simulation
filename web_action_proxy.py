@@ -7,7 +7,6 @@ from rclpy.action import ActionClient
 from std_srvs.srv import Empty
 from std_msgs.msg import String
 
-# Import the actions from nav2
 from nav2_msgs.action import Spin, BackUp, DriveOnHeading, Wait
 
 class WebActionProxy(Node):
@@ -19,7 +18,7 @@ class WebActionProxy(Node):
         # Publisher for live feedback to the dashboard
         self._status_pub = self.create_publisher(String, '/web/action_status', 10)
 
-        # Subscriber for generic JSON commands from Dashboard (e.g. NavigateToPose)
+        # Subscriber for generic JSON commands from Dashboard
         self.create_subscription(String, '/web/action_command', self.command_callback, 10)
 
         # 1. Create Action Clients targeting Nav2 servers

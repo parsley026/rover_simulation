@@ -23,12 +23,16 @@ class WebActionProxy(Node):
         self.create_subscription(String, '/web/action_command', self.command_callback, 10)
 
         # 1. Create Action Clients targeting Nav2 servers
-        from nav2_msgs.action import NavigateToPose
+        from nav2_msgs.action import NavigateToPose, NavigateThroughPoses, FollowWaypoints, ComputePathToPose, ComputePathThroughPoses
         self._spin_client = ActionClient(self, Spin, '/navigation/spin')
         self._backup_client = ActionClient(self, BackUp, '/navigation/backup')
         self._drive_client = ActionClient(self, DriveOnHeading, '/navigation/drive_on_heading')
         self._wait_client = ActionClient(self, Wait, '/navigation/wait')
         self._nav_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
+        self._nav_through_client = ActionClient(self, NavigateThroughPoses, '/navigate_through_poses')
+        self._follow_waypoints_client = ActionClient(self, FollowWaypoints, '/follow_waypoints')
+        self._compute_path_client = ActionClient(self, ComputePathToPose, '/navigation/compute_path_to_pose')
+        self._compute_path_through_client = ActionClient(self, ComputePathThroughPoses, '/navigation/compute_path_through_poses')
 
         # 2. Create ROS Services that the React UI will call (Legacy/Simple buttons)
         self.create_service(Empty, '/web/spin_proxy', self.spin_service_callback)
@@ -48,6 +52,19 @@ class WebActionProxy(Node):
         })
         self._status_pub.publish(msg)
 
+    def create_pose_stamped(self, x, y, yaw_deg):
+        from geometry_msgs.msg import PoseStamped
+        import math
+        pose = PoseStamped()
+        pose.header.frame_id = 'map'
+        pose.header.stamp = self.get_clock().now().to_msg()
+        pose.pose.position.x = float(x)
+        pose.pose.position.y = float(y)
+        yaw = float(yaw_deg) * math.pi / 180.0
+        pose.pose.orientation.z = math.sin(yaw / 2.0)
+        pose.pose.orientation.w = math.cos(yaw / 2.0)
+        return pose
+
     # ================= COMMAND TOPIC =================
     def command_callback(self, msg):
         try:
@@ -56,6 +73,16 @@ class WebActionProxy(Node):
             
             if action == "/navigate_to_pose":
                 self.handle_navigate_to_pose(data)
+            elif action == "/navigate_through_poses":
+                self.handle_navigate_through_poses(data)
+            elif action == "/follow_waypoints":
+                self.handle_follow_waypoints(data)
+            elif action == "/navigation/compute_path_to_pose":
+                self.handle_compute_path_to_pose(data)
+            elif action == "/navigation/compute_path_through_poses":
+                self.handle_compute_path_through_poses(data)
+            else:
+                self.get_logger().warning(f"Unknown action command: {action}")
         except Exception as e:
             self.get_logger().error(f"Failed to parse command: {e}")
 
@@ -66,25 +93,81 @@ class WebActionProxy(Node):
             return
 
         from nav2_msgs.action import NavigateToPose
-        import math
-        
         goal_msg = NavigateToPose.Goal()
-        goal_msg.pose.header.frame_id = 'map'
-        goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
-        goal_msg.pose.pose.position.x = float(data.get('x', 0.0))
-        goal_msg.pose.pose.position.y = float(data.get('y', 0.0))
+        goal_msg.pose = self.create_pose_stamped(data.get('x', 0.0), data.get('y', 0.0), data.get('yaw', 0.0))
         
-        yaw = float(data.get('yaw', 0.0)) * math.pi / 180.0
-        goal_msg.pose.pose.orientation.z = math.sin(yaw / 2.0)
-        goal_msg.pose.pose.orientation.w = math.cos(yaw / 2.0)
-        
-        self.publish_status("Navigate to Pose", "starting", 0.0, -1.0) # -1 means unknown target dist initially
+        self.publish_status("Navigate to Pose", "starting", 0.0, -1.0)
 
         send_goal_future = self._nav_client.send_goal_async(
             goal_msg,
             feedback_callback=lambda msg: self.publish_status("Navigate to Pose", "running", msg.feedback.distance_remaining, -1.0)
         )
         send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, "Navigate to Pose"))
+
+    def handle_navigate_through_poses(self, data):
+        self.get_logger().info('Received request: Triggering NavigateThroughPoses...')
+        if not self._nav_through_client.wait_for_server(timeout_sec=1.0):
+            self.publish_status("Navigate Through Poses", "error")
+            return
+
+        from nav2_msgs.action import NavigateThroughPoses
+        goal_msg = NavigateThroughPoses.Goal()
+        waypoints = data.get('waypoints', [])
+        goal_msg.poses = [self.create_pose_stamped(wp.get('x', 0.0), wp.get('y', 0.0), wp.get('yaw', 0.0)) for wp in waypoints]
+        
+        self.publish_status("Navigate Through Poses", "starting", 0.0, -1.0)
+        send_goal_future = self._nav_through_client.send_goal_async(
+            goal_msg,
+            feedback_callback=lambda msg: self.publish_status("Navigate Through Poses", "running", msg.feedback.distance_remaining, -1.0)
+        )
+        send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, "Navigate Through Poses"))
+
+    def handle_follow_waypoints(self, data):
+        self.get_logger().info('Received request: Triggering FollowWaypoints...')
+        if not self._follow_waypoints_client.wait_for_server(timeout_sec=1.0):
+            self.publish_status("Follow Waypoints", "error")
+            return
+
+        from nav2_msgs.action import FollowWaypoints
+        goal_msg = FollowWaypoints.Goal()
+        waypoints = data.get('waypoints', [])
+        goal_msg.poses = [self.create_pose_stamped(wp.get('x', 0.0), wp.get('y', 0.0), wp.get('yaw', 0.0)) for wp in waypoints]
+        
+        self.publish_status("Follow Waypoints", "starting", 0.0, len(waypoints))
+        send_goal_future = self._follow_waypoints_client.send_goal_async(
+            goal_msg,
+            feedback_callback=lambda msg: self.publish_status("Follow Waypoints", "running", msg.feedback.current_waypoint, len(waypoints))
+        )
+        send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, "Follow Waypoints"))
+
+    def handle_compute_path_to_pose(self, data):
+        self.get_logger().info('Received request: Triggering ComputePathToPose...')
+        if not self._compute_path_client.wait_for_server(timeout_sec=1.0):
+            self.publish_status("Compute Path To Pose", "error")
+            return
+
+        from nav2_msgs.action import ComputePathToPose
+        goal_msg = ComputePathToPose.Goal()
+        goal_msg.goal = self.create_pose_stamped(data.get('x', 0.0), data.get('y', 0.0), data.get('yaw', 0.0))
+        
+        self.publish_status("Compute Path To Pose", "starting", 0.0, -1.0)
+        send_goal_future = self._compute_path_client.send_goal_async(goal_msg)
+        send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, "Compute Path To Pose"))
+
+    def handle_compute_path_through_poses(self, data):
+        self.get_logger().info('Received request: Triggering ComputePathThroughPoses...')
+        if not self._compute_path_through_client.wait_for_server(timeout_sec=1.0):
+            self.publish_status("Compute Path Through Poses", "error")
+            return
+
+        from nav2_msgs.action import ComputePathThroughPoses
+        goal_msg = ComputePathThroughPoses.Goal()
+        waypoints = data.get('waypoints', [])
+        goal_msg.goals = [self.create_pose_stamped(wp.get('x', 0.0), wp.get('y', 0.0), wp.get('yaw', 0.0)) for wp in waypoints]
+        
+        self.publish_status("Compute Path Through Poses", "starting", 0.0, -1.0)
+        send_goal_future = self._compute_path_through_client.send_goal_async(goal_msg)
+        send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, "Compute Path Through Poses"))
 
     # ================= WAIT =================
     def wait_service_callback(self, request, response):

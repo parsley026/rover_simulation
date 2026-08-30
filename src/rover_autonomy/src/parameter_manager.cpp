@@ -81,6 +81,8 @@ void ParameterManager::declare_all_parameters()
   node_->declare_parameter<std::string>("localization_launch",  "localization.launch.py");
   node_->declare_parameter<std::string>("localization_type",    "ekf");
   node_->declare_parameter<std::string>("localization_ns",      "localization");
+  node_->declare_parameter<int>("localization_mode",            1);
+
 
   node_->declare_parameter<std::string>("mapping_package",      "rover_autonomy");
   node_->declare_parameter<std::string>("mapping_launch",       "mapping.launch.py");
@@ -147,8 +149,9 @@ OdometryConfig ParameterManager::get_odometry_config() const
     resolve_share_path("rover_autonomy", node_->get_parameter("ekf_config").as_string());
   // Forward sensor namespaces so localization.launch.py can remap EKF inputs dynamically
   localization.launch_args["localization_ns"] = node_->get_parameter("localization_ns").as_string();
-  localization.launch_args["camera_ns"]       = node_->get_parameter("camera_primary_ns").as_string();
-
+  localization.launch_args["localization_mode"] = std::to_string(node_->get_parameter("localization_mode").as_int());
+  localization.launch_args["camera_primary_ns"] = node_->get_parameter("camera_primary_ns").as_string();
+  localization.launch_args["camera_secondary_ns"] = node_->get_parameter("camera_secondary_ns").as_string();
   localization.launch_args["lidar_ns"]        = node_->get_parameter("lidar_ns").as_string();
 
   return OdometryConfig{camera_odom, lidar_odom, localization};

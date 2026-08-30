@@ -68,6 +68,7 @@ main_compute:
     localization_launch:  "localization.launch.py"
     localization_type:    "ekf"
     localization_ns:      "localization"
+    localization_mode:    2
 
     mapping_package:      "rover_autonomy"
     mapping_launch:       "mapping.launch.py"

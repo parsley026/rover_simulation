@@ -45,15 +45,75 @@ def launch_setup(context, *args, **kwargs):
         }
     ]
 
-    camera_ns       = LaunchConfiguration('camera_ns')
-    lidar_ns        = LaunchConfiguration('lidar_ns')
-    localization_ns = LaunchConfiguration('localization_ns')
+    mapping_mode = int(LaunchConfiguration('mapping_mode').perform(context))
+    camera_primary_ns = LaunchConfiguration('camera_primary_ns').perform(context)
+    camera_secondary_ns = LaunchConfiguration('camera_secondary_ns').perform(context)
+    lidar_ns = LaunchConfiguration('lidar_ns').perform(context)
+    localization_ns = LaunchConfiguration('localization_ns').perform(context)
 
+    mode_params = {}
     slam_remappings = [
-        ("rgbd_image", ['/', camera_ns,       '/rgbd_image']),
-        ("scan_cloud", ['/', lidar_ns,        '/points']),
-        ("odom",       ['/', localization_ns, '/odometry/filtered']),
+        ("odom", f"/{localization_ns}/odometry/filtered"),
     ]
+
+    if mapping_mode == 1:
+        # Full Fusion Mode
+        mode_params = {
+            'subscribe_rgbd': True, 'rgbd_cameras': 2,
+            'subscribe_scan_cloud': True, 'subscribe_depth': False,
+            'Reg/Strategy': '2' # Visual + ICP
+        }
+        slam_remappings.extend([
+            ("rgbd_image0", f"/{camera_primary_ns}/rgbd_image"),
+            ("rgbd_image1", f"/{camera_secondary_ns}/rgbd_image"),
+            ("scan_cloud", f"/{lidar_ns}/points")
+        ])
+    elif mapping_mode == 2:
+        # Single Camera + LiDAR Mode
+        mode_params = {
+            'subscribe_rgbd': True, 'rgbd_cameras': 1,
+            'subscribe_scan_cloud': True, 'subscribe_depth': False,
+            'Reg/Strategy': '2' # Visual + ICP
+        }
+        slam_remappings.extend([
+            ("rgbd_image", f"/{camera_primary_ns}/rgbd_image"),
+            ("scan_cloud", f"/{lidar_ns}/points")
+        ])
+    elif mapping_mode == 3:
+        # LiDAR-Only Mode
+        mode_params = {
+            'subscribe_rgbd': False, 'subscribe_depth': False, 'subscribe_stereo': False,
+            'subscribe_scan_cloud': True,
+            'Reg/Strategy': '1', 'Icp/PointToPoint': 'true'
+        }
+        slam_remappings.extend([
+            ("scan_cloud", f"/{lidar_ns}/points")
+        ])
+    elif mapping_mode == 4:
+        # Vision-Only Multi-Camera Mode
+        mode_params = {
+            'subscribe_rgbd': True, 'rgbd_cameras': 2,
+            'subscribe_scan_cloud': False, 'subscribe_depth': False,
+            'Grid/FromDepth': 'true',
+            'Reg/Strategy': '0' # Visual
+        }
+        slam_remappings.extend([
+            ("rgbd_image0", f"/{camera_primary_ns}/rgbd_image"),
+            ("rgbd_image1", f"/{camera_secondary_ns}/rgbd_image")
+        ])
+    elif mapping_mode == 5:
+        # Vision-Only Single Camera Mode
+        mode_params = {
+            'subscribe_rgbd': True, 'rgbd_cameras': 1,
+            'subscribe_scan_cloud': False, 'subscribe_depth': False,
+            'Grid/FromDepth': 'true',
+            'Reg/Strategy': '0' # Visual
+        }
+        slam_remappings.extend([
+            ("rgbd_image", f"/{camera_primary_ns}/rgbd_image")
+        ])
+
+    rtabmap_parameters.append(mode_params)
 
     slam_arguments = []
 
@@ -80,7 +140,9 @@ def generate_launch_description():
 
         DeclareLaunchArgument('use_sim_time',      default_value='false',        description=''),
         DeclareLaunchArgument('namespace',          default_value='mapping',      description='Namespace for mapping'),
-        DeclareLaunchArgument('camera_ns',          default_value='camera_00',    description='Camera sensor namespace'),
+        DeclareLaunchArgument('mapping_mode',       default_value='2',            description='SLAM Mode (1-5)'),
+        DeclareLaunchArgument('camera_primary_ns',  default_value='camera_00',    description='Primary camera sensor namespace'),
+        DeclareLaunchArgument('camera_secondary_ns',default_value='camera_01',    description='Secondary camera sensor namespace'),
         DeclareLaunchArgument('lidar_ns',           default_value='lidar_00',     description='Lidar sensor namespace'),
         DeclareLaunchArgument('localization_ns',    default_value='localization', description='Localization namespace'),
 

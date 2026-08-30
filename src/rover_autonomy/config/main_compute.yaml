@@ -38,7 +38,8 @@ main_compute:
     camera_driver_launch:          "camera_driver.launch.py"
     camera_decompression_launch:   "camera_decompression.launch.py"
     camera_post_processing_launch: "camera_post_processing.launch.py"
-    camera_ns:           "camera_00"
+    camera_primary_ns:   "camera_00"
+    camera_secondary_ns: "camera_01"
     camera_name:         "camera_00"
     camera_parent_frame: "sensor_mount_01_link"
 
@@ -71,6 +72,7 @@ main_compute:
     mapping_package:      "rover_autonomy"
     mapping_launch:       "mapping.launch.py"
     mapping_ns:           "mapping"
+    mapping_mode:         2
 
     local_topography_package: "rover_topography"
     local_topography_launch:  "local_topography.launch.py"

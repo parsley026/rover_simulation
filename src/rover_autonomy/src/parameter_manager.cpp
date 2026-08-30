@@ -55,9 +55,11 @@ void ParameterManager::declare_all_parameters()
   node_->declare_parameter<std::string>("camera_post_processing_launch",  "camera_post_processing.launch.py");
   node_->declare_parameter<bool>("camera_decompress_rgb", true);
   node_->declare_parameter<bool>("camera_decompress_depth", true);
-  node_->declare_parameter<std::string>("camera_ns",      "camera_00");
+  node_->declare_parameter<std::string>("camera_primary_ns", "camera_00");
+  node_->declare_parameter<std::string>("camera_secondary_ns", "camera_01");
   node_->declare_parameter<std::string>("camera_name",    "camera_00");
   node_->declare_parameter<std::string>("camera_parent_frame", "base_link");
+
 
   // --- Lidar subsystem identifiers ---
   node_->declare_parameter<std::string>("lidar_package", "rover_autonomy");
@@ -83,6 +85,8 @@ void ParameterManager::declare_all_parameters()
   node_->declare_parameter<std::string>("mapping_package",      "rover_autonomy");
   node_->declare_parameter<std::string>("mapping_launch",       "mapping.launch.py");
   node_->declare_parameter<std::string>("mapping_ns",           "mapping");
+  node_->declare_parameter<int>("mapping_mode",                 2);
+
   node_->declare_parameter<std::string>("mapping_db_folder",    "~/.ros/rtabmap");
   node_->declare_parameter<bool>("mapping_load_existing_db",    false);
   node_->declare_parameter<std::string>("mapping_db_file_name", "rtabmap.db");
@@ -143,7 +147,8 @@ OdometryConfig ParameterManager::get_odometry_config() const
     resolve_share_path("rover_autonomy", node_->get_parameter("ekf_config").as_string());
   // Forward sensor namespaces so localization.launch.py can remap EKF inputs dynamically
   localization.launch_args["localization_ns"] = node_->get_parameter("localization_ns").as_string();
-  localization.launch_args["camera_ns"]       = node_->get_parameter("camera_ns").as_string();
+  localization.launch_args["camera_ns"]       = node_->get_parameter("camera_primary_ns").as_string();
+
   localization.launch_args["lidar_ns"]        = node_->get_parameter("lidar_ns").as_string();
 
   return OdometryConfig{camera_odom, lidar_odom, localization};
@@ -163,7 +168,8 @@ CameraConfig ParameterManager::get_camera_config() const
   // Common args
   std::map<std::string, std::string> common_args;
   common_args["use_sim_time"] = sim_time_str;
-  common_args["camera_ns"]    = node_->get_parameter("camera_ns").as_string();
+  common_args["camera_ns"]    = node_->get_parameter("camera_primary_ns").as_string();
+
 
   // 1. Driver
   config.driver.launch_enabled = use_sim_time ? false : (base_enabled && driver_enabled);
@@ -228,9 +234,12 @@ MappingConfig ParameterManager::get_mapping_config() const
   composite.mapping.launch_args["params_file"] =
     resolve_share_path("rover_autonomy", node_->get_parameter("mapping_config").as_string());
   // Forward sensor namespaces so mapping.launch.py can build remappings dynamically
-  composite.mapping.launch_args["camera_ns"]       = node_->get_parameter("camera_ns").as_string();
-  composite.mapping.launch_args["lidar_ns"]        = node_->get_parameter("lidar_ns").as_string();
-  composite.mapping.launch_args["localization_ns"] = node_->get_parameter("localization_ns").as_string();
+  composite.mapping.launch_args["camera_primary_ns"]   = node_->get_parameter("camera_primary_ns").as_string();
+  composite.mapping.launch_args["camera_secondary_ns"] = node_->get_parameter("camera_secondary_ns").as_string();
+  composite.mapping.launch_args["lidar_ns"]            = node_->get_parameter("lidar_ns").as_string();
+  composite.mapping.launch_args["localization_ns"]     = node_->get_parameter("localization_ns").as_string();
+  composite.mapping.launch_args["mapping_mode"]        = std::to_string(node_->get_parameter("mapping_mode").as_int());
+
 
 
   // 2. Local Topography

@@ -17,13 +17,13 @@ def launch_setup(context, *args, **kwargs):
     )
 
     localization_ns = LaunchConfiguration('localization_ns')
-    camera_ns       = LaunchConfiguration('camera_ns')
+    camera_primary_ns = LaunchConfiguration('camera_primary_ns')
     lidar_ns        = LaunchConfiguration('lidar_ns')
 
     # Override the generic odom0/odom1 aliases declared in ekf_filter.yaml
     # with the actual absolute dynamic topic paths resolved from launch arguments.
     ekf_remappings = [
-        ('odom0', ['/', camera_ns, '/odom']),
+        ('odom0', ['/', camera_primary_ns, '/odom']),
         ('odom1', ['/', lidar_ns,  '/odom']),
     ]
 
@@ -48,7 +48,7 @@ def generate_launch_description():
         DeclareLaunchArgument('params_file',       default_value=default_params_file, description=''),
         DeclareLaunchArgument('use_sim_time',      default_value='false',             description=''),
         DeclareLaunchArgument('localization_ns',   default_value='localization',      description='Localization node namespace'),
-        DeclareLaunchArgument('camera_ns',         default_value='camera_00',         description='Camera sensor namespace'),
+        DeclareLaunchArgument('camera_primary_ns', default_value='camera_00',         description='Primary camera sensor namespace'),
         DeclareLaunchArgument('lidar_ns',          default_value='lidar_00',          description='Lidar sensor namespace'),
         OpaqueFunction(function=launch_setup)
     ])

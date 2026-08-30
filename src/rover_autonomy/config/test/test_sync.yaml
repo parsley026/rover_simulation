@@ -1,0 +1,13 @@
+/test_sync_node:
+  ros__parameters:
+    trigger_topic:
+      name: "/camera_00/rgb/image_raw"
+      type: "sensor_msgs/msg/Image"
+      output_topic: "/camera_00/sync/image_raw"
+    held_topic_names: ["camera_info"]
+    held_topics:
+      camera_info:
+        name: "/camera_00/rgb/camera_info"
+        type: "sensor_msgs/msg/CameraInfo"
+        output_topic: "/camera_00/sync/camera_info"
+        max_stale_sec: 0.1

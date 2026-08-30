@@ -1,0 +1,20 @@
+/**:
+  ros__parameters:
+    trigger_topic:
+      name: "/camera_00/rgb/image_rect_color"
+      type: "sensor_msgs/msg/Image"
+      output_topic: "/sync/camera_00/rgb"
+    
+    held_topic_names: ["depth", "lidar"]
+    
+    held_topics:
+      depth:
+        name: "/camera_00/depth/image_rect_raw"
+        type: "sensor_msgs/msg/Image"
+        output_topic: "/sync/camera_00/depth"
+        max_stale_sec: 0.5
+      lidar:
+        name: "/lidar_00/points"
+        type: "sensor_msgs/msg/PointCloud2"
+        output_topic: "/sync/lidar_00/points"
+        max_stale_sec: 0.2

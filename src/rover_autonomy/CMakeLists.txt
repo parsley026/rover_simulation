@@ -14,6 +14,8 @@ find_package(rclcpp_components REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 
 # ── Shared component library ──────────────────────────────────────────────────
 add_library(main_compute_component SHARED
@@ -69,6 +71,32 @@ install(TARGETS
 
 install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+add_executable(generic_temporal_sync_node src/utils/generic_temporal_sync_node.cpp)
+ament_target_dependencies(generic_temporal_sync_node rclcpp)
+
+install(TARGETS generic_temporal_sync_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(odometry_health_node src/utils/odometry_health_node.cpp)
+target_include_directories(odometry_health_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(odometry_health_node rclcpp nav_msgs diagnostic_msgs)
+
+install(TARGETS odometry_health_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(PROGRAMS 
+  scripts/mock_sync_publisher.py 
+  scripts/mock_health_publisher.py 
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

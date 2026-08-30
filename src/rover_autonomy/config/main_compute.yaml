@@ -39,12 +39,13 @@ main_compute:
     camera_decompression_launch:   "camera_decompression.launch.py"
     camera_post_processing_launch: "camera_post_processing.launch.py"
     camera_primary_ns:   "camera_00"
-    camera_secondary_ns: "camera_01"
     camera_name:         "camera_00"
     camera_parent_frame: "sensor_mount_01_link"
 
     camera_decompress_rgb: true
     camera_decompress_depth: false
+
+    camera_secondary_ns: "camera_01"
 
     # -- lidar subsystem identifiers
     lidar_package:           "rover_autonomy"
@@ -66,7 +67,6 @@ main_compute:
 
     localization_package: "rover_autonomy"
     localization_launch:  "localization.launch.py"
-    localization_type:    "ekf"
     localization_ns:      "localization"
     localization_mode:    2
 

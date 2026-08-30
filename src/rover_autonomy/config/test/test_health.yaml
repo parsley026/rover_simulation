@@ -1,0 +1,9 @@
+/odometry_health_node:
+  ros__parameters:
+    expected_hz: 30.0
+    timeout_sec: 0.5
+    max_lin_vel: 5.0
+    max_ang_vel: 3.0
+    max_cov_trace: 10.0
+    max_consecutive_rejections: 15
+    max_jump_dist: 1.5

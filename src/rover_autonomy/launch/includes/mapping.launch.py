@@ -45,13 +45,17 @@ def launch_setup(context, *args, **kwargs):
         }
     ]
 
-    slam_arguments = []
+    camera_ns       = LaunchConfiguration('camera_ns')
+    lidar_ns        = LaunchConfiguration('lidar_ns')
+    localization_ns = LaunchConfiguration('localization_ns')
 
     slam_remappings = [
-        ("rgbd_image", "/camera_00/rgbd_image"),
-        ("scan_cloud", "/lidar_00/points"),
-        ("odom", "/localization/odometry/filtered")
+        ("rgbd_image", ['/', camera_ns,       '/rgbd_image']),
+        ("scan_cloud", ['/', lidar_ns,        '/points']),
+        ("odom",       ['/', localization_ns, '/odometry/filtered']),
     ]
+
+    slam_arguments = []
 
     return [
         Node(
@@ -74,8 +78,11 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('params_file', default_value=default_params_file, description=''),
 
-        DeclareLaunchArgument('use_sim_time', default_value='false', description=''),
-        DeclareLaunchArgument('namespace', default_value='mapping', description='Namespace for mapping'),
+        DeclareLaunchArgument('use_sim_time',      default_value='false',        description=''),
+        DeclareLaunchArgument('namespace',          default_value='mapping',      description='Namespace for mapping'),
+        DeclareLaunchArgument('camera_ns',          default_value='camera_00',    description='Camera sensor namespace'),
+        DeclareLaunchArgument('lidar_ns',           default_value='lidar_00',     description='Lidar sensor namespace'),
+        DeclareLaunchArgument('localization_ns',    default_value='localization', description='Localization namespace'),
 
         # -- arguments
         DeclareLaunchArgument('mapping_db_folder', default_value='~/.ros/rtabmap'),

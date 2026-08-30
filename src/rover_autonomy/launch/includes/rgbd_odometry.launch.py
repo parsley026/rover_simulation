@@ -14,6 +14,14 @@ def launch_setup(context, *args, **kwargs):
         value_type=bool
     )
 
+    camera_ns = LaunchConfiguration('camera_ns')
+
+    # Publish odom to an absolute topic so cross-namespace consumers
+    # (EKF, other nodes) don't have to guess the camera namespace.
+    odom_remappings = [
+        ("odom", ['/', camera_ns, '/odom']),
+    ]
+
     return [
         Node(
             package='rtabmap_odom',
@@ -21,7 +29,7 @@ def launch_setup(context, *args, **kwargs):
             name='rtabmap_odom',
             namespace=camera_ns,
             parameters=[params_file, {'use_sim_time': use_sim_time}],
-            remappings=[],
+            remappings=odom_remappings,
             arguments=['--ros-args', '--log-level', 'warn'],
         ),
     ]
@@ -31,9 +39,8 @@ def generate_launch_description():
     default_params_file = PathJoinSubstitution([pkg_share, 'config', 'odometry', 'rgbd_odom.yaml'])
 
     return LaunchDescription([
-        DeclareLaunchArgument('camera_ns',   default_value='camera_00',         description=''),
+        DeclareLaunchArgument('camera_ns',   default_value='camera_00',         description='Camera sensor namespace'),
         DeclareLaunchArgument('params_file', default_value=default_params_file, description=''),
-        
         DeclareLaunchArgument('use_sim_time', default_value='false', description=''),
         OpaqueFunction(function=launch_setup)
     ])

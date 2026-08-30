@@ -78,6 +78,7 @@ void ParameterManager::declare_all_parameters()
   node_->declare_parameter<std::string>("localization_package", "rover_autonomy");
   node_->declare_parameter<std::string>("localization_launch",  "localization.launch.py");
   node_->declare_parameter<std::string>("localization_type",    "ekf");
+  node_->declare_parameter<std::string>("localization_ns",      "localization");
 
   node_->declare_parameter<std::string>("mapping_package",      "rover_autonomy");
   node_->declare_parameter<std::string>("mapping_launch",       "mapping.launch.py");
@@ -140,6 +141,10 @@ OdometryConfig ParameterManager::get_odometry_config() const
   localization.launch_args["localization_type"] = node_->get_parameter("localization_type").as_string();
   localization.launch_args["params_file"]       =
     resolve_share_path("rover_autonomy", node_->get_parameter("ekf_config").as_string());
+  // Forward sensor namespaces so localization.launch.py can remap EKF inputs dynamically
+  localization.launch_args["localization_ns"] = node_->get_parameter("localization_ns").as_string();
+  localization.launch_args["camera_ns"]       = node_->get_parameter("camera_ns").as_string();
+  localization.launch_args["lidar_ns"]        = node_->get_parameter("lidar_ns").as_string();
 
   return OdometryConfig{camera_odom, lidar_odom, localization};
 }
@@ -222,6 +227,11 @@ MappingConfig ParameterManager::get_mapping_config() const
   composite.mapping.launch_args["mapping_db_file_name"] = node_->get_parameter("mapping_db_file_name").as_string();
   composite.mapping.launch_args["params_file"] =
     resolve_share_path("rover_autonomy", node_->get_parameter("mapping_config").as_string());
+  // Forward sensor namespaces so mapping.launch.py can build remappings dynamically
+  composite.mapping.launch_args["camera_ns"]       = node_->get_parameter("camera_ns").as_string();
+  composite.mapping.launch_args["lidar_ns"]        = node_->get_parameter("lidar_ns").as_string();
+  composite.mapping.launch_args["localization_ns"] = node_->get_parameter("localization_ns").as_string();
+
 
   // 2. Local Topography
   composite.local_topography.launch_enabled = node_->get_parameter("launch_local_topography").as_bool();

@@ -12,26 +12,46 @@
     map_frame_id: map
     odom_frame_id: odom
     publish_tf: true
-    wait_for_transform: 0.2
+    wait_for_transform: 0.5
     map_always_update: true
-    Rtabmap/DetectionRate: "10"
-    Rtabmap/TimeThr: "0"
-    Mem/STMSize: "20"
+
+    # --- PERFORMANCE & MAPPING RATE ---
+    # SLAM rate. Dropped from 10 to 2. The EKF handles fast local pose. 
+    # Giving RTAB-Map 500ms per frame stops sync drops and allows heavier computation.
+    Rtabmap/DetectionRate: "2"
+    # 0 = Unlimited processing time for memory management (Perfect for 32GB RAM)
+    Rtabmap/TimeThr: "0" 
+    Mem/STMSize: "30"
     Mem/IncrementalMemory: "True"
     Mem/InitWMWithAllNodes: "False"
-    Kp/MaxFeatures: "750"
+
+    # --- LOOP CLOSURE & VISUAL FEATURES ---
+    # Doubled from 750. Extracts more visual features per frame for robust loop closures.
+    Kp/MaxFeatures: "1500"
+    # Actively scans memory for locations you've visited previously based on spatial proximity.
+    RGBD/ProximityBySpace: "True"
     RGBD/NeighborLinkRefining: "True"
+    
+    # --- REGISTRATION ---
     Reg/Strategy: "2"
     Reg/Force3DoF: "false"
+    
+    # --- STEREO (Ignored if using RGB-D, but kept for consistency) ---
     Sterero/WinWidth: "15"
     Sterero/WinHeight: "3"
     Sterero/Iterations: "30"
     Sterero/DenseStrategy: "0"
+    
+    # --- 3D GRID & POINT CLOUD DENSITY ---
     Grid/Sensor: "2"
     Grid/3D: "True"
-    Grid/DepthDecimation: "4"
+    # Decreased from 4 to 2. Projects a much denser 3D point cloud from the camera, costing more CPU.
+    Grid/DepthDecimation: "2"
+    # Explicitly defines grid resolution. 0.05 = 5cm voxels/cells. 
+    Grid/CellSize: "0.05" 
+
     Grid/RangeMin: "0.5"
-    Grid/RangeMax: "5"
+    Grid/RangeMax: "5.0"
     Grid/FootprintLength: "1.5"
     Grid/FootprintWidth: "1.5"
     Grid/FootprintHeight: "1.5"

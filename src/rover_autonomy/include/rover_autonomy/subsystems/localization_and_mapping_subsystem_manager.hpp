@@ -13,6 +13,10 @@ public:
   LocalizationAndMappingSubsystemManager(
     rclcpp_lifecycle::LifecycleNode * parent_node,
     const MappingConfig & config);
+
+  SubsystemManager* get_mapping_subsystem();
+  SubsystemManager* get_local_topography_subsystem();
+  SubsystemManager* get_global_topography_subsystem();
 };
 
 }  // namespace rover_autonomy

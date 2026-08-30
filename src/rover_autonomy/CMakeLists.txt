@@ -13,6 +13,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(tf2_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # ── Shared component library ──────────────────────────────────────────────────
 add_library(main_compute_component SHARED
@@ -39,6 +40,7 @@ ament_target_dependencies(main_compute_component
   rclcpp_components
   ament_index_cpp
   tf2_msgs
+  std_srvs
 )
 
 # Register node for component loading and create standalone executable
@@ -53,6 +55,7 @@ install(DIRECTORY
   config  
   launch
   urdf
+  mesh
   DESTINATION share/${PROJECT_NAME}
 )
 

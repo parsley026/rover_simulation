@@ -22,7 +22,7 @@ def launch_setup(context, *args, **kwargs):
             namespace=camera_ns,
             parameters=[params_file, {'use_sim_time': use_sim_time}],
             remappings=[],
-            arguments=['--ros-args', '--log-level', 'fatal'],
+            arguments=['--ros-args', '--log-level', 'warn'],
         ),
     ]
 

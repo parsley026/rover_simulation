@@ -12,6 +12,7 @@
 #include "rover_autonomy/subsystems/localization_and_mapping_subsystem_manager.hpp"
 #include "rover_autonomy/subsystems/navigation_subsystem_manager.hpp"
 #include "rover_autonomy/subsystems/subsystem_manager.hpp"
+#include "std_srvs/srv/set_bool.hpp"
 
 #include <memory>
 #include <vector>
@@ -54,6 +55,28 @@ private:
 
   // Supervisor loop roster — all subsystems registered here regardless of enabled state
   std::vector<SubsystemManager*> all_subsystems_;
+
+  // Navigation service
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr navigation_service_;
+  void on_set_navigation(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  // Mapping & Topography services
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr mapping_service_;
+  void on_set_mapping(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr local_topography_service_;
+  void on_set_local_topography(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr global_topography_service_;
+  void on_set_global_topography(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // Recovery callback fired by ParameterManager when a config param changes at runtime
   void on_subsystem_config_changed(const std::string & subsystem_name);

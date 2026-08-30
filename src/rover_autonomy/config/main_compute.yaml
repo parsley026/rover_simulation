@@ -4,26 +4,32 @@ main_compute:
     use_sim_time: true
 
     # -- 
-    launch_description: false
+    launch_description: true
+    
     launch_camera_00: true
     launch_camera_00_driver: true
-    launch_camera_00_decompression: true
+    launch_camera_00_decompression: false
     launch_camera_00_post_processing: true
+
     launch_lidar_00: true
+
     launch_camera_00_odom: true
     launch_lidar_00_odom: true
+    
     launch_localization: true
-    launch_mapping: true
-    launch_local_topography: true
-    launch_global_topography: true
-    launch_navigation: true
+
+    launch_mapping: false
+    launch_local_topography: false
+    launch_global_topography: false
+    
+    launch_navigation: false
 
     # -- subsystem config files
     camera_00_config: "config/camera/camera.yaml"
     lidar_00_config: "config/lidar/lidar.yaml"
     camera_00_odom_config: "config/odometry/rgbd_odom.yaml"
     lidar_00_odom_config: "config/odometry/icp_odom.yaml"
-    ekf_config: "config/odometry/ekf_filter.yaml"
+    ekf_config:           "config/odometry/ekf_filter.yaml"
     mapping_config: "config/mapping/mapping.yaml"
     navigation_config: "config/navigation/navigation.yaml"
 
@@ -37,7 +43,7 @@ main_compute:
     camera_parent_frame: "sensor_mount_01_link"
 
     camera_decompress_rgb: true
-    camera_decompress_depth: true
+    camera_decompress_depth: false
 
     # -- lidar subsystem identifiers
     lidar_package:           "rover_autonomy"

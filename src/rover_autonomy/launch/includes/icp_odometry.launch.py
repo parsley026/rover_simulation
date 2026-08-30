@@ -15,6 +15,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     odom_remappings = [
+        ("scan", "dummy_scan_topic"),
         ("scan_cloud", f"/{lidar_ns}/points"),
         ("odom", f"/{lidar_ns}/odom"),
     ]
@@ -27,7 +28,7 @@ def launch_setup(context, *args, **kwargs):
             namespace=lidar_ns,
             parameters=[params_file, {'use_sim_time': use_sim_time}],
             remappings=odom_remappings,
-            arguments=['--ros-args', '--log-level', 'fatal'],
+            arguments=['--ros-args', '--log-level', 'warn'],
         ),
     ]
 

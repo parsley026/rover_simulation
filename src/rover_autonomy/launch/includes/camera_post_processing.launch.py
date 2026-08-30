@@ -12,13 +12,13 @@ def launch_setup(context, *args, **kwargs):
 
     sync_parameters = {
         'approx_sync': True,
-        'approx_sync_max_interval': 0.1,
+        'approx_sync_max_interval': 1.0,
         'qos': 1,
         'qos_image': 2,
         'qos_camera_info': 2,
         'use_sim_time': use_sim_time,             
-        'topic_queue_size': 50,          
-        'sync_queue_size': 50, 
+        'topic_queue_size': 100,          
+        'sync_queue_size': 100, 
     }
 
     sync_remappings = [

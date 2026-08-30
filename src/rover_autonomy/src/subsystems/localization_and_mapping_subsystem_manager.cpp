@@ -78,4 +78,19 @@ LocalizationAndMappingSubsystemManager::LocalizationAndMappingSubsystemManager(
     config.global_topography.launch_enabled ? "enabled" : "disabled");
 }
 
+SubsystemManager* LocalizationAndMappingSubsystemManager::get_mapping_subsystem()
+{
+  return child_processes_[0].get();
+}
+
+SubsystemManager* LocalizationAndMappingSubsystemManager::get_local_topography_subsystem()
+{
+  return child_processes_[1].get();
+}
+
+SubsystemManager* LocalizationAndMappingSubsystemManager::get_global_topography_subsystem()
+{
+  return child_processes_[2].get();
+}
+
 }  // namespace rover_autonomy

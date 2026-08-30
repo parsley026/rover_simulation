@@ -15,6 +15,18 @@
         </joint>
 
         <link name="${camera_name}_link">
+            <visual>
+                <origin xyz="0.00 -0.048 0.02" rpy="1.5708 0 1.5708"/>
+                <geometry>
+                    <mesh filename="package://rover_autonomy/mesh/oak_d_pro_w_poe.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.03 0.10 0.03"/>
+                </geometry>
+            </collision>
         </link>
 
         <link name="${camera_name}_model_origin" />

@@ -28,6 +28,7 @@ public:
   virtual SubsystemState get_state() const = 0;
   virtual bool is_healthy() const = 0;
   virtual bool is_enabled() const = 0;
+  virtual void set_enabled(bool enabled) = 0;
   
   virtual bool recover() = 0;
 };

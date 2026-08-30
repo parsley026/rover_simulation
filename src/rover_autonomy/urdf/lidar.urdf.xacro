@@ -15,6 +15,18 @@
         </joint>
 
         <link name="${lidar_name}_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://rover_autonomy/mesh/ouster_os1.dae" scale="1.0 1.0 1.0"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.03 0.10 0.03"/>
+                </geometry>
+            </collision>
         </link>
 
         <link name="${lidar_name}_model_origin" />

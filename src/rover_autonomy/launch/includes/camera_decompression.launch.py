@@ -13,10 +13,13 @@ def launch_setup(context, *args, **kwargs):
             executable="republish",
             name="rgb_republish",
             namespace="",
-            arguments=['compressed', 'raw'],
+            parameters=[{
+                'in_transport': 'compressed',
+                'out_transport': 'raw'
+            }],
             remappings=[
                 ("in/compressed", f"/{camera_ns}/rgb/image_raw/compressed"),
-                ("out", f"/{camera_ns}/rgb/image_raw/uncompressed")
+                ("out", f"/{camera_ns}/rgb/image_raw")
             ],
             condition=IfCondition(LaunchConfiguration('decompress_rgb'))
         ),
@@ -25,10 +28,13 @@ def launch_setup(context, *args, **kwargs):
             executable="republish",
             name="stereo_republish",
             namespace="",
-            arguments=['compressed', 'raw'],
+            parameters=[{
+                'in_transport': 'compressedDepth',
+                'out_transport': 'raw'
+            }],
             remappings=[
-                ("in/compressed", f"/{camera_ns}/stereo/image_raw/compressed"),
-                ("out", f"/{camera_ns}/stereo/image_raw/uncompressed")
+                ("in/compressedDepth", f"/{camera_ns}/stereo/image_raw/compressedDepth"),
+                ("out", f"/{camera_ns}/stereo/image_raw")
             ],
             condition=IfCondition(LaunchConfiguration('decompress_depth'))
         ),

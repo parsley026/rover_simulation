@@ -24,6 +24,7 @@
   <exec_depend>ros2launch</exec_depend>
   
   <depend>tf2_msgs</depend>
+  <depend>std_srvs</depend>
 
   <!-- Python launch support -->
   <exec_depend>launch</exec_depend>

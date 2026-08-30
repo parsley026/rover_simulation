@@ -7,8 +7,10 @@ from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 def launch_setup(context, *args, **kwargs):
-    urdf_package = LaunchConfiguration('urdf_package').perform(context)
-    urdf_file    = LaunchConfiguration('urdf_file')   .perform(context)
+    urdf_package   = LaunchConfiguration('urdf_package').perform(context)
+    urdf_file      = LaunchConfiguration('urdf_file').perform(context)
+    
+    description_ns = LaunchConfiguration('description_ns')
 
     use_sim_time = ParameterValue(
         LaunchConfiguration('use_sim_time'),
@@ -34,18 +36,26 @@ def launch_setup(context, *args, **kwargs):
     return [
         Node(
             name='mount_state_publisher',
-            namespace='',
+            namespace=description_ns,     # 2. Replaced the duplicate namespace kwargs
             package="robot_state_publisher",
             executable="robot_state_publisher",
             parameters=[mount_description, {'use_sim_time': use_sim_time}],
+            remappings=[
+                ('tf', '/tf'),
+                ('tf_static', '/tf_static')
+            ],
             condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
         ),
         Node(
             name='mount_joint_state_publisher',
-            namespace='',
+            namespace=description_ns,     # 3. Replaced the duplicate namespace kwargs
             package='joint_state_publisher',
             executable='joint_state_publisher',
             parameters=[mount_description, {'use_sim_time': use_sim_time}],
+            remappings=[
+                ('tf', '/tf'),
+                ('tf_static', '/tf_static')
+            ],
             condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
         ),
     ]
@@ -54,6 +64,8 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('urdf_package', default_value='rover_autonomy'),
         DeclareLaunchArgument('urdf_file',    default_value='sensor_mounts.urdf.xacro'),
+
+        DeclareLaunchArgument('description_ns',   default_value='autonomy_submodule', description=''),
 
         DeclareLaunchArgument('use_sim_time', default_value='false', description=''),
         OpaqueFunction(function=launch_setup)

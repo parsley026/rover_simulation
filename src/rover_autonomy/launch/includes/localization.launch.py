@@ -24,12 +24,13 @@ def launch_setup(context, *args, **kwargs):
             namespace='localization',
             output='screen',
             parameters=[ekf_config_path, {'use_sim_time': use_sim_time}],
+            arguments=['--ros-args', '--log-level', 'warn'],
         ),
     ]
 
 def generate_launch_description():
     pkg_share = FindPackageShare('rover_autonomy')
-    default_params_file = PathJoinSubstitution([pkg_share, 'config', 'localization', 'ukf_filter.yaml'])
+    default_params_file = PathJoinSubstitution([pkg_share, 'config', 'odometry', 'ekf_filter.yaml'])
 
     return LaunchDescription([
         DeclareLaunchArgument('params_file', default_value=default_params_file, description=''),

@@ -31,6 +31,7 @@ public:
   SubsystemState get_state() const override;
   bool is_healthy() const override = 0;
   bool is_enabled() const override;
+  void set_enabled(bool enabled) override;
 
   bool recover() override = 0;
 

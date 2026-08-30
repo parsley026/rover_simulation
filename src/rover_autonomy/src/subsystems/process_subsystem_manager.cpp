@@ -29,6 +29,11 @@ bool ProcessSubsystemManager::is_enabled() const
   return enabled_;
 }
 
+void ProcessSubsystemManager::set_enabled(bool enabled)
+{
+  enabled_ = enabled;
+}
+
 ProcessSubsystemManager::~ProcessSubsystemManager()
 {
   if (current_state_ == SubsystemState::ACTIVE) {

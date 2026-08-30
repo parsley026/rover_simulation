@@ -54,6 +54,9 @@ bool CompositeSubsystemManager::on_cleanup()
 
 SubsystemState CompositeSubsystemManager::get_state() const
 {
+  if (!is_enabled()) {
+    return SubsystemState::INACTIVE;
+  }
   for (const auto & child : child_processes_) {
     if (child->is_enabled() && child->get_state() != SubsystemState::ACTIVE) {
       return SubsystemState::INACTIVE;
@@ -80,6 +83,13 @@ bool CompositeSubsystemManager::is_enabled() const
     }
   }
   return false;
+}
+
+void CompositeSubsystemManager::set_enabled(bool enabled)
+{
+  for (auto & child : child_processes_) {
+    child->set_enabled(enabled);
+  }
 }
 
 bool CompositeSubsystemManager::recover()

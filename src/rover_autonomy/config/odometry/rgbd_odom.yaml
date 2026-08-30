@@ -1,15 +1,31 @@
 /**:
   ros__parameters:
-    subscribe_rgbd: true
     frame_id: base_link
     odom_frame_id: odom
-    publish_tf: false
+    publish_tf: false 
+    
+    qos: 1
+    qos_image: 2
+    qos_camera_info: 2
+    use_sim_time: false
+
+    subscribe_rgbd: true
+
     approx_sync: true
     approx_sync_max_interval: 0.01
     publish_null_when_lost: false
     Odom/ResetCountdown: "1"
     wait_imu_to_init: false
-    qos: 1
-    qos_image: 2
-    qos_camera_info: 2
-    use_sim_time: false
+
+    # --- PERFORMANCE OPTIMIZATIONS ---
+    # 2 = Processes the image at half resolution. Massive CPU savings.
+    Odom/ImageDecimation: "2"       
+    
+    # 1 = 2D->3D Perspective-n-Point. Significantly faster than 3D->3D estimation.
+    Vis/EstimationType: "1"         
+    
+    # 6 = GFTT/BRIEF. One of the fastest CPU-based feature extractors available.
+    Vis/FeatureType: "6"            
+    
+    # Caps the maximum features tracked so looking at a highly textured wall doesn't stall the CPU.
+    Vis/MaxFeatures: "800"

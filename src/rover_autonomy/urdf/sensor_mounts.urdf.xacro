@@ -14,7 +14,7 @@
   <joint name="sensor_mount_00_joint" type="fixed">
     <parent link="mount_link"/>
     <child link="sensor_mount_00_link"/>
-    <origin xyz="-0.12 0.0 0.22" rpy="0 0 3.14159265359"/>
+    <origin xyz="-0.12 0.0 0.22" rpy="0 -0.3490659 0"/>
   </joint>
 
   <link name="sensor_mount_01_link"/>
@@ -24,12 +24,12 @@
     <origin xyz="-0.12 0.0 0.12" rpy="0 0 3.14159265359"/>
   </joint>
 
-  <link name="sensor_mount_02_link"/>
+  <!-- <link name="sensor_mount_02_link"/>
   <joint name="sensor_mount_02_joint" type="fixed">
     <parent link="mount_link"/>
     <child link="sensor_mount_02_link"/>
     <origin xyz="-0.05 0.0 0.3" rpy="0 0 0"/>
-  </joint>
+  </joint> -->
 
   <!-- <link name="sensor_mount_03_link"/>
   <joint name="sensor_mount_03_joint" type="fixed">

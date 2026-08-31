@@ -1,0 +1,25 @@
+/**:
+  ros__parameters:
+    # ICP runs at a lower rate than RGBD
+    expected_hz:                  10.0
+    timeout_sec:                  1.0
+
+    # Kinematic limits for a rover (m/s, rad/s)
+    max_lin_vel:                  5.0
+    max_ang_vel:                  3.0
+
+    # Maximum allowed pose covariance trace before the stream is considered unhealthy
+    max_cov_trace:                10.0
+
+    # Maximum single-frame jump distance (meters) — teleport detection
+    # LiDAR ICP is more globally consistent, so tighter threshold than RGBD
+    max_jump_dist:                1.5
+
+    # Fewer consecutive rejections before reset — LiDAR failures are harder
+    max_consecutive_rejections:   10
+
+    # LiDAR maintains a global map so a full pose reset is required to anchor
+    # the ICP estimator back to the UKF's last known good position
+    reset_mode:                   "pose"
+    reset_cooldown_sec:           2.0
+    reset_service_name:           "reset_odom_to_pose"

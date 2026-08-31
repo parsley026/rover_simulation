@@ -1,0 +1,24 @@
+/**:
+  ros__parameters:
+    use_sim_time: false
+    frequency: 15.0
+    sensor_timeout: 0.5
+    two_d_mode: false               
+    
+    # Set to false by default so it doesn't fight with EKF over the odom->base_link TF tree
+    # If running UKF standalone (without EKF), you should change this to true.
+    publish_tf: false               
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link  
+    world_frame: odom
+
+    # UKF specific parameters
+    alpha: 0.001
+    kappa: 0.0
+    beta: 2.0
+
+    # Sensor routing (odomX, imuX, and their _config arrays) are now 
+    # dynamically injected at launch time by localization.launch.py 
+    # based on the selected localization_mode integer.

@@ -7,18 +7,21 @@ from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 def launch_setup(context, *args, **kwargs):
-    ekf_config_path = LaunchConfiguration('params_file').perform(context)
-
     use_sim_time = ParameterValue(
         LaunchConfiguration('use_sim_time'),
         value_type=bool
     )
+    
+    use_ekf = LaunchConfiguration('use_ekf').perform(context).lower() == 'true'
+    use_ukf = LaunchConfiguration('use_ukf').perform(context).lower() == 'true'
+    ekf_config_path = LaunchConfiguration('ekf_params_file').perform(context)
+    ukf_config_path = LaunchConfiguration('ukf_params_file').perform(context)
 
     localization_ns = LaunchConfiguration('localization_ns').perform(context)
     localization_mode = int(LaunchConfiguration('localization_mode').perform(context))
     lidar_ns = LaunchConfiguration('lidar_ns').perform(context)
-    cam0_ns = LaunchConfiguration('camera_primary_ns').perform(context)
-    cam1_ns = LaunchConfiguration('camera_secondary_ns').perform(context)
+    cam0_ns = LaunchConfiguration('camera_00_ns').perform(context)
+    cam1_ns = LaunchConfiguration('camera_01_ns').perform(context)
 
     # Config for the primary absolute reference (Pose: x, y, z, r, p, y)
     odom_pose_config = [True,  True,  True,
@@ -85,8 +88,10 @@ def launch_setup(context, *args, **kwargs):
             if f"{base_name}_differential" not in mode_params:
                 mode_params[f"{base_name}_differential"] = False
 
-    return [
-        Node(
+    nodes = []
+
+    if use_ekf:
+        nodes.append(Node(
             package='robot_localization',
             executable='ekf_node',
             name='ekf_filter_node',
@@ -98,20 +103,40 @@ def launch_setup(context, *args, **kwargs):
                 mode_params
             ],
             arguments=['--ros-args', '--log-level', 'warn'],
-        ),
-    ]
+        ))
+
+    if use_ukf:
+        nodes.append(Node(
+            package='robot_localization',
+            executable='ukf_node',
+            name='ukf_filter_node',
+            namespace=localization_ns,
+            output='screen',
+            parameters=[
+                ukf_config_path, 
+                {'use_sim_time': use_sim_time}, 
+                mode_params
+            ],
+            arguments=['--ros-args', '--log-level', 'warn'],
+            remappings=[('odometry/filtered', 'odometry/filtered_ukf')]
+        ))
+
+    return nodes
 
 def generate_launch_description():
     pkg_share = FindPackageShare('rover_autonomy')
     default_params_file = PathJoinSubstitution([pkg_share, 'config', 'odometry', 'ekf_filter.yaml'])
 
     return LaunchDescription([
-        DeclareLaunchArgument('params_file',       default_value=default_params_file, description=''),
         DeclareLaunchArgument('use_sim_time',      default_value='false',             description=''),
+        DeclareLaunchArgument('use_ekf',           default_value='true',              description='Run EKF'),
+        DeclareLaunchArgument('use_ukf',           default_value='false',             description='Run UKF'),
+        DeclareLaunchArgument('ekf_params_file',   default_value='',                  description='Path to EKF config'),
+        DeclareLaunchArgument('ukf_params_file',   default_value='',                  description='Path to UKF config'),
         DeclareLaunchArgument('localization_ns',   default_value='localization',      description='Localization node namespace'),
         DeclareLaunchArgument('localization_mode', default_value='1',                 description='Localization Mode (1-5)'),
-        DeclareLaunchArgument('camera_primary_ns', default_value='camera_00',         description='Primary camera sensor namespace'),
-        DeclareLaunchArgument('camera_secondary_ns',default_value='camera_01',        description='Secondary camera sensor namespace'),
+        DeclareLaunchArgument('camera_00_ns', default_value='camera_00', description='Primary camera sensor namespace'),
+        DeclareLaunchArgument('camera_01_ns', default_value='camera_01', description='Secondary camera sensor namespace'),
         DeclareLaunchArgument('lidar_ns',          default_value='lidar_00',          description='Lidar sensor namespace'),
         OpaqueFunction(function=launch_setup)
     ])

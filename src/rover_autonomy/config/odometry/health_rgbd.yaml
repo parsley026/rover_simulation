@@ -1,0 +1,25 @@
+/**:
+  ros__parameters:
+    # Expected rate of the RGBD odometry stream
+    expected_hz:                  30.0
+    timeout_sec:                  0.5
+
+    # Kinematic limits for a rover (m/s, rad/s)
+    max_lin_vel:                  5.0
+    max_ang_vel:                  3.0
+
+    # Maximum allowed pose covariance trace before the stream is considered unhealthy
+    max_cov_trace:                10.0
+
+    # Maximum single-frame jump distance (meters) — teleport detection
+    # RGBD cameras can drift more than LiDAR, so a slightly looser threshold
+    max_jump_dist:                2.0
+
+    # Consecutive rejections before triggering an active reset
+    max_consecutive_rejections:   15
+
+    # Cameras operate in differential/velocity mode so a simple internal twist
+    # reset is sufficient — no global pose correction needed
+    reset_mode:                   "twist"
+    reset_cooldown_sec:           2.0
+    reset_service_name:           "reset_odom"

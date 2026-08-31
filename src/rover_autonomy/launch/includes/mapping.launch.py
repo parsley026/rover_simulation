@@ -46,8 +46,8 @@ def launch_setup(context, *args, **kwargs):
     ]
 
     mapping_mode = int(LaunchConfiguration('mapping_mode').perform(context))
-    camera_primary_ns = LaunchConfiguration('camera_primary_ns').perform(context)
-    camera_secondary_ns = LaunchConfiguration('camera_secondary_ns').perform(context)
+    camera_00_ns = LaunchConfiguration('camera_00_ns').perform(context)
+    camera_01_ns = LaunchConfiguration('camera_01_ns').perform(context)
     lidar_ns = LaunchConfiguration('lidar_ns').perform(context)
     localization_ns = LaunchConfiguration('localization_ns').perform(context)
 
@@ -64,8 +64,8 @@ def launch_setup(context, *args, **kwargs):
             'Reg/Strategy': '2' # Visual + ICP
         }
         slam_remappings.extend([
-            ("rgbd_image0", f"/{camera_primary_ns}/rgbd_image"),
-            ("rgbd_image1", f"/{camera_secondary_ns}/rgbd_image"),
+            ("rgbd_image0", f"/{camera_00_ns}/rgbd_image"),
+            ("rgbd_image1", f"/{camera_01_ns}/rgbd_image"),
             ("scan_cloud", f"/{lidar_ns}/points")
         ])
     elif mapping_mode == 2:
@@ -76,7 +76,7 @@ def launch_setup(context, *args, **kwargs):
             'Reg/Strategy': '2' # Visual + ICP
         }
         slam_remappings.extend([
-            ("rgbd_image", f"/{camera_primary_ns}/rgbd_image"),
+            ("rgbd_image", f"/{camera_00_ns}/rgbd_image"),
             ("scan_cloud", f"/{lidar_ns}/points")
         ])
     elif mapping_mode == 3:
@@ -98,8 +98,8 @@ def launch_setup(context, *args, **kwargs):
             'Reg/Strategy': '0' # Visual
         }
         slam_remappings.extend([
-            ("rgbd_image0", f"/{camera_primary_ns}/rgbd_image"),
-            ("rgbd_image1", f"/{camera_secondary_ns}/rgbd_image")
+            ("rgbd_image0", f"/{camera_00_ns}/rgbd_image"),
+            ("rgbd_image1", f"/{camera_01_ns}/rgbd_image")
         ])
     elif mapping_mode == 5:
         # Vision-Only Single Camera Mode
@@ -110,7 +110,7 @@ def launch_setup(context, *args, **kwargs):
             'Reg/Strategy': '0' # Visual
         }
         slam_remappings.extend([
-            ("rgbd_image", f"/{camera_primary_ns}/rgbd_image")
+            ("rgbd_image", f"/{camera_00_ns}/rgbd_image")
         ])
 
     rtabmap_parameters.append(mode_params)
@@ -141,8 +141,8 @@ def generate_launch_description():
         DeclareLaunchArgument('use_sim_time',      default_value='false',        description=''),
         DeclareLaunchArgument('namespace',          default_value='mapping',      description='Namespace for mapping'),
         DeclareLaunchArgument('mapping_mode',       default_value='2',            description='SLAM Mode (1-5)'),
-        DeclareLaunchArgument('camera_primary_ns',  default_value='camera_00',    description='Primary camera sensor namespace'),
-        DeclareLaunchArgument('camera_secondary_ns',default_value='camera_01',    description='Secondary camera sensor namespace'),
+        DeclareLaunchArgument('camera_00_ns',  default_value='camera_00',    description='Primary camera sensor namespace'),
+        DeclareLaunchArgument('camera_01_ns',default_value='camera_01',    description='Secondary camera sensor namespace'),
         DeclareLaunchArgument('lidar_ns',           default_value='lidar_00',     description='Lidar sensor namespace'),
         DeclareLaunchArgument('localization_ns',    default_value='localization', description='Localization namespace'),
 

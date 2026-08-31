@@ -2,6 +2,8 @@
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
+from std_srvs.srv import Empty
+from rtabmap_msgs.srv import ResetPose
 from dataclasses import dataclass
 import time
 import math
@@ -25,6 +27,7 @@ class MockHealthPublisher(Node):
         # State-based variables
         self.start_time = time.time()
         self.current_scenario = "UNKNOWN"
+        self.teleport_applied = False
         
         # Odometry State (SoC: separate physical state from ROS config)
         self.state_x = 0.0
@@ -34,6 +37,12 @@ class MockHealthPublisher(Node):
         # ROS 2 Interfaces
         self.odom_pub = self.create_publisher(
             Odometry, f'/{self.config.namespace}/odom_raw', 10)
+            
+        self.reset_twist_srv = self.create_service(
+            Empty, f'/{self.config.namespace}/reset_odom', self.reset_twist_callback)
+            
+        self.reset_pose_srv = self.create_service(
+            ResetPose, '/reset_odom_to_pose', self.reset_pose_callback)
             
         self.timer = self.create_timer(
             1.0 / self.config.pub_hz, self.timer_callback)
@@ -69,9 +78,30 @@ class MockHealthPublisher(Node):
             
         # State-based Throttling (Log only on transitions)
         if new_scenario != self.current_scenario:
-            if new_scenario != "ODOM_TELEPORT_APPLIED":
-                self.get_logger().info(f"--- MOCK INJECTING SCENARIO: {new_scenario} ---")
+            if new_scenario == "ODOM_TELEPORT":
+                self.teleport_applied = False
+            self.get_logger().info(f"--- MOCK INJECTING SCENARIO: {new_scenario} ---")
             self.current_scenario = new_scenario
+
+    # ==========================================
+    # SERVICE CALLBACKS
+    # ==========================================
+    def reset_twist_callback(self, request, response):
+        self.get_logger().info("MOCK: Received reset_odom (twist) request. Resetting to 0,0,0.")
+        # Real RTAB-Map twist reset zeroes out the local map
+        self.state_x = 0.0
+        self.state_y = 0.0
+        self.state_z = 0.0
+        return response
+        
+    def reset_pose_callback(self, request, response):
+        self.get_logger().info(f"MOCK: Received reset_odom_to_pose request: x={request.x:.2f}, y={request.y:.2f}, z={request.z:.2f}")
+        # ACTUALLY HEAL THE MOCK STATE!
+        # Accept the C++ node's safe historical pose so the jump distance returns to 0
+        self.state_x = request.x
+        self.state_y = request.y
+        self.state_z = request.z
+        return response
 
     # ==========================================
     # MESSAGE GENERATION (SRP)
@@ -95,8 +125,9 @@ class MockHealthPublisher(Node):
         if self.current_scenario == "ODOM_NAN":
             msg.pose.covariance[0] = float('nan')
         elif self.current_scenario == "ODOM_TELEPORT":
-            self.state_x += self.config.teleport_jump
-            self.current_scenario = "ODOM_TELEPORT_APPLIED" # Prevent continuous teleportation
+            if not self.teleport_applied:
+                self.state_x += self.config.teleport_jump
+                self.teleport_applied = True
         elif self.current_scenario == "ODOM_VELOCITY_SPIKE":
             vel_x = self.config.spike_vel_x
             

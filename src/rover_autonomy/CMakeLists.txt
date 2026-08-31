@@ -16,6 +16,9 @@ find_package(tf2_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
+find_package(rtabmap_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
 # ── Shared component library ──────────────────────────────────────────────────
 add_library(main_compute_component SHARED
@@ -85,7 +88,7 @@ target_include_directories(odometry_health_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-ament_target_dependencies(odometry_health_node rclcpp nav_msgs diagnostic_msgs)
+ament_target_dependencies(odometry_health_node rclcpp nav_msgs diagnostic_msgs rtabmap_msgs geometry_msgs std_srvs tf2)
 
 install(TARGETS odometry_health_node
   DESTINATION lib/${PROJECT_NAME}

@@ -1,6 +1,10 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <std_srvs/srv/empty.hpp>
+#include <rtabmap_msgs/srv/reset_pose.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 #include "rover_autonomy/utils/stream_health_monitor.hpp"
 
 #include <cmath>
@@ -19,11 +23,18 @@ public:
 
     // ROS 2 Interfaces
     odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      "odom_raw", rclcpp::SensorDataQoS(),
+      "odom_raw", rclcpp::SystemDefaultsQoS(),
       std::bind(&OdometryHealthNode::odom_callback, this, std::placeholders::_1));
 
     safe_odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
     diag_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+    
+    if (config_.reset_mode == "twist") {
+      reset_twist_client_ = this->create_client<std_srvs::srv::Empty>(config_.reset_service_name);
+    } else if (config_.reset_mode == "pose") {
+      reset_pose_client_ = this->create_client<rtabmap_msgs::srv::ResetPose>(config_.reset_service_name);
+    }
+    last_reset_time_ = this->now();
   }
 
 private:
@@ -38,6 +49,9 @@ private:
     double max_cov_trace;
     double max_jump_dist;
     int max_consecutive_rejections;
+    std::string reset_mode;
+    double reset_cooldown_sec;
+    std::string reset_service_name;
   } config_;
 
   enum class HealthState { UNKNOWN, OK, WARN, ERROR };
@@ -52,6 +66,10 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr safe_odom_pub_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diag_pub_;
 
+  rclcpp::Client<std_srvs::srv::Empty>::SharedPtr reset_twist_client_;
+  rclcpp::Client<rtabmap_msgs::srv::ResetPose>::SharedPtr reset_pose_client_;
+  rclcpp::Time last_reset_time_;
+
   // ==========================================
   // INITIALIZATION
   // ==========================================
@@ -63,6 +81,9 @@ private:
     this->declare_parameter("max_cov_trace", 10.0);
     this->declare_parameter("max_consecutive_rejections", 15);
     this->declare_parameter("max_jump_dist", 1.5);
+    this->declare_parameter("reset_mode", "twist");
+    this->declare_parameter("reset_cooldown_sec", 2.0);
+    this->declare_parameter("reset_service_name", "/camera_00/reset_odom");
 
     config_.expected_hz = this->get_parameter("expected_hz").as_double();
     config_.timeout_sec = this->get_parameter("timeout_sec").as_double();
@@ -71,6 +92,9 @@ private:
     config_.max_cov_trace = this->get_parameter("max_cov_trace").as_double();
     config_.max_jump_dist = this->get_parameter("max_jump_dist").as_double();
     config_.max_consecutive_rejections = this->get_parameter("max_consecutive_rejections").as_int();
+    config_.reset_mode = this->get_parameter("reset_mode").as_string();
+    config_.reset_cooldown_sec = this->get_parameter("reset_cooldown_sec").as_double();
+    config_.reset_service_name = this->get_parameter("reset_service_name").as_string();
   }
 
   // ==========================================
@@ -122,9 +146,59 @@ private:
 
   void handle_rejection() {
     consecutive_rejections_++;
+    
     if (consecutive_rejections_ > config_.max_consecutive_rejections) {
-      update_diagnostics(HealthState::ERROR, "Odometry mathematically insane. Fallback required.", 
+      update_diagnostics(HealthState::ERROR, "Odometry mathematically insane. Auto-resetting...", 
                          diagnostic_msgs::msg::DiagnosticStatus::ERROR);
+                         
+      if ((this->now() - last_reset_time_).seconds() > config_.reset_cooldown_sec) {
+        
+        if (config_.reset_mode == "twist") {
+          // --- CAMERA RECOVERY (Twist) ---
+          if (reset_twist_client_->service_is_ready()) {
+            auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+            reset_twist_client_->async_send_request(request);
+            RCLCPP_WARN(this->get_logger(), "Sent twist reset to %s", config_.reset_service_name.c_str());
+          } else {
+            RCLCPP_ERROR(this->get_logger(), "Reset service %s not available!", config_.reset_service_name.c_str());
+          }
+          
+        } else if (config_.reset_mode == "pose") {
+          // --- LIDAR RECOVERY (Pose) ---
+          if (!has_last_pose_) {
+            RCLCPP_ERROR(this->get_logger(), "Cannot reset pose: No valid historical pose exists yet!");
+            return; // Abort reset to protect the UKF
+          }
+          
+          if (reset_pose_client_->service_is_ready()) {
+            auto request = std::make_shared<rtabmap_msgs::srv::ResetPose::Request>();
+            request->x = last_pose_.position.x;
+            request->y = last_pose_.position.y;
+            request->z = last_pose_.position.z;
+            
+            tf2::Quaternion q(
+                last_pose_.orientation.x,
+                last_pose_.orientation.y,
+                last_pose_.orientation.z,
+                last_pose_.orientation.w);
+            tf2::Matrix3x3 m(q);
+            double roll, pitch, yaw;
+            m.getRPY(roll, pitch, yaw);
+            
+            request->roll = roll;
+            request->pitch = pitch;
+            request->yaw = yaw;
+
+            reset_pose_client_->async_send_request(request);
+            RCLCPP_WARN(this->get_logger(), "Sent pose reset to %s", config_.reset_service_name.c_str());
+          } else {
+            RCLCPP_ERROR(this->get_logger(), "Reset service %s not available!", config_.reset_service_name.c_str());
+          }
+        }
+
+        last_reset_time_ = this->now();
+        consecutive_rejections_ = 0; // Reset counter to give sensor time to boot
+      }
     }
   }
 

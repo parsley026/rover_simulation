@@ -7,3 +7,7 @@
     max_cov_trace: 10.0
     max_consecutive_rejections: 15
     max_jump_dist: 1.5
+    
+    reset_mode: "pose"
+    reset_cooldown_sec: 2.0
+    reset_service_name: "/reset_odom_to_pose"

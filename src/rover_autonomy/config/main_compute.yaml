@@ -12,9 +12,6 @@ main_compute:
     launch_camera_00_post_processing: true
 
     launch_lidar_00: true
-
-    launch_camera_00_odom: true
-    launch_lidar_00_odom: true
     
     launch_localization: true
 
@@ -27,48 +24,77 @@ main_compute:
     # -- subsystem config files
     camera_00_config: "config/camera/camera.yaml"
     lidar_00_config: "config/lidar/lidar.yaml"
-    camera_00_odom_config: "config/odometry/rgbd_odom.yaml"
-    lidar_00_odom_config: "config/odometry/icp_odom.yaml"
-    ekf_config:           "config/odometry/ekf_filter.yaml"
+    
     mapping_config: "config/mapping/mapping.yaml"
     navigation_config: "config/navigation/navigation.yaml"
 
-    # -- camera subsystem identifiers
-    camera_package:      "rover_autonomy"
-    camera_driver_launch:          "camera_driver.launch.py"
-    camera_decompression_launch:   "camera_decompression.launch.py"
-    camera_post_processing_launch: "camera_post_processing.launch.py"
-    camera_primary_ns:   "camera_00"
-    camera_name:         "camera_00"
-    camera_parent_frame: "sensor_mount_01_link"
+    # -- camera 00 subsystem identifiers
+    camera_00_package:      "rover_autonomy"
+    camera_00_driver_launch:          "camera_driver.launch.py"
+    camera_00_decompression_launch:   "camera_decompression.launch.py"
+    camera_00_post_processing_launch: "camera_post_processing.launch.py"
+    camera_00_ns:           "camera_00"
+    camera_00_name:         "camera_00"
+    camera_00_parent_frame: "sensor_mount_01_link"
 
-    camera_decompress_rgb: true
-    camera_decompress_depth: false
+    camera_00_decompress_rgb: true
+    camera_00_decompress_depth: false
 
-    camera_secondary_ns: "camera_01"
+    # -- camera 01 subsystem identifiers
+    camera_01_ns:           "camera_01"
+    camera_01_name:         "camera_01"
+    camera_01_parent_frame: "sensor_mount_02_link"
 
     # -- lidar subsystem identifiers
-    lidar_package:           "rover_autonomy"
+    lidar_package:          "rover_autonomy"
     lidar_driver_launch:        "lidar_driver.launch.py"
     # lidar_decompression_launch: "lidar_decompression.launch.py"
     # lidar_processing_launch:    "lidar_processing.launch.py"
-    lidar_ns:                "lidar_00"
-    lidar_name:              "lidar_00"
-    lidar_parent_frame:      "sensor_mount_00_link"
+    lidar_ns:               "lidar_00"
+    lidar_name:             "lidar_00"
+    lidar_parent_frame:     "sensor_mount_00_link"
 
-    # -- odometry subsystem identifiers
-    camera_odom_package: "rover_autonomy"
-    camera_odom_launch:  "rgbd_odometry.launch.py"
-    camera_odom_ns:      "camera_00"
+    # camera_00 odometry
+    launch_camera_00_odom: true
+    camera_00_odom_package: "rover_autonomy"
+    camera_00_odom_launch:  "rgbd_odometry.launch.py"
+    camera_00_odom_ns:      "camera_00"
+    camera_00_odom_config:  "config/odometry/rgbd_odom.yaml"
 
-    lidar_odom_package:  "rover_autonomy"
-    lidar_odom_launch:   "icp_odometry.launch.py"
-    lidar_odom_ns:       "lidar_00"
+    # camera_01 odometry
+    launch_camera_01_odom: false
+    camera_01_odom_package: "rover_autonomy"
+    camera_01_odom_launch:  "rgbd_odometry.launch.py"
+    camera_01_odom_ns:      "camera_01"
+    camera_01_odom_config:  "config/odometry/rgbd_odom.yaml"
+
+    # lidar_00 odometry
+    launch_lidar_00_odom: true
+    lidar_odom_package:   "rover_autonomy"
+    lidar_odom_launch:    "icp_odometry.launch.py"
+    lidar_odom_ns:        "lidar_00"
+    lidar_00_odom_config: "config/odometry/icp_odom.yaml"
+
+    # -- odometry health watchdog toggles (all disabled by default)
+    launch_camera_00_odom_health: false
+    launch_camera_01_odom_health: false
+    launch_lidar_00_odom_health:  false
+
+    # -- health node config files (relative to package share)
+    camera_00_odom_health_config: "config/odometry/health_rgbd.yaml"
+    camera_01_odom_health_config: "config/odometry/health_rgbd.yaml"
+    lidar_00_odom_health_config:  "config/odometry/health_icp.yaml"
 
     localization_package: "rover_autonomy"
     localization_launch:  "localization.launch.py"
     localization_ns:      "localization"
     localization_mode:    2
+    
+    localization_use_ekf: true
+    ekf_config:           "config/odometry/ekf_filter.yaml"
+    
+    localization_use_ukf: false
+    ukf_config:           "config/odometry/ukf_filter.yaml"
 
     mapping_package:      "rover_autonomy"
     mapping_launch:       "mapping.launch.py"

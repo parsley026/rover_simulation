@@ -31,8 +31,12 @@ struct CameraConfig {
 
 // Typed contract handed from COO to Odometry composite subsystem.
 struct OdometryConfig {
-  SubsystemConfig camera_odom;
-  SubsystemConfig lidar_odom;
+  SubsystemConfig camera_odom;           // camera_00 rtabmap_odom
+  SubsystemConfig camera_odom_health;    // camera_00 health watchdog (optional)
+  SubsystemConfig camera_01_odom;        // camera_01 rtabmap_odom    (was unmanaged)
+  SubsystemConfig camera_01_odom_health; // camera_01 health watchdog (optional)
+  SubsystemConfig lidar_odom;            // lidar_00  rtabmap_odom
+  SubsystemConfig lidar_odom_health;     // lidar_00  health watchdog (optional)
   SubsystemConfig localization;
 };
 

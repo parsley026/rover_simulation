@@ -78,6 +78,21 @@ MainComputeNode::on_configure(const rclcpp_lifecycle::State &)
     }
   }
 
+  // Warn if Full Fusion mode is active but camera_01 odometry is not launched.
+  // The EKF will subscribe to a dead /camera_01/odom topic and coast on other sensors.
+  int loc_mode = 1;
+  if (has_parameter("localization_mode")) {
+    loc_mode = get_parameter("localization_mode").as_int();
+  }
+  bool cam01_odom_enabled = has_parameter("launch_camera_01_odom") &&
+                            get_parameter("launch_camera_01_odom").as_bool();
+  if (loc_mode == 1 && !cam01_odom_enabled) {
+    RCLCPP_WARN(get_logger(),
+      "localization_mode=1 (Full Fusion) is set but launch_camera_01_odom=false. "
+      "The EKF will subscribe to /camera_01/odom but no publisher will exist. "
+      "Set launch_camera_01_odom: true in main_compute.yaml or switch to a different mode.");
+  }
+
   navigation_service_ = this->create_service<std_srvs::srv::SetBool>(
     "~/set_navigation",
     std::bind(&MainComputeNode::on_set_navigation, this, std::placeholders::_1, std::placeholders::_2)

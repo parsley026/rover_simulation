@@ -181,4 +181,24 @@ OdometrySubsystemManager::OdometrySubsystemManager(
     config.localization.launch_enabled         ? "enabled" : "disabled");
 }
 
+SubsystemManager* OdometrySubsystemManager::get_camera_00_odom_subsystem()
+{
+  return child_processes_[0].get();
+}
+
+SubsystemManager* OdometrySubsystemManager::get_camera_01_odom_subsystem()
+{
+  return child_processes_[2].get();
+}
+
+SubsystemManager* OdometrySubsystemManager::get_lidar_00_odom_subsystem()
+{
+  return child_processes_[4].get();
+}
+
+SubsystemManager* OdometrySubsystemManager::get_localization_subsystem()
+{
+  return child_processes_[6].get();
+}
+
 }  // namespace rover_autonomy

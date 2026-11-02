@@ -27,8 +27,6 @@ import launch
 import lifecycle_msgs.msg
 
 def launch_setup(context, *args, **kwargs):
-    urdf_package = LaunchConfiguration('urdf_package').perform(context)
-    urdf_file    = LaunchConfiguration('urdf_file')   .perform(context)
 
     lidar_ns   = LaunchConfiguration('lidar_ns').perform(context)
     lidar_name = LaunchConfiguration('lidar_name').perform(context)
@@ -40,37 +38,6 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time = ParameterValue(
         LaunchConfiguration('use_sim_time'),
         value_type=bool
-    )
-
-    lidar_description = {
-        'robot_description': ParameterValue(
-            Command([
-                FindExecutable(name='xacro'),
-                ' "',
-                PathJoinSubstitution([
-                    FindPackageShare(urdf_package),
-                    'urdf',
-                    urdf_file
-                ]),
-                '"',
-                f" lidar_name:={lidar_name}",
-                f" parent_frame:={lidar_parent_frame}",
-            ]),
-            value_type=str
-        )
-    }
-
-    description_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name=f"{lidar_name}_state_publisher",
-        namespace=lidar_ns,
-        parameters=[lidar_description],
-        remappings=[
-            ('tf', '/tf'),
-            ('tf_static', '/tf_static')
-        ],
-        condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
     )
 
     ouster_node = LifecycleNode(
@@ -127,13 +94,11 @@ def launch_setup(context, *args, **kwargs):
         condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
     )
     
-    return [description_node, ouster_node, sensor_configure_event, sensor_activate_event, sensor_finalized_event]
+    return [ouster_node, sensor_configure_event, sensor_activate_event, sensor_finalized_event]
 
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('urdf_package', default_value='rover_autonomy',   description=''),
-        DeclareLaunchArgument('urdf_file',    default_value='lidar.urdf.xacro', description=''),
         
         DeclareLaunchArgument('lidar_ns',   default_value='lidar_00', description=''),
         DeclareLaunchArgument('lidar_name', default_value='lidar_00', description=''),

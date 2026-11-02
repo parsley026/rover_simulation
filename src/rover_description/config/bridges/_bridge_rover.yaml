@@ -1,0 +1,70 @@
+# 4WS
+- ros_topic_name: "/steer/rear_right/cmd_pos"
+  gz_topic_name: "/model/rover/joint/steer_rear_right_joint/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/steer/rear_left/cmd_pos"
+  gz_topic_name: "/model/rover/joint/steer_rear_left_joint/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/steer/front_left/cmd_pos"
+  gz_topic_name: "/model/rover/joint/steer_front_left_joint/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/steer/front_right/cmd_pos"
+  gz_topic_name: "/model/rover/joint/steer_front_right_joint/0/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+# 4WD
+- ros_topic_name: "/wheel/front_left/cmd_vel"
+  gz_topic_name: "/model/rover/joint/drive_front_left_joint/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/wheel/rear_right/cmd_vel"
+  gz_topic_name: "/model/rover/joint/drive_rear_right_joint/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/wheel/front_right/cmd_vel"
+  gz_topic_name: "/model/rover/joint/drive_front_right_joint/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+- ros_topic_name: "/wheel/rear_left/cmd_vel"
+  gz_topic_name: "/model/rover/joint/drive_rear_left_joint/cmd_vel"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+
+# Chassis Joint States (model-agnostic, chassis-only, Bug 4 fix)
+# Bridges the explicit Gazebo topic set in core_plugins.xacro -> ROS 2 topic.
+# /chassis/joint_states is consumed by:
+#   - simulation_mode.cpp (direct, high-rate feedback)
+#   - joint_state_publisher merger (source_list entry)
+- ros_topic_name: "/chassis/joint_states"
+  gz_topic_name: "/chassis/gz_joint_states"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+
+# Odometry
+- ros_topic_name: "perfect/odom"
+  gz_topic_name: "/model/rover/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "perfect/odom/covariance"
+  gz_topic_name: "/model/rover/odometry_with_covariance"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.OdometryWithCovariance"
+  direction: GZ_TO_ROS
+

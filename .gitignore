@@ -1,6 +1,7 @@
 build/
 install/
 log/
+map/
 
 .vscode/
 
@@ -25,4 +26,4 @@ frames*
 
 qwen-vllm
 
-src/gazebo_worlds/models/mars_yard
+src/gazebo_worlds/models/mars_yardrover.generated.urdf

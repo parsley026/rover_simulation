@@ -5,25 +5,28 @@
     publish_tf: false
 
     qos: 1
-    qos_scan: 2                   # <-- CRITICAL: Match Ouster's Best Effort QoS
+    qos_scan: 2
     use_sim_time: false
     
     subscribe_scan: false         
-    subscribe_scan_cloud: true    
+    subscribe_scan_cloud: true   
+
+    approx_sync: true
+    approx_sync_max_interval: 0.01 
     
     approx_sync: true
     publish_null_when_lost: false
     wait_imu_to_init: false
     queue_size_odom: 200
-    wait_for_transform: 0.5       # <-- Gives TF tree time to provide base_link -> lidar
+    wait_for_transform: 0.1 
 
     Odom/ResetCountdown: "1"
     
     Icp/PointToPlane: "false" 
     Icp/PointToPlaneK: "0"
-    Icp/VoxelSize: "0.05"
-    Icp/MaxCorrespondenceDistance: "0.3"
-    Icp/Iterations: "20"
+    Icp/VoxelSize: "0.005"
+    Icp/MaxCorrespondenceDistance: "0.5"
+    Icp/Iterations: "50"
     
     # Odom/Strategy: "0"
     # ground_normals_up: true

@@ -20,6 +20,7 @@ SimulationMode::SimulationMode(
         "/CAN/TX/set_motor_vel", 10,
         std::bind(&SimulationMode::kinematicsCallback, this, std::placeholders::_1));
 
+    // Subscribe to /joint_states published directly by joint_state_broadcaster (gz_ros2_control)
     feedback_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(
         "/joint_states", rclcpp::QoS(10).reliable(),
         std::bind(&SimulationMode::feedbackCallback, this, std::placeholders::_1));
@@ -62,14 +63,15 @@ void SimulationMode::kinematicsCallback(const rex_interfaces::msg::Wheels::Share
     predicted_state_buffor_.rear_right_steer.data  = msg->rear_right.turn.set_value  * M_PI / 180.0 / core::STEER_PRESCALE;
     predicted_state_buffor_.rear_left_steer.data   = msg->rear_left.turn.set_value   * M_PI / 180.0 / core::STEER_PRESCALE;
 
-    if (config_.invert_left_steering) {
-        predicted_state_buffor_.front_left_steer.data = -predicted_state_buffor_.front_left_steer.data;
-        predicted_state_buffor_.rear_left_steer.data = -predicted_state_buffor_.rear_left_steer.data;
-    }
-    if (config_.invert_right_steering) {
-        predicted_state_buffor_.front_right_steer.data = -predicted_state_buffor_.front_right_steer.data;
-        predicted_state_buffor_.rear_right_steer.data = -predicted_state_buffor_.rear_right_steer.data;
-    }
+    if (config_.invert_steering_fl) predicted_state_buffor_.front_left_steer.data = -predicted_state_buffor_.front_left_steer.data;
+    if (config_.invert_steering_fr) predicted_state_buffor_.front_right_steer.data = -predicted_state_buffor_.front_right_steer.data;
+    if (config_.invert_steering_rl) predicted_state_buffor_.rear_left_steer.data = -predicted_state_buffor_.rear_left_steer.data;
+    if (config_.invert_steering_rr) predicted_state_buffor_.rear_right_steer.data = -predicted_state_buffor_.rear_right_steer.data;
+
+    if (config_.invert_drive_fl) predicted_state_buffor_.front_left_drive.data = -predicted_state_buffor_.front_left_drive.data;
+    if (config_.invert_drive_fr) predicted_state_buffor_.front_right_drive.data = -predicted_state_buffor_.front_right_drive.data;
+    if (config_.invert_drive_rl) predicted_state_buffor_.rear_left_drive.data = -predicted_state_buffor_.rear_left_drive.data;
+    if (config_.invert_drive_rr) predicted_state_buffor_.rear_right_drive.data = -predicted_state_buffor_.rear_right_drive.data;
 }
 
 void SimulationMode::feedbackCallback(const sensor_msgs::msg::JointState::SharedPtr msg)
@@ -77,15 +79,19 @@ void SimulationMode::feedbackCallback(const sensor_msgs::msg::JointState::Shared
     std::lock_guard<std::mutex> lock(data_mutex_);
 
     using SetterFn = std::function<void(SimulationMode*, double, double)>;
+    // Bug 3 fix: joint names updated to match actual URDF joint names from
+    // steer.xacro / wheel.xacro. The obsolete "arm_*_to_*" and "steer_*_to_wheel_*"
+    // names were never present in /joint_states and silently produced zero feedback,
+    // breaking closed-loop odometry in simulation mode.
     static const std::unordered_map<std::string, SetterFn> joint_map = {
-        {"arm_front_left_to_steer_front_left",   [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.front_left_steer.data  = p; }},
-        {"arm_front_right_to_steer_front_right", [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.front_right_steer.data = p; }},
-        {"arm_rear_right_to_steer_rear_right",   [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.rear_right_steer.data  = p; }},
-        {"arm_rear_left_to_steer_rear_left",     [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.rear_left_steer.data   = p; }},
-        {"steer_front_left_to_wheel_front_left",   [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.front_left_drive.data  = v; }},
-        {"steer_front_right_to_wheel_front_right", [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.front_right_drive.data = v; }},
-        {"steer_rear_right_to_wheel_rear_right",   [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.rear_right_drive.data  = v; }},
-        {"steer_rear_left_to_wheel_rear_left",     [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.rear_left_drive.data   = v; }},
+        {"steer_front_left_joint",  [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.front_left_steer.data  = p; }},
+        {"steer_front_right_joint", [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.front_right_steer.data = p; }},
+        {"steer_rear_left_joint",   [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.rear_left_steer.data   = p; }},
+        {"steer_rear_right_joint",  [](SimulationMode* s, double p, double){ s->simulated_feedback_buffor_.rear_right_steer.data  = p; }},
+        {"drive_front_left_joint",  [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.front_left_drive.data  = v; }},
+        {"drive_front_right_joint", [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.front_right_drive.data = v; }},
+        {"drive_rear_left_joint",   [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.rear_left_drive.data   = v; }},
+        {"drive_rear_right_joint",  [](SimulationMode* s, double, double v){ s->simulated_feedback_buffor_.rear_right_drive.data  = v; }},
     };
 
     for (std::size_t i = 0; i < msg->name.size(); ++i) {

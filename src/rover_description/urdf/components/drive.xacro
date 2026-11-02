@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/common/inertias.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/wheel.xacro"/>
+
+  <xacro:macro name="drive_assembly" params="prefix parent_link reflect_y">
+    <xacro:rover_wheel prefix="${prefix}" parent_link="${parent_link}" x_reflect="${reflect_y}"/>
+  </xacro:macro>
+</robot>

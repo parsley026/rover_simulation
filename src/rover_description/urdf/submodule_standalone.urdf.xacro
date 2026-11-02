@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<!--
+  submodule_standalone.urdf.xacro
+  Generic standalone URDF for simulating or visualizing any rover submodule
+  in isolation, without the rover chassis.
+
+  Supported submodules:
+    - robotic_arm (6-DOF manipulator + gripper + wrist camera)
+    - autonomy    (mast tower + sensor mounts + LiDAR & stereo camera)
+    - crossbar    (crossbar payload + sensor mount + stereo camera)
+    - sampler     (sampling drill/probe payload)
+-->
+<robot name="submodule_standalone" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="submodule"             default="robotic_arm"/>
+  <xacro:arg name="mount_height"          default="0.8"/>
+  <xacro:arg name="use_sim_time"          default="true"/>
+  <xacro:arg name="use_real_hardware"     default="false"/>
+  <xacro:arg name="ros_namespace"         default=""/>
+  <xacro:arg name="include_sensors"       default="true"/>
+  <xacro:arg name="sensor_mount_00_pitch" default="0.0"/>
+  <xacro:arg name="sensor_mount_01_pitch" default="0.0"/>
+  <xacro:arg name="sensor_mount_02_pitch" default="0.0"/>
+  <xacro:arg name="sensor_mount_06_pitch" default="0.0"/>
+  <xacro:arg name="standalone_arm"        default="true"/>
+
+  <!-- Common properties and materials -->
+  <xacro:include filename="$(find rover_description)/urdf/common/parameters.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/common/materials.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/common/inertias.xacro"/>
+
+  <!-- World anchor link -->
+  <link name="world"/>
+
+  <!-- Pedestal: mounting fixture anchoring the submodule above the ground -->
+  <link name="submodule_mount_link">
+    <visual>
+      <origin xyz="0 0 -0.4" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.35 0.35 0.8"/>
+      </geometry>
+      <material name="mount_dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.4" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.35 0.35 0.8"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="20.0"/>
+      <inertia ixx="1.0" iyy="1.0" izz="0.3" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+
+  <joint name="world_to_submodule_mount" type="fixed">
+    <parent link="world"/>
+    <child  link="submodule_mount_link"/>
+    <origin xyz="0 0 $(arg mount_height)" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Canonical base_link frame (reference root for RViz and ROS tooling) -->
+  <link name="base_link"/>
+
+  <joint name="mount_to_base_link" type="fixed">
+    <parent link="submodule_mount_link"/>
+    <child  link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ========================================================================= -->
+  <!-- Submodule: Robotic Arm                                                    -->
+  <!-- ========================================================================= -->
+  <xacro:if value="${'$(arg submodule)' == 'robotic_arm'}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/robotic_arm/robotic_arm_base.xacro"/>
+    <xacro:robotic_arm parent_link="base_link"
+                       module_position_front="false"
+                       module_position_back="false"
+                       xyz="0 0 0"
+                       rpy="0 0 0"
+                       sensor_mount_06_pitch="$(arg sensor_mount_06_pitch)"/>
+
+    <xacro:if value="$(arg include_sensors)">
+      <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/hikvision/ip_camera.xacro"/>
+      <xacro:sensor_camera_hikvision_ip_camera prefix="camera_06" parent="sensor_mount_06_link"/>
+    </xacro:if>
+  </xacro:if>
+
+  <!-- ========================================================================= -->
+  <!-- Submodule: Autonomy Mast                                                  -->
+  <!-- ========================================================================= -->
+  <xacro:if value="${'$(arg submodule)' == 'autonomy'}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/autonomy/autonomy_base.xacro"/>
+    <xacro:autonomy_base name="autonomy"
+                         parent_link="base_link"
+                         module_position_front="false"
+                         module_position_back="false"
+                         sensor_mount_00_pitch="$(arg sensor_mount_00_pitch)"
+                         sensor_mount_01_pitch="$(arg sensor_mount_01_pitch)"/>
+
+    <xacro:if value="$(arg include_sensors)">
+      <xacro:include filename="$(find rover_description)/urdf/components/sensors/lidar/ouster/os1.xacro"/>
+      <xacro:sensor_lidar_ouster_os1 prefix="lidar_00" parent="sensor_mount_00_link"/>
+
+      <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/stereolabs/zed2i.xacro"/>
+      <xacro:sensor_camera_stereolabs_zed2i prefix="camera_01" parent="sensor_mount_01_link"/>
+    </xacro:if>
+  </xacro:if>
+
+  <!-- ========================================================================= -->
+  <!-- Submodule: Crossbar                                                       -->
+  <!-- ========================================================================= -->
+  <xacro:if value="${'$(arg submodule)' == 'crossbar'}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/crossbar/crossbar_base.xacro"/>
+    <xacro:crossbar_base name="crossbar"
+                         parent_link="base_link"
+                         sensor_mount_02_pitch="$(arg sensor_mount_02_pitch)"/>
+
+    <xacro:if value="$(arg include_sensors)">
+      <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/stereolabs/zed2i.xacro"/>
+      <xacro:sensor_camera_stereolabs_zed2i prefix="camera_02" parent="sensor_mount_02_link"/>
+    </xacro:if>
+  </xacro:if>
+
+  <!-- ========================================================================= -->
+  <!-- Submodule: Sampler                                                        -->
+  <!-- ========================================================================= -->
+  <xacro:if value="${'$(arg submodule)' == 'sampler'}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/sampler/sampler_base.xacro"/>
+    <xacro:sampler_base name="sampler"
+                        parent_link="base_link"
+                        module_position_front="false"
+                        module_position_back="false"
+                        xyz="0 0 0"
+                        rpy="0 0 0"/>
+  </xacro:if>
+
+</robot>

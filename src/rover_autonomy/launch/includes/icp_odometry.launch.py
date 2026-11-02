@@ -15,9 +15,6 @@ def launch_setup(context, *args, **kwargs):
         value_type=bool
     )
 
-    # Opt. 1: Relative remapping — the node runs inside its namespace already,
-    # so we only need to rename the local 'odom' topic to 'odom_raw'.
-    # When health is OFF, no remapping is applied and the topic stays as 'odom'.
     odom_remappings = [("odom", "odom_raw")] if health_enabled else []
     odom_remappings += [
         ("scan",       "dummy_scan_topic"),

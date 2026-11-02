@@ -1,0 +1,27 @@
+# Bridge template: Ouster OS1 LiDAR
+#
+# Token substitution applied at runtime by dynamic_bridge_node:
+#   {ID}          → sensor id from payload.yaml  (e.g. lidar_00)
+#   {ROBOT_NAME}  → Gazebo entity name           (e.g. rover)
+#   {WORLD_NAME}  → Gazebo world name            (e.g. mars_yard)
+#
+# Gz sensor names defined in os1_lidar_assembly.xacro:
+#   {ID}_lidar    → gpu_lidar sensor  (topic: /{ID})
+#   {ID}_imu      → imu sensor        (topic: /{ID}/imu)
+# Topics produced:
+#   /{ID}/points      (PointCloud2, 64V×256H, 10 Hz)
+#   /{ID}/imu/data    (Imu, 50 Hz)
+
+# ── Point cloud ───────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/points"
+  gz_topic_name:  "/{ID}"
+  ros_type_name:  "sensor_msgs/msg/PointCloud2"
+  gz_type_name:   "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+
+# ── IMU ───────────────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/imu/data"
+  gz_topic_name:  "/{ID}/imu"
+  ros_type_name:  "sensor_msgs/msg/Imu"
+  gz_type_name:   "gz.msgs.IMU"
+  direction: GZ_TO_ROS

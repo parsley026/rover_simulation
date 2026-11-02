@@ -1,0 +1,408 @@
+<?xml version="1.0" ?>
+<robot name="robotic_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- Select hardware backend:
+       use_real_hardware:=true  → ActuatorArmSystemHardware (real VESC motors)
+       use_real_hardware:=false → GazeboSimSystem (default, Gazebo simulation)
+     For real hardware, read_only:=true disables periodic motor commands while
+     retaining the plugin's lifecycle stop commands. -->
+<xacro:arg name="use_real_hardware" default="false"/>
+<xacro:arg name="ros_namespace"     default=""/>
+<xacro:arg name="read_only"         default="false"/>
+<xacro:arg name="standalone_arm"    default="false"/>
+
+<xacro:include filename="$(find rover_description)/urdf/common/inertias.xacro"/>
+<xacro:include filename="$(find rover_description)/urdf/submodules/robotic_arm/robotic_arm_materials.xacro"/>
+<xacro:include filename="$(find rover_description)/urdf/submodules/robotic_arm/robotic_arm_ros2control.xacro"/>
+<xacro:unless value="$(arg use_real_hardware)">
+  <xacro:include filename="$(find rover_description)/urdf/submodules/robotic_arm/robotic_arm_gazebo.xacro"/>
+</xacro:unless>
+
+<!--
+  robotic arm macro
+    parent_link          : fallback explicit parent link (used when both module_position_* are false)
+    module_position_front: attach to robot_base_front_mount (matches autonomy submodule)
+    module_position_back : attach to robot_base_back_mount
+    xyz / rpy            : fine-tune origin offset on top of the mount
+    sensor_mount_06_pitch: pitch angle for wrist sensor mount in degrees
+-->
+<xacro:macro name="robotic_arm" params="parent_link:='' module_position_front:=true module_position_back:=false xyz:='0 0 0' rpy:='0 0 0' sensor_mount_06_pitch:=0.0">
+
+  <!-- Direction sign for joints 1/2/4/5: Gazebo simulates these with the
+       opposite rotation sense relative to real hardware, so flip the axis
+       sign in sim. Real hardware keeps the URDF axis as authored. -->
+  <xacro:property name="is_real_hw" value="$(arg use_real_hardware)"/>
+  <xacro:property name="axis_s"     value="${1.0 if is_real_hw else -1.0}"/>
+
+  <!-- Front mount (matches autonomy submodule default) -->
+  <xacro:if value="${module_position_front}">
+    <joint name="robotic_arm_base_joint" type="fixed">
+      <parent link="robot_base_front_mount"/>
+      <child  link="robotic_arm_base_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+  </xacro:if>
+
+  <!-- Back mount -->
+  <xacro:if value="${module_position_back}">
+    <joint name="robotic_arm_base_joint" type="fixed">
+      <parent link="robot_base_back_mount"/>
+      <child  link="robotic_arm_base_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+  </xacro:if>
+
+  <!-- Fallback mount -->
+  <xacro:if value="${not module_position_front and not module_position_back and parent_link != ''}">
+    <joint name="robotic_arm_base_joint" type="fixed">
+      <parent link="${parent_link}"/>
+      <child  link="robotic_arm_base_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+  </xacro:if>
+
+  <link name="robotic_arm_base_link">
+    <inertial>
+      <origin xyz="0.0003602994265603955 0.00034138489292631033 -0.0011700726631684733" rpy="0 0 0"/>
+      <mass value="2"/>
+      <inertia ixx="0.012968" iyy="0.010027" izz="0.017364" ixy="1.7e-05" iyz="-6e-06" ixz="3.6e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/base_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/base_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <!-- The new Fusion export separates the mounting plate from the pedestal.
+         Keep them in one fixed base link to preserve the established TF tree. -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/base_plate.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/base_plate.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_01_1">
+    <inertial>
+      <origin xyz="-0.00076 -0.03590 0.02113" rpy="0 0 0"/>
+      <mass value="1.91176"/>
+      <inertia ixx="0.008132" iyy="0.005253" izz="0.007082" ixy="-0.000094" iyz="-0.002331" ixz="-0.000093"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0.0 -0.0425" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_01_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 -0.0425" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_01_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_02_1">
+    <inertial>
+      <origin xyz="-0.03741 0.02020 0.26984" rpy="0 0 0"/>
+      <mass value="2.95110"/>
+      <inertia ixx="0.062762" iyy="0.066608" izz="0.004887" ixy="0.000013" iyz="0.000013" ixz="0.001264"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.024 -0.02 -0.0675" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_02_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.024 -0.02 -0.0675" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_02_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_03_1">
+    <inertial>
+      <origin xyz="0.17833 0.02577 0.02765" rpy="0 0 0"/>
+      <mass value="0.68110"/>
+      <inertia ixx="0.000533" iyy="0.015436" izz="0.015245" ixy="0.000051" iyz="0.000011" ixz="0.001219"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.024 -0.0245 -0.6205" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_03_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.024 -0.0245 -0.6205" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_03_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_04_1">
+    <inertial>
+      <origin xyz="0.05737 -0.00048 -0.00463" rpy="0 0 0"/>
+      <mass value="0.61363"/>
+      <inertia ixx="0.000652" iyy="0.000970" izz="0.001334" ixy="-0.000162" iyz="0.000018" ixz="-0.000038"/>
+    </inertial>
+    <visual>
+      <!-- Compensate for the reused STL's -90 degree frame change and 1.618 degree roll. -->
+      <origin xyz="-0.3579 -0.616268445525 0.016902752731" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_04_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.3579 -0.616268445525 0.016902752731" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_04_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_05_1">
+    <inertial>
+      <origin xyz="0.00217 0.02846 -0.00800" rpy="0 0 0"/>
+      <mass value="0.32394"/>
+      <inertia ixx="0.000134" iyy="0.000209" izz="0.000295" ixy="0.000002" iyz="0.0" ixz="0.0"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.47585 -0.566856117015 0.016889937098" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_05_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.47585 -0.566856117015 0.016889937098" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_05_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_06_1">
+    <inertial>
+      <origin xyz="0.06307 0.00177 -0.00799" rpy="0 0 0"/>
+      <mass value="0.35662"/>
+      <inertia ixx="0.001338" iyy="0.000351" izz="0.001579" ixy="0.0" iyz="0.000100" ixz="0.0"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.463563 -0.615868576693 0.016892461138" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_06_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.463563 -0.615868576693 0.016892461138" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_06_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!--
+    Tool center point at the center of the two fingertip faces when the gripper
+    is closed (gripper1 = 0.1, gripper2 = -0.1).
+  -->
+  <link name="gripper_tip"/>
+  <joint name="gripper_tip_joint" type="fixed">
+    <origin xyz="0.182200 0 0" rpy="0 0 0"/>
+    <parent link="link_06_1"/>
+    <child  link="gripper_tip"/>
+  </joint>
+
+  <link name="link_72_1">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <mass value="0.1"/>
+      <inertia ixx="0.000215" iyy="0.000426" izz="0.000574" ixy="7e-06" iyz="-1e-05" ixz="3.9e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.555163 -0.475868679804 0.010377950021" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_72_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.555163 -0.475868679804 0.010377950021" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_72_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="link_72_2">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <mass value="0.1"/>
+      <inertia ixx="0.000215" iyy="0.000426" izz="0.000574" ixy="-7e-06" iyz="-1e-05" ixz="-3.9e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.555161 -0.755869261119 0.010377802505" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_72_2.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="robotic_arm_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.555161 -0.755869261119 0.010377802505" rpy="-1.599028063098 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find rover_description)/meshes/robotic_arm/link_72_2.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joints -->
+  <joint name="link1" type="revolute">
+    <origin xyz="0.0 0.0 0.0425" rpy="0 0 0"/>
+    <parent link="robotic_arm_base_link"/>
+    <child  link="link_01_1"/>
+    <axis xyz="0.0 0.0 ${axis_s}"/>
+    <limit upper="1.396263401595464" lower="-2.094395102393195" effort="15.5" velocity="1.78"/>
+  </joint>
+
+  <joint name="link2" type="revolute">
+    <origin xyz="0.024 0.02 0.025" rpy="0 0 0"/>
+    <parent link="link_01_1"/>
+    <child  link="link_02_1"/>
+    <axis xyz="0.0 ${axis_s} 0.0"/>
+    <xacro:if value="$(arg use_real_hardware)">
+      <limit upper="1.658063" lower="-0.261799" effort="60" velocity="0.22"/>
+    </xacro:if>
+    <xacro:unless value="$(arg use_real_hardware)">
+      <limit upper="0.261799" lower="-1.658063" effort="60" velocity="0.22"/>
+    </xacro:unless>
+    <dynamics damping="2.5" friction="10"/>
+  </joint>
+
+  <joint name="link3" type="revolute">
+    <origin xyz="0.0 0.0045 0.553" rpy="0 0 0"/>
+    <parent link="link_02_1"/>
+    <child  link="link_03_1"/>
+    <axis xyz="0.0 -1.0 0.0"/>
+    <limit upper="0.872664626" lower="-0.698132" effort="70" velocity="0.14"/>
+    <!-- damping: simulates resistance from one-way construction -->
+    <dynamics damping="2.5" friction="10"/>
+  </joint>
+
+  <joint name="link4" type="revolute">
+    <origin xyz="0.3339 -0.025 -0.004" rpy="0 0 0"/>
+    <parent link="link_03_1"/>
+    <child  link="link_04_1"/>
+    <axis xyz="1.0 0.0 0.0"/>
+    <limit upper="3.141592" lower="-3.141592" effort="6" velocity="0.42"/>
+  </joint>
+
+  <joint name="link5" type="revolute">
+    <origin xyz="0.11795 -0.049413 0.000021" rpy="0 0 0"/>
+    <parent link="link_04_1"/>
+    <child  link="link_05_1"/>
+    <axis xyz="0.0 -1.0 0.0"/>
+    <limit upper="2.181662" lower="-2.181662" effort="5" velocity="0.58"/>
+  </joint>
+
+  <joint name="link6" type="revolute">
+    <origin xyz="-0.012287 0.049013 -0.00001" rpy="0 0 0"/>
+    <parent link="link_05_1"/>
+    <child  link="link_06_1"/>
+    <axis xyz="${-axis_s} 0.0 0.0"/>
+    <limit upper="3.141592" lower="-3.141592" effort="2.5" velocity="1.15"/>
+  </joint>
+
+  <joint name="gripper1" type="prismatic">
+    <origin xyz="0.0916 -0.139998 0.006537" rpy="0 0 0"/>
+    <parent link="link_06_1"/>
+    <child  link="link_72_1"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <limit upper="0.1001" lower="-1e-4" effort="1000" velocity="0.03"/>
+    <dynamics damping="200" friction="500.0"/>
+  </joint>
+
+  <joint name="gripper2" type="prismatic">
+    <origin xyz="0.091598 0.140002 0.006491" rpy="0 0 0"/>
+    <xacro:unless value="$(arg use_real_hardware)">
+      <mimic joint="gripper1" multiplier="-1.0" offset="0.0"/>
+    </xacro:unless>
+    <parent link="link_06_1"/>
+    <child  link="link_72_2"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <limit upper="1e-4" lower="-0.1001" effort="1000" velocity="0.03"/>
+    <dynamics damping="200" friction="500.0"/>
+  </joint>
+
+  <!-- ========================================================================= -->
+  <!-- Sensor Mount 06 (Arm End-Effector / Wrist Mount)                          -->
+  <!-- ========================================================================= -->
+  <link name="sensor_mount_06_pivot_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+      <geometry>
+        <cylinder radius="0.005" length="0.04"/>
+      </geometry>
+      <material name="mount_green"/>
+    </visual>
+    <xacro:inertial_cylinder mass="0.01" length="0.04" radius="0.005">
+      <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+    </xacro:inertial_cylinder>
+  </link>
+
+  <joint name="sensor_mount_06_pivot_joint" type="fixed">
+    <parent link="link_06_1"/>
+    <child  link="sensor_mount_06_pivot_link"/>
+    <origin xyz="0.07 0 0.045" rpy="0 ${sensor_mount_06_pitch * pi / 180.0} 0"/>
+  </joint>
+
+  <link name="sensor_mount_06_link">
+    <visual>
+      <geometry>
+        <box size="0.02 0.04 0.035"/>
+      </geometry>
+      <material name="mount_green"/>
+    </visual>
+    <xacro:inertial_box mass="0.01" x="0.02" y="0.04" z="0.035">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_box>
+  </link>
+
+  <joint name="sensor_mount_06_joint" type="fixed">
+    <parent link="sensor_mount_06_pivot_link"/>
+    <child  link="sensor_mount_06_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Backward-compatibility alias for wrist mount -->
+  <link name="wrist_mount_link"/>
+  <joint name="wrist_mount_joint" type="fixed">
+    <parent link="sensor_mount_06_link"/>
+    <child  link="wrist_mount_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+</xacro:macro>
+
+</robot>

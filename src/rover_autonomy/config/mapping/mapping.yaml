@@ -12,7 +12,7 @@
     map_frame_id: map
     odom_frame_id: odom
     publish_tf: true
-    wait_for_transform: 0.5
+    wait_for_transform: 0.1
     map_always_update: true
 
     # --- PERFORMANCE & MAPPING RATE ---

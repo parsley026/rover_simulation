@@ -7,6 +7,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <rex_interfaces/msg/vesc_status.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <memory>
 #include <mutex>
 
@@ -17,7 +18,6 @@ class DigitalShadowMode : public IBridgeMode {
 public:
     DigitalShadowMode(
         rclcpp::Node* node,
-        std::shared_ptr<gazebo::GazeboCommandPublisher> gazebo_pub,
         std::shared_ptr<core::Conversions> conversions,
         const BridgeConfig& config);
 
@@ -27,11 +27,11 @@ private:
     void hardwareFeedbackCallback(const rex_interfaces::msg::VescStatus::SharedPtr msg);
 
     rclcpp::Node* node_;
-    std::shared_ptr<gazebo::GazeboCommandPublisher> gazebo_pub_;
     std::shared_ptr<core::Conversions> conversions_;
     BridgeConfig config_;
 
     rclcpp::Subscription<rex_interfaces::msg::VescStatus>::SharedPtr hardware_sub_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
 
     std::mutex data_mutex_;
     core::WheelData measured_state_current_;

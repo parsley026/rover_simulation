@@ -1,0 +1,58 @@
+chassis:
+  mass: 28.0
+  mast:
+    mass: 0.2
+    radius: 0.01
+    length: 0.8
+
+suspension:
+  frame:
+    mass: 1.65
+    size: [0.18, 0.03, 0.13]
+    
+  arm:
+    mass: 0.3
+    radius: 0.02
+    length: 0.34
+    damping: 2.0
+    friction: 0.05
+
+  swivel:
+    damping: 5.0
+    friction: 0.1
+
+steer:
+  mass: 2.0
+  size: [0.08, 0.08, 0.12]
+  friction: 0.05
+  damping: 0.5
+  gear_ratio: 100.0
+
+drive:
+  mass: 2.0
+  size: [0.1, 0.1, 0.15]
+  friction: 0.05
+  damping: 0.1
+  gear_ratio: 30.0
+
+wheel:
+  mass: 2.0
+  radius: 0.125
+  width: 0.145
+  friction:
+    mu1: 1.0
+    mu2: 1.0
+
+limits:
+  steer_effort: 100.0
+  steer_vel: 2.0
+
+  drive_effort: 500.0
+  drive_vel: 10.0
+
+  suspension_effort: 100.0
+
+  bogie_spring: 200.0
+  bogie_damping: 20.0
+  differential_force: 150.0
+  differential_damping: 25.0

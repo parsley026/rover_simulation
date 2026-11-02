@@ -15,6 +15,7 @@ find_package(builtin_interfaces REQUIRED)
 set(msg_files
   "msg/ManipulatorControl.msg"
   "msg/ManipulatorMqttMessage.msg"
+  "msg/RoboticArmControl.msg"
   "msg/ProbeStatus.msg"
   "msg/RoverControl.msg"
   "msg/RoverStatus.msg"

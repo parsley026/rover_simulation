@@ -21,8 +21,6 @@ MainComputeNode::MainComputeNode(const rclcpp::NodeOptions & options)
   param_manager_->declare_all_parameters();
 
   // 2. Fetch configs — called once, result stored; ParameterManager not queried again
-  auto desc_config    = param_manager_->get_description_config();
-  // 
   auto camera_config  = param_manager_->get_camera_config();
   auto lidar_config   = param_manager_->get_lidar_config();
 
@@ -31,9 +29,6 @@ MainComputeNode::MainComputeNode(const rclcpp::NodeOptions & options)
   auto nav_config     = param_manager_->get_navigation_config();
 
   // 3. Instantiate subsystems — ALWAYS created; enabled_ governs behavior, not construction
-  
-  description_subsystem_ = std::make_unique<DescriptionSubsystemManager>(this, desc_config);
-  all_subsystems_.push_back(description_subsystem_.get());
   
   camera_subsystem_ = std::make_unique<CameraSubsystemManager>(this, camera_config);
   all_subsystems_.push_back(camera_subsystem_.get());
@@ -57,7 +52,9 @@ void MainComputeNode::on_subsystem_config_changed(const std::string & subsystem_
 {
   RCLCPP_WARN(get_logger(), "Config changed for subsystem '%s'. Triggering recovery...", subsystem_name.c_str());
 
-  if (subsystem_name == "description") { description_subsystem_->recover(); }
+  if (subsystem_name == "camera") { camera_subsystem_->recover(); }
+  else if (subsystem_name == "lidar") { lidar_subsystem_->recover(); }
+  else if (subsystem_name == "odometry") { odometry_subsystem_->recover(); }
   else if (subsystem_name == "mapping") { mapping_subsystem_->recover(); }
   else if (subsystem_name == "navigation") { navigation_subsystem_->recover(); }
 }
@@ -111,6 +108,41 @@ MainComputeNode::on_configure(const rclcpp_lifecycle::State &)
   global_topography_service_ = this->create_service<std_srvs::srv::SetBool>(
     "~/set_global_topography",
     std::bind(&MainComputeNode::on_set_global_topography, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  camera_00_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_camera_00",
+    std::bind(&MainComputeNode::on_set_camera_00, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  camera_01_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_camera_01",
+    std::bind(&MainComputeNode::on_set_camera_01, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  lidar_00_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_lidar_00",
+    std::bind(&MainComputeNode::on_set_lidar_00, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  odom_camera_00_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_odom_camera_00",
+    std::bind(&MainComputeNode::on_set_odom_camera_00, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  odom_camera_01_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_odom_camera_01",
+    std::bind(&MainComputeNode::on_set_odom_camera_01, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  odom_lidar_00_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_odom_lidar_00",
+    std::bind(&MainComputeNode::on_set_odom_lidar_00, this, std::placeholders::_1, std::placeholders::_2)
+  );
+
+  localization_service_ = this->create_service<std_srvs::srv::SetBool>(
+    "~/set_localization",
+    std::bind(&MainComputeNode::on_set_localization, this, std::placeholders::_1, std::placeholders::_2)
   );
 
   RCLCPP_INFO(get_logger(), "Configuration successful.");
@@ -327,6 +359,250 @@ void MainComputeNode::on_set_global_topography(
     }
   }
 }
+
+void MainComputeNode::on_set_camera_00(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  auto sub = camera_subsystem_.get();
+  RCLCPP_INFO(get_logger(), "Received request to set camera_00: %s", request->data ? "true" : "false");
+
+  if (request->data) {
+    if (sub->get_state() == SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Camera 00 subsystem is already active.";
+    } else {
+      sub->set_enabled(true);
+      if (sub->on_activate()) {
+        response->success = true;
+        response->message = "Successfully started camera 00 subsystem.";
+      } else {
+        response->success = false;
+        response->message = "Failed to start camera 00 subsystem.";
+      }
+    }
+  } else {
+    if (sub->get_state() != SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Camera 00 subsystem is already inactive.";
+      sub->set_enabled(false);
+    } else {
+      if (sub->on_deactivate()) {
+        response->success = true;
+        response->message = "Successfully stopped camera 00 subsystem.";
+        sub->set_enabled(false);
+      } else {
+        response->success = false;
+        response->message = "Failed to stop camera 00 subsystem.";
+      }
+    }
+  }
+}
+
+void MainComputeNode::on_set_camera_01(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  RCLCPP_INFO(get_logger(), "Received request to set camera_01 (placeholder): %s", request->data ? "true" : "false");
+  response->success = true;
+  response->message = "Camera 01 is a placeholder. No action taken.";
+}
+
+void MainComputeNode::on_set_lidar_00(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  auto sub = lidar_subsystem_.get();
+  RCLCPP_INFO(get_logger(), "Received request to set lidar_00: %s", request->data ? "true" : "false");
+
+  if (request->data) {
+    if (sub->get_state() == SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Lidar 00 subsystem is already active.";
+    } else {
+      sub->set_enabled(true);
+      if (sub->on_activate()) {
+        response->success = true;
+        response->message = "Successfully started lidar 00 subsystem.";
+      } else {
+        response->success = false;
+        response->message = "Failed to start lidar 00 subsystem.";
+      }
+    }
+  } else {
+    if (sub->get_state() != SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Lidar 00 subsystem is already inactive.";
+      sub->set_enabled(false);
+    } else {
+      if (sub->on_deactivate()) {
+        response->success = true;
+        response->message = "Successfully stopped lidar 00 subsystem.";
+        sub->set_enabled(false);
+      } else {
+        response->success = false;
+        response->message = "Failed to stop lidar 00 subsystem.";
+      }
+    }
+  }
+}
+
+void MainComputeNode::on_set_odom_camera_00(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  auto sub = odometry_subsystem_->get_camera_00_odom_subsystem();
+  RCLCPP_INFO(get_logger(), "Received request to set camera 00 odometry: %s", request->data ? "true" : "false");
+
+  if (request->data) {
+    if (sub->get_state() == SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Camera 00 odometry is already active.";
+    } else {
+      sub->set_enabled(true);
+      if (sub->on_activate()) {
+        response->success = true;
+        response->message = "Successfully started camera 00 odometry.";
+      } else {
+        response->success = false;
+        response->message = "Failed to start camera 00 odometry.";
+      }
+    }
+  } else {
+    if (sub->get_state() != SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Camera 00 odometry is already inactive.";
+      sub->set_enabled(false);
+    } else {
+      if (sub->on_deactivate()) {
+        response->success = true;
+        response->message = "Successfully stopped camera 00 odometry.";
+        sub->set_enabled(false);
+      } else {
+        response->success = false;
+        response->message = "Failed to stop camera 00 odometry.";
+      }
+    }
+  }
+}
+
+void MainComputeNode::on_set_odom_camera_01(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  auto sub = odometry_subsystem_->get_camera_01_odom_subsystem();
+  RCLCPP_INFO(get_logger(), "Received request to set camera 01 odometry: %s", request->data ? "true" : "false");
+
+  if (request->data) {
+    if (sub->get_state() == SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Camera 01 odometry is already active.";
+    } else {
+      sub->set_enabled(true);
+      if (sub->on_activate()) {
+        response->success = true;
+        response->message = "Successfully started camera 01 odometry.";
+      } else {
+        response->success = false;
+        response->message = "Failed to start camera 01 odometry.";
+      }
+    }
+  } else {
+    if (sub->get_state() != SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Camera 01 odometry is already inactive.";
+      sub->set_enabled(false);
+    } else {
+      if (sub->on_deactivate()) {
+        response->success = true;
+        response->message = "Successfully stopped camera 01 odometry.";
+        sub->set_enabled(false);
+      } else {
+        response->success = false;
+        response->message = "Failed to stop camera 01 odometry.";
+      }
+    }
+  }
+}
+
+void MainComputeNode::on_set_odom_lidar_00(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  auto sub = odometry_subsystem_->get_lidar_00_odom_subsystem();
+  RCLCPP_INFO(get_logger(), "Received request to set lidar 00 odometry: %s", request->data ? "true" : "false");
+
+  if (request->data) {
+    if (sub->get_state() == SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Lidar 00 odometry is already active.";
+    } else {
+      sub->set_enabled(true);
+      if (sub->on_activate()) {
+        response->success = true;
+        response->message = "Successfully started lidar 00 odometry.";
+      } else {
+        response->success = false;
+        response->message = "Failed to start lidar 00 odometry.";
+      }
+    }
+  } else {
+    if (sub->get_state() != SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Lidar 00 odometry is already inactive.";
+      sub->set_enabled(false);
+    } else {
+      if (sub->on_deactivate()) {
+        response->success = true;
+        response->message = "Successfully stopped lidar 00 odometry.";
+        sub->set_enabled(false);
+      } else {
+        response->success = false;
+        response->message = "Failed to stop lidar 00 odometry.";
+      }
+    }
+  }
+}
+
+void MainComputeNode::on_set_localization(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  auto sub = odometry_subsystem_->get_localization_subsystem();
+  RCLCPP_INFO(get_logger(), "Received request to set localization: %s", request->data ? "true" : "false");
+
+  if (request->data) {
+    if (sub->get_state() == SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Localization is already active.";
+    } else {
+      sub->set_enabled(true);
+      if (sub->on_activate()) {
+        response->success = true;
+        response->message = "Successfully started localization.";
+      } else {
+        response->success = false;
+        response->message = "Failed to start localization.";
+      }
+    }
+  } else {
+    if (sub->get_state() != SubsystemState::ACTIVE) {
+      response->success = true;
+      response->message = "Localization is already inactive.";
+      sub->set_enabled(false);
+    } else {
+      if (sub->on_deactivate()) {
+        response->success = true;
+        response->message = "Successfully stopped localization.";
+        sub->set_enabled(false);
+      } else {
+        response->success = false;
+        response->message = "Failed to stop localization.";
+      }
+    }
+  }
+}
+
 
 RCLCPP_COMPONENTS_REGISTER_NODE(rover_autonomy::MainComputeNode)
 

@@ -1,0 +1,80 @@
+# Master ros2_control configuration for Rover Chassis and optional Robotic Arm
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # 4 Steering controllers (position)
+    steer_front_left_controller:
+      type: position_controllers/JointGroupPositionController
+
+    steer_front_right_controller:
+      type: position_controllers/JointGroupPositionController
+
+    steer_rear_left_controller:
+      type: position_controllers/JointGroupPositionController
+
+    steer_rear_right_controller:
+      type: position_controllers/JointGroupPositionController
+
+    # 4 Drive controllers (velocity)
+    drive_front_left_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+    drive_front_right_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+    drive_rear_left_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+    drive_rear_right_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+# ==============================================================================
+# Chassis Steering Controllers (Position)
+# ==============================================================================
+steer_front_left_controller:
+  ros__parameters:
+    joints:
+      - steer_front_left_joint
+
+steer_front_right_controller:
+  ros__parameters:
+    joints:
+      - steer_front_right_joint
+
+steer_rear_left_controller:
+  ros__parameters:
+    joints:
+      - steer_rear_left_joint
+
+steer_rear_right_controller:
+  ros__parameters:
+    joints:
+      - steer_rear_right_joint
+
+# ==============================================================================
+# Chassis Wheel Drive Controllers (Velocity)
+# ==============================================================================
+drive_front_left_controller:
+  ros__parameters:
+    joints:
+      - drive_front_left_joint
+
+drive_front_right_controller:
+  ros__parameters:
+    joints:
+      - drive_front_right_joint
+
+drive_rear_left_controller:
+  ros__parameters:
+    joints:
+      - drive_rear_left_joint
+
+drive_rear_right_controller:
+  ros__parameters:
+    joints:
+      - drive_rear_right_joint
+

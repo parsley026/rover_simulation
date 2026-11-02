@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/common/inertias.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/steer.xacro"/>
+
+  <xacro:macro name="suspension_assembly" params="prefix reflect_y">
+    <joint name="swivel_${prefix}_joint" type="revolute">
+      <parent link="base_link"/>
+      <child link="suspension_frame_${prefix}"/>
+      <origin xyz="0 ${reflect_y * suspension_y_mount} 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="${suspension_effort}" lower="-${swivel_limit}" upper="${swivel_limit}" velocity="1.0"/>
+      <dynamics damping="${swivel_joint_damping}" friction="${swivel_joint_friction}"/>
+    </joint>
+
+    <link name="suspension_frame_${prefix}">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 1.570796 0"/>
+        <geometry><cylinder radius="0.022" length="0.12"/></geometry>
+        <material name="pivot_orange"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        <geometry><box size="0.12 0.03 0.10"/></geometry>
+        <material name="frame_grey"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0.11" rpy="0 0 0"/>
+        <geometry><box size="0.18 0.03 0.02"/></geometry>
+        <material name="frame_grey"/>
+      </visual>
+      <visual>
+        <origin xyz="0 ${-reflect_y * 0.1} ${swivel_z_offset}" rpy="1.570796 0 0"/>
+        <geometry><cylinder radius="0.015" length="0.2"/></geometry>
+        <material name="actuator_silver"/>
+      </visual>
+      <xacro:inertial_box mass="${mass_suspension_frame}" x="0.18" y="0.03" z="0.13">
+        <origin xyz="0 0 0.065" rpy="0 0 0"/>
+      </xacro:inertial_box>
+    </link>
+
+    <!-- FRONT ARM -->
+    <joint name="arm_front_${prefix}_pivot" type="revolute">
+      <parent link="suspension_frame_${prefix}"/>
+      <child link="arm_front_${prefix}"/>
+      <origin xyz="${arm_pivot_x} 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="500" lower="-${arm_limit}" upper="${arm_limit}" velocity="1.0"/>
+      <dynamics damping="${arm_pivot_damping}" friction="${arm_pivot_friction}"/>
+    </joint>
+
+    <link name="arm_front_${prefix}">
+      <visual><origin xyz="0.17 0 0" rpy="0 1.570796 0"/><geometry><cylinder radius="0.018" length="0.34"/></geometry><material name="carbon_black"/></visual>
+      <visual><origin xyz="0.12 0 0" rpy="0 0 0"/><geometry><box size="0.03 0.045 0.045"/></geometry><material name="frame_grey"/></visual>
+      <visual><origin xyz="0.06 0 0.055" rpy="0 -1.05 0"/><geometry><cylinder radius="0.01" length="0.16"/></geometry><material name="actuator_silver"/></visual>
+      <visual><origin xyz="0.08 0 0.035" rpy="0 -1.05 0"/><geometry><cylinder radius="0.012" length="0.06"/></geometry><material name="carbon_black"/></visual>
+      <xacro:inertial_cylinder mass="${mass_arm}" radius="0.018" length="0.34">
+        <origin xyz="0.17 0 0" rpy="0 1.570796 0"/>
+      </xacro:inertial_cylinder>
+    </link>
+
+    <!-- FRONT STEER & DRIVE -->
+    <xacro:steer_assembly prefix="front_${prefix}" parent_link="arm_front_${prefix}" origin_xyz="0.34 0 0.02" reflect_y="${reflect_y}" wheel_prefix="front_${prefix}"/>
+
+    <!-- REAR ARM -->
+    <joint name="arm_rear_${prefix}_pivot" type="revolute">
+      <parent link="suspension_frame_${prefix}"/>
+      <child link="arm_rear_${prefix}"/>
+      <origin xyz="-${arm_pivot_x} 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="500" lower="-${arm_limit}" upper="${arm_limit}" velocity="1.0"/>
+      <dynamics damping="${arm_pivot_damping}" friction="${arm_pivot_friction}"/>
+    </joint>
+
+    <link name="arm_rear_${prefix}">
+      <visual><origin xyz="-0.17 0 0" rpy="0 1.570796 0"/><geometry><cylinder radius="0.018" length="0.34"/></geometry><material name="carbon_black"/></visual>
+      <visual><origin xyz="-0.12 0 0" rpy="0 0 0"/><geometry><box size="0.03 0.045 0.045"/></geometry><material name="frame_grey"/></visual>
+      <visual><origin xyz="-0.06 0 0.055" rpy="0 1.05 0"/><geometry><cylinder radius="0.01" length="0.16"/></geometry><material name="actuator_silver"/></visual>
+      <visual><origin xyz="-0.08 0 0.035" rpy="0 1.05 0"/><geometry><cylinder radius="0.012" length="0.06"/></geometry><material name="carbon_black"/></visual>
+      <xacro:inertial_cylinder mass="${mass_arm}" radius="0.018" length="0.34">
+        <origin xyz="-0.17 0 0" rpy="0 1.570796 0"/>
+      </xacro:inertial_cylinder>
+    </link>
+
+    <!-- REAR STEER & DRIVE -->
+    <xacro:steer_assembly prefix="rear_${prefix}" parent_link="arm_rear_${prefix}" origin_xyz="-0.34 0 0.02" reflect_y="${reflect_y}" wheel_prefix="rear_${prefix}"/>
+  </xacro:macro>
+</robot>

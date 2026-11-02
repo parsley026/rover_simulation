@@ -1,0 +1,30 @@
+<launch>
+  <!--
+    Bridge operating mode — select one of two architectural modes:
+
+      simulation      Classic virtual testing. No hardware required.
+                      Arm commands -> Gazebo ros2_control -> fake VescStatus feedback.
+
+      digital_shadow  One-way observer. RViz passively reflects the physical
+                      arm's actual state. Real VescStatus (112-118) -> /joint_states.
+
+    Override at launch time (takes precedence over bridge_config.yaml):
+      ros2 launch rover_robot_arm_kinematics_bridge rover_robot_arm_kinematics_bridge.launch.xml \
+          mode:=digital_shadow
+  -->
+  <arg name="mode" default="simulation"
+       description="Bridge mode: 'simulation' | 'digital_shadow'"/>
+
+  <node pkg="rover_robot_arm_kinematics_bridge"
+        exec="rover_robot_arm_kinematics_bridge_node"
+        name="rover_robot_arm_kinematics_bridge_node"
+        output="screen">
+
+    <!-- Load all parameters from the config file -->
+    <param from="$(find-pkg-share rover_robot_arm_kinematics_bridge)/config/bridge_config.yaml"/>
+
+    <!-- Allow launch-time mode override (takes precedence over YAML value) -->
+    <param name="mode" value="$(var mode)"/>
+
+  </node>
+</launch>

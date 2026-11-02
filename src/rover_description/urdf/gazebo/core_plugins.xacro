@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="gazebo_core_plugins" params="world_name entity_name force_constant differential_damping bogie_spring bogie_damping has_arm:=false">
+    <gazebo>
+
+      <!-- Master gz_ros2_control plugin for Rover Chassis & optional Submodules -->
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find rover_description)/config/ros2_controllers.yaml</parameters>
+        <xacro:if value="${has_arm}">
+          <parameters>$(find rover_description)/config/robotic_arm/ros2_controllers.yaml</parameters>
+        </xacro:if>
+      </plugin>
+
+      <!-- Pose publisher -->
+      <plugin filename="gz-sim-pose-publisher-system"
+              name="gz::sim::systems::PosePublisher">
+        <publish_link_pose>true</publish_link_pose>
+        <use_pose_vector_msg>true</use_pose_vector_msg>
+        <static_publisher>true</static_publisher>
+        <static_update_frequency>5</static_update_frequency>
+      </plugin>
+
+      <!-- Odometry -->
+      <plugin filename="gz-sim-odometry-publisher-system"
+              name="gz::sim::systems::OdometryPublisher">
+        <odom_frame>/odom</odom_frame>
+        <robot_base_frame>/base_link</robot_base_frame>
+        <odom_publish_frequency>15</odom_publish_frequency>
+        <tf_topic>/tf</tf_topic>
+      </plugin>
+
+      <!-- Differential swivel sync + bogie spring-damper -->
+      <plugin filename="libdifferential_plugin.so"
+              name="gazebo_sim_ros2_example::DifferentialPlugin">
+        <jointA>swivel_right_joint</jointA>
+        <jointB>swivel_left_joint</jointB>
+        <forceConstant>${force_constant}</forceConstant>
+        <dampingConstant>${differential_damping}</dampingConstant>
+        <bogieJoint>arm_front_left_pivot</bogieJoint>
+        <bogieJoint>arm_rear_left_pivot</bogieJoint>
+        <bogieJoint>arm_front_right_pivot</bogieJoint>
+        <bogieJoint>arm_rear_right_pivot</bogieJoint>
+        <bogieSpring>${bogie_spring}</bogieSpring>
+        <bogieDamping>${bogie_damping}</bogieDamping>
+      </plugin>
+
+    </gazebo>
+  </xacro:macro>
+
+</robot>

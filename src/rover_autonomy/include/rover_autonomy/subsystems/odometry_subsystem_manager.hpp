@@ -16,6 +16,11 @@ public:
     const OdometryConfig & config);
 
   ~OdometrySubsystemManager() override = default;
+
+  SubsystemManager* get_camera_00_odom_subsystem();
+  SubsystemManager* get_camera_01_odom_subsystem();
+  SubsystemManager* get_lidar_00_odom_subsystem();
+  SubsystemManager* get_localization_subsystem();
 };
 
 }  // namespace rover_autonomy

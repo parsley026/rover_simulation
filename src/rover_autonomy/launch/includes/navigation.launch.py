@@ -3,7 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import LoadComposableNodes, SetParameter
@@ -11,29 +11,49 @@ from launch_ros.actions import Node
 from launch_ros.descriptions import ComposableNode, ParameterFile
 from nav2_common.launch import RewrittenYaml
 
-
-def generate_launch_description():
-    # Update this to match your actual package name where your config lives
-    """
-    Create a ROS 2 launch description for the Nav2 navigation stack.
-    
-    The launch description supports standalone or composable Nav2 nodes, configurable namespaces, parameters, lifecycle startup, simulation time, respawning, logging, and topic remappings.
-    
-    Returns:
-    	LaunchDescription: The configured Nav2 launch description.
-    """
+def launch_setup(context, *args, **kwargs):
     my_package_name = 'rover_autonomy'
     my_package_dir = get_package_share_directory(my_package_name)
 
     namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
     autostart = LaunchConfiguration('autostart')
-    params_file = LaunchConfiguration('params_file')
     use_composition = LaunchConfiguration('use_composition')
     container_name = LaunchConfiguration('container_name')
     container_name_full = (namespace, '/', container_name)
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
+
+    navigation_mode = str(LaunchConfiguration('navigation_mode').perform(context))
+    navigation_odom_only = LaunchConfiguration('navigation_odom_only').perform(context).lower() == 'true'
+    launch_mapping = LaunchConfiguration('launch_mapping').perform(context).lower() == 'true'
+    launch_local_topography = LaunchConfiguration('launch_local_topography').perform(context).lower() == 'true'
+    launch_global_topography = LaunchConfiguration('launch_global_topography').perform(context).lower() == 'true'
+
+    yaml_name = f"costmaps_{navigation_mode}"
+    
+    if launch_local_topography or launch_global_topography:
+        yaml_name = "costmaps_topography" 
+    
+    if launch_mapping:
+        yaml_name += "_mapping"
+        
+    yaml_name += ".yaml"
+    
+    core_params_path = os.path.join(my_package_dir, 'config', 'navigation', 'nav2_core.yaml')
+    
+    user_params_file = LaunchConfiguration('params_file').perform(context)
+    if user_params_file and "navigation.yaml" not in user_params_file:
+        costmap_params_path = user_params_file
+    else:
+        costmap_params_path = os.path.join(my_package_dir, 'config', 'navigation', yaml_name)
+        
+    if not os.path.exists(costmap_params_path):
+        print(f"[WARN] Expected config {costmap_params_path} does not exist. Falling back to navigation.yaml")
+        costmap_params_path = os.path.join(my_package_dir, 'config', 'navigation', 'navigation.yaml')
+    else:
+        print(f"[INFO] Using core config: {core_params_path}")
+        print(f"[INFO] Using costmap config: {costmap_params_path}")
 
     lifecycle_nodes = [
         'controller_server',
@@ -47,26 +67,24 @@ def generate_launch_description():
     ]
 
     remappings = [
-        # Force relative and absolute TF requests to use the global topics
         ('tf', '/tf'),
         ('tf_static', '/tf_static'),
         ('/tf', '/tf'),
         ('/tf_static', '/tf_static'),
-        
-        # Keep your existing map remapping
         ('/map', '/mapping/map'),
-        
-        # Route RViz2 global GUI topics directly into the Nav2 namespace
         ('goal_pose', '/goal_pose'),
         ('initialpose', '/initialpose')
     ]
 
-    # Create our own temporary YAML files that include substitutions
     param_substitutions = {'autostart': autostart}
+    
+    if navigation_odom_only:
+        param_substitutions['global_frame'] = 'odom'
+        param_substitutions['rolling_window'] = 'True'
 
-    configured_params = ParameterFile(
+    configured_core_params = ParameterFile(
         RewrittenYaml(
-            source_file=params_file,
+            source_file=core_params_path,
             root_key=namespace,
             param_rewrites=param_substitutions,
             convert_types=True,
@@ -74,52 +92,14 @@ def generate_launch_description():
         allow_substs=True,
     )
 
-    stdout_linebuf_envvar = SetEnvironmentVariable(
-        'RCUTILS_LOGGING_BUFFERED_STREAM', '1'
-    )
-
-    declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace', default_value='', description='Top-level namespace'
-    )
-
-    declare_use_sim_time_cmd = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='true', # Set to true to match your mapping script
-        description='Use simulation (Gazebo) clock if true',
-    )
-
-    declare_params_file_cmd = DeclareLaunchArgument(
-        'params_file',
-        default_value=os.path.join(my_package_dir, 'config', 'navigation', 'nav2_params.yaml'),
-        description='Full path to the ROS2 parameters file to use for all launched nodes',
-    )
-
-    declare_autostart_cmd = DeclareLaunchArgument(
-        'autostart',
-        default_value='true',
-        description='Automatically startup the nav2 stack',
-    )
-
-    declare_use_composition_cmd = DeclareLaunchArgument(
-        'use_composition',
-        default_value='False',
-        description='Use composed bringup if True',
-    )
-
-    declare_container_name_cmd = DeclareLaunchArgument(
-        'container_name',
-        default_value='nav2_container',
-        description='the name of conatiner that nodes will load in if use composition',
-    )
-
-    declare_use_respawn_cmd = DeclareLaunchArgument(
-        'use_respawn',
-        default_value='False',
-        description='Whether to respawn if a node crashes. Applied when composition is disabled.',
-    )
-
-    declare_log_level_cmd = DeclareLaunchArgument(
-        'log_level', default_value='info', description='log level'
+    configured_costmap_params = ParameterFile(
+        RewrittenYaml(
+            source_file=costmap_params_path,
+            root_key=namespace,
+            param_rewrites=param_substitutions,
+            convert_types=True,
+        ),
+        allow_substs=True,
     )
 
     load_nodes = GroupAction(
@@ -133,7 +113,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
             ),
@@ -145,7 +125,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
             ),
@@ -157,7 +137,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
             ),
@@ -169,7 +149,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
             ),
@@ -181,7 +161,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
             ),
@@ -193,7 +173,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
             ),
@@ -205,7 +185,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
             ),
@@ -217,7 +197,7 @@ def generate_launch_description():
                 output='screen',
                 respawn=use_respawn,
                 respawn_delay=2.0,
-                parameters=[configured_params],
+                parameters=[configured_core_params, configured_costmap_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
             ),
@@ -243,7 +223,7 @@ def generate_launch_description():
                 executable='component_container_isolated',
                 name=container_name,
                 output='screen',
-                parameters=[configured_params, {'autostart': autostart}],
+                parameters=[configured_core_params, configured_costmap_params, {'autostart': autostart}],
                 arguments=['--ros-args', '--log-level', log_level],
             ),
             LoadComposableNodes(
@@ -254,7 +234,7 @@ def generate_launch_description():
                         package='nav2_controller',
                         plugin='nav2_controller::ControllerServer',
                         name='controller_server',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
                     ),
                     ComposableNode(
@@ -262,7 +242,7 @@ def generate_launch_description():
                         package='nav2_smoother',
                         plugin='nav2_smoother::SmootherServer',
                         name='smoother_server',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings,
                     ),
                     ComposableNode(
@@ -270,7 +250,7 @@ def generate_launch_description():
                         package='nav2_planner',
                         plugin='nav2_planner::PlannerServer',
                         name='planner_server',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings,
                     ),
                     ComposableNode(
@@ -278,7 +258,7 @@ def generate_launch_description():
                         package='nav2_behaviors',
                         plugin='behavior_server::BehaviorServer',
                         name='behavior_server',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
                     ),
                     ComposableNode(
@@ -286,7 +266,7 @@ def generate_launch_description():
                         package='nav2_bt_navigator',
                         plugin='nav2_bt_navigator::BtNavigator',
                         name='bt_navigator',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings,
                     ),
                     ComposableNode(
@@ -294,7 +274,7 @@ def generate_launch_description():
                         package='nav2_waypoint_follower',
                         plugin='nav2_waypoint_follower::WaypointFollower',
                         name='waypoint_follower',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings,
                     ),
                     ComposableNode(
@@ -302,7 +282,7 @@ def generate_launch_description():
                         package='nav2_velocity_smoother',
                         plugin='nav2_velocity_smoother::VelocitySmoother',
                         name='velocity_smoother',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
                     ),
                     ComposableNode(
@@ -310,7 +290,7 @@ def generate_launch_description():
                         package='nav2_collision_monitor',
                         plugin='nav2_collision_monitor::CollisionMonitor',
                         name='collision_monitor',
-                        parameters=[configured_params],
+                        parameters=[configured_core_params, configured_costmap_params],
                         remappings=remappings,
                     ),
                     ComposableNode(
@@ -327,24 +307,30 @@ def generate_launch_description():
         ],
     )
 
-    # Create the launch description and populate
-    ld = LaunchDescription()
+    return [load_nodes, load_composable_nodes]
 
-    # Set environment variables
-    ld.add_action(stdout_linebuf_envvar)
 
-    # Declare the launch options
-    ld.add_action(declare_namespace_cmd)
-    ld.add_action(declare_use_sim_time_cmd)
-    ld.add_action(declare_params_file_cmd)
-    ld.add_action(declare_autostart_cmd)
-    ld.add_action(declare_use_composition_cmd)
-    ld.add_action(declare_container_name_cmd)
-    ld.add_action(declare_use_respawn_cmd)
-    ld.add_action(declare_log_level_cmd)
+def generate_launch_description():
+    my_package_name = 'rover_autonomy'
+    my_package_dir = get_package_share_directory(my_package_name)
 
-    # Add the actions to launch all of the navigation nodes
-    ld.add_action(load_nodes)
-    ld.add_action(load_composable_nodes)
+    return LaunchDescription([
+        SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1'),
+        DeclareLaunchArgument('namespace', default_value='', description='Top-level namespace'),
+        DeclareLaunchArgument('use_sim_time', default_value='true', description='Use simulation (Gazebo) clock if true'),
+        DeclareLaunchArgument('params_file', default_value=os.path.join(my_package_dir, 'config', 'navigation', 'navigation.yaml'), description='Full path to the ROS2 parameters file to use for all launched nodes'),
+        DeclareLaunchArgument('autostart', default_value='true', description='Automatically startup the nav2 stack'),
+        DeclareLaunchArgument('use_composition', default_value='False', description='Use composed bringup if True'),
+        DeclareLaunchArgument('container_name', default_value='nav2_container', description='the name of conatiner that nodes will load in if use composition'),
+        DeclareLaunchArgument('use_respawn', default_value='False', description='Whether to respawn if a node crashes. Applied when composition is disabled.'),
+        DeclareLaunchArgument('log_level', default_value='info', description='log level'),
+        
+        # New arguments for dynamic mode switching
+        DeclareLaunchArgument('navigation_mode', default_value='110', description='Navigation Mode (e.g. 110)'),
+        DeclareLaunchArgument('navigation_odom_only', default_value='false', description='Navigate using only odom'),
+        DeclareLaunchArgument('launch_mapping', default_value='false', description='Is mapping active?'),
+        DeclareLaunchArgument('launch_local_topography', default_value='false', description='Is local topography active?'),
+        DeclareLaunchArgument('launch_global_topography', default_value='false', description='Is global topography active?'),
 
-    return ld
+        OpaqueFunction(function=launch_setup)
+    ])

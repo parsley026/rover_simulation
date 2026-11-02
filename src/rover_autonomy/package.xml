@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rover_autonomy</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>Autonomy subsystem — supervisor, watchdog, and pipeline bringup for the rover.</description>
 
   <maintainer email="me@email.com">me_name</maintainer>
@@ -30,6 +30,7 @@
   <depend>geometry_msgs</depend>
   <depend>diagnostic_msgs</depend>
   <depend>tf2</depend>
+  <depend>aruco_interfaces</depend>
 
   <!-- Python launch support -->
   <exec_depend>launch</exec_depend>

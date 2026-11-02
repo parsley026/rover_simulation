@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/lidar/ouster/os1_lidar_assembly.xacro"/>
+  <xacro:macro name="sensor_lidar_ouster_os1" params="prefix parent">
+    <xacro:ouster_os1_lidar name="${prefix}" parent_link="${parent}">
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+    </xacro:ouster_os1_lidar>
+  </xacro:macro>
+</robot>

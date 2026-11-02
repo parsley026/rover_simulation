@@ -1,0 +1,25 @@
+# Bridge template: Hikvision IP camera
+#
+# Token substitution applied at runtime by dynamic_bridge_node:
+#   {ID}          → sensor id from payload.yaml  (e.g. camera_03)
+#   {ROBOT_NAME}  → Gazebo entity name           (e.g. rover)
+#   {WORLD_NAME}  → Gazebo world name            (e.g. mars_yard)
+#
+# Gz sensor name defined in ip_camera_asseemble.xacro: {ID}_rgb_sensor
+# Topics produced:
+#   /{ID}/image_raw     (1920×1080, 60 Hz, R8G8B8)
+#   /{ID}/camera_info
+
+# ── RGB image ─────────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/image_raw"
+  gz_topic_name:  "/{ID}/image_raw"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+# ── Camera calibration ────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/camera_info"
+  gz_topic_name:  "/{ID}/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS

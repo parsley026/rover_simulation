@@ -1,0 +1,83 @@
+# Bridge template: ZED2i stereo camera (simulation mode)
+#
+# Token substitution applied at runtime by dynamic_bridge_node:
+#   {ID}          → sensor id from payload.yaml  (e.g. camera_01)
+#   {ROBOT_NAME}  → Gazebo entity name           (e.g. rover)
+#   {WORLD_NAME}  → Gazebo world name            (e.g. mars_yard)
+#
+# Topics match the Gazebo sensor names in zed2i_camera_assembly.xacro:
+#   {ID}_left_sensor    → /{ID}/left/image_raw + camera_info
+#   {ID}_right_sensor   → /{ID}/right/image_raw + camera_info
+#   {ID}_depth_sensor   → /{ID}/depth/image_raw + camera_info + points
+#   {ID}_imu_sensor     → /{ID}/imu/data_raw
+#
+# QoS strategy:
+#   Image, Depth, PointCloud2: sensor_data profile (Best Effort, Volatile, depth 5)
+#     — matches the QoS profile expected by most ROS 2 perception nodes
+#       (e.g., image_transport, depth_image_proc, rviz2 image display).
+#     — avoids Reliable back-pressure that causes memory bloat and frame
+#       drops when a subscriber temporarily can't keep up with 15 Hz stereo.
+#   IMU: Reliable, depth 10 — small messages, correctness matters more than latency.
+#
+# For disparity maps run stereo_image_proc on /{ID}/left + /{ID}/right.
+
+# ── Left stereo camera ────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/left/image_raw"
+  gz_topic_name:  "/{ID}_left_sensor/image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/left/camera_info"
+  gz_topic_name:  "/{ID}_left_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── Right stereo camera ───────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/right/image_raw"
+  gz_topic_name:  "/{ID}_right_sensor/image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/right/camera_info"
+  gz_topic_name:  "/{ID}_right_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── Depth / RGBD ──────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/depth/image_raw"
+  gz_topic_name:  "/{ID}_depth_sensor/depth_image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/depth/camera_info"
+  gz_topic_name:  "/{ID}_depth_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/depth/points"
+  gz_topic_name:  "/{ID}_depth_sensor/points"
+  ros_type_name:  "sensor_msgs/msg/PointCloud2"
+  gz_type_name:   "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── IMU ───────────────────────────────────────────────────────────────────
+# IMU uses Reliable QoS: the payloads are tiny (< 200 bytes) so back-pressure
+# is negligible, but message ordering correctness matters for EKF fusion.
+- ros_topic_name: "/{ID}/imu/data_raw"
+  gz_topic_name:  "/{ID}_imu_sensor"
+  ros_type_name:  "sensor_msgs/msg/Imu"
+  gz_type_name:   "gz.msgs.IMU"
+  direction: GZ_TO_ROS

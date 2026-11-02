@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/common/inertias.xacro"/>
+
+  <xacro:macro name="rover_wheel" params="prefix parent_link x_reflect">
+    <joint name="drive_${prefix}_joint" type="continuous">
+      <parent link="${parent_link}"/>
+      <child link="wheel_${prefix}"/>
+      <origin xyz="0 0 ${wheel_drop_z}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="${drive_effort}" velocity="${drive_vel}"/>
+      <dynamics damping="${drive_joint_damping}" friction="${drive_joint_friction}"/>
+    </joint>
+
+    <link name="wheel_${prefix}">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+        <material name="tire_orange"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+        <geometry><cylinder radius="${wheel_radius - 0.02}" length="${wheel_width + 0.002}"/></geometry>
+        <material name="carbon_black"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+        <geometry><cylinder radius="0.04" length="0.11"/></geometry>
+        <material name="carbon_black"/>
+      </visual>
+      <visual>
+        <origin xyz="0 ${0.056 * x_reflect} 0" rpy="1.570796 0 0"/>
+        <geometry><cylinder radius="0.015" length="0.005"/></geometry>
+        <material name="actuator_silver"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+      </collision>
+      <xacro:inertial_cylinder mass="${mass_wheel}" radius="${wheel_radius}" length="${wheel_width}">
+        <origin xyz="0 0 0" rpy="1.570796 0 0"/>
+      </xacro:inertial_cylinder>
+    </link>
+    
+    <gazebo reference="wheel_${prefix}">
+      <mu1>${mu1_wheel}</mu1>
+      <mu2>${mu2_wheel}</mu2>
+    </gazebo>
+  </xacro:macro>
+</robot>

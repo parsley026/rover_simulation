@@ -3,31 +3,21 @@ main_compute:
     # -- mode
     use_sim_time: true
 
-    # -- 
-    launch_description: true
-    
+
     launch_camera_00: true
     launch_camera_00_driver: true
     launch_camera_00_decompression: false
     launch_camera_00_post_processing: true
 
     launch_lidar_00: true
+    # launch_lidar_00_driver: true
+    # launch_lidar_00_decompression: false
+    # launch_lidar_00_processing: true
     
-    launch_localization: true
-
-    launch_mapping: false
-    launch_local_topography: false
-    launch_global_topography: false
-    
-    launch_navigation: false
-
     # -- subsystem config files
     camera_00_config: "config/camera/camera.yaml"
     lidar_00_config: "config/lidar/lidar.yaml"
     
-    mapping_config: "config/mapping/mapping.yaml"
-    navigation_config: "config/navigation/navigation.yaml"
-
     # -- camera 00 subsystem identifiers
     camera_00_package:      "rover_autonomy"
     camera_00_driver_launch:          "camera_driver.launch.py"
@@ -37,7 +27,7 @@ main_compute:
     camera_00_name:         "camera_00"
     camera_00_parent_frame: "sensor_mount_01_link"
 
-    camera_00_decompress_rgb: true
+    camera_00_decompress_rgb: false
     camera_00_decompress_depth: false
 
     # -- camera 01 subsystem identifiers
@@ -75,20 +65,12 @@ main_compute:
     lidar_odom_ns:        "lidar_00"
     lidar_00_odom_config: "config/odometry/icp_odom.yaml"
 
-    # -- odometry health watchdog toggles (all disabled by default)
-    launch_camera_00_odom_health: false
-    launch_camera_01_odom_health: false
-    launch_lidar_00_odom_health:  false
-
-    # -- health node config files (relative to package share)
-    camera_00_odom_health_config: "config/odometry/health_rgbd.yaml"
-    camera_01_odom_health_config: "config/odometry/health_rgbd.yaml"
-    lidar_00_odom_health_config:  "config/odometry/health_icp.yaml"
-
+    # localization 
+    launch_localization: true
     localization_package: "rover_autonomy"
     localization_launch:  "localization.launch.py"
     localization_ns:      "localization"
-    localization_mode:    2
+    localization_mode:    110
     
     localization_use_ekf: true
     ekf_config:           "config/odometry/ekf_filter.yaml"
@@ -96,26 +78,68 @@ main_compute:
     localization_use_ukf: false
     ukf_config:           "config/odometry/ukf_filter.yaml"
 
+    # aruco positioning - Camera 00 (Z)
+    launch_aruco_00: true
+    aruco_00_rtsp_url: "rtsp://admin:Raptors9@192.168.1.67:554/Streaming/Channels/101"
+    aruco_00_camera_frame: "sensor_mount_02_link"
+    aruco_00_camera_config: "config/sensors/hikvision_z.yaml"
+
+    # aruco positioning - Camera 01 (ZZ)
+    launch_aruco_01: false
+    aruco_01_rtsp_url: "rtsp://admin:Raptors9@192.168.1.65:554/Streaming/Channels/101"
+    aruco_01_camera_frame: "sensor_mount_03_link"
+    aruco_01_camera_config: "config/sensors/hikvision_zz.yaml"
+
+    # aruco positioning - Camera 02 (B)
+    launch_aruco_02: false
+    aruco_02_rtsp_url: "rtsp://admin:Raptors9@192.168.1.66:554/Streaming/Channels/101"
+    aruco_02_camera_frame: "sensor_mount_04_link"
+    aruco_02_camera_config: "config/sensors/hikvision_b.yaml"
+
+    # mapping
+    launch_mapping: false
     mapping_package:      "rover_autonomy"
     mapping_launch:       "mapping.launch.py"
     mapping_ns:           "mapping"
-    mapping_mode:         2
+    mapping_mode:         110
 
+    mapping_config: "config/mapping/mapping.yaml"
+
+    launch_local_topography: false
     local_topography_package: "rover_topography"
     local_topography_launch:  "local_topography.launch.py"
-    local_topography_ns:      ""
+    local_topography_ns:      "local_topography"
     
+    launch_global_topography: false
     global_topography_package: "rover_topography"
     global_topography_launch:  "global_topography.launch.py"
-    global_topography_ns:      ""
+    global_topography_ns:      "global_topography"
 
     mapping_load_existing_db: false
     
-    mapping_db_folder:    "~/.ros/rtabmap"
+    mapping_db_folder:    "/home/raptors/Desktop/rover_simulation_ai/map"
     mapping_db_file_name: "rtabmap.db"
 
+    # navigation
+    launch_navigation: true
     navigation_package:      "rover_autonomy"
     navigation_launch:       "navigation.launch.py"
     navigation_ns:           "navigation"
+    navigation_mode:         110
+
+    navigation_odom_only:    true
+
     navigation_autostart:    true
     navigation_use_composition: true
+
+    navigation_config: "config/navigation/navigation.yaml"
+
+   # -- odometry health watchdog toggles (all disabled by default)
+    # launch_camera_00_odom_health: false
+    # launch_camera_01_odom_health: false
+    # launch_lidar_00_odom_health:  false
+
+    # -- health node config files (relative to package share)
+    # camera_00_odom_health_config: "config/odometry/health_rgbd.yaml"
+    # camera_01_odom_health_config: "config/odometry/health_rgbd.yaml"
+    # lidar_00_odom_health_config:  "config/odometry/health_icp.yaml"

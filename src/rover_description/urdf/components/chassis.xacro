@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/common/inertias.xacro"/>
+
+  <xacro:macro name="base_link">
+    <link name="base_link">
+      <visual>
+        <origin xyz="${x_merged_offset} 0 0" rpy="0 0 0"/>
+        <geometry><box size="${x_merged} ${w_mid} ${z_thick}"/></geometry>
+        <material name="grad_base"/>
+      </visual>
+      <collision>
+        <origin xyz="${x_merged_offset} 0 0" rpy="0 0 0"/>
+        <geometry><box size="${x_merged} ${w_mid} ${z_thick}"/></geometry>
+      </collision>
+      <xacro:inertial_box mass="${mass_chassis}" x="${x_merged}" y="${w_mid}" z="${z_thick}">
+          <origin xyz="${x_merged_offset} 0 0" rpy="0 0 0"/>
+      </xacro:inertial_box>
+    </link>
+
+    <link name="top_slice_2"><visual><geometry><box size="${x_top} ${w_t2} ${z_thick}"/></geometry><material name="grad_t2"/></visual><collision><geometry><box size="${x_top} ${w_t2} ${z_thick}"/></geometry></collision></link>
+    <link name="top_slice_3"><visual><geometry><box size="${x_top} ${w_t3} ${z_thick}"/></geometry><material name="grad_t3"/></visual><collision><geometry><box size="${x_top} ${w_t3} ${z_thick}"/></geometry></collision></link>
+    <link name="top_slice_4"><visual><geometry><box size="${x_top} ${w_t4} ${z_thick}"/></geometry><material name="grad_t4"/></visual><collision><geometry><box size="${x_top} ${w_t4} ${z_thick}"/></geometry></collision></link>
+
+    <link name="bottom_slice_2"><visual><geometry><box size="${x_bot} ${w_b2} ${z_thick}"/></geometry><material name="grad_b2"/></visual><collision><geometry><box size="${x_bot} ${w_b2} ${z_thick}"/></geometry></collision></link>
+    <link name="bottom_slice_3"><visual><geometry><box size="${x_bot} ${w_b3} ${z_thick}"/></geometry><material name="grad_b3"/></visual><collision><geometry><box size="${x_bot} ${w_b3} ${z_thick}"/></geometry></collision></link>
+    <link name="bottom_slice_4"><visual><geometry><box size="${x_bot} ${w_b4} ${z_thick}"/></geometry><material name="grad_b4"/></visual><collision><geometry><box size="${x_bot} ${w_b4} ${z_thick}"/></geometry></collision></link>
+    <link name="bottom_slice_5"><visual><geometry><box size="${x_bot} ${w_b5} ${z_thick}"/></geometry><material name="grad_b5"/></visual><collision><geometry><box size="${x_bot} ${w_b5} ${z_thick}"/></geometry></collision></link>
+
+    <joint name="mid_to_t2" type="fixed"><parent link="base_link"/><child link="top_slice_2"/><origin xyz="${x_mid/2 + x_top + x_top/2} 0 0" rpy="0 0 0"/></joint>
+    <joint name="t2_to_t3" type="fixed"><parent link="top_slice_2"/><child link="top_slice_3"/><origin xyz="${x_top} 0 0" rpy="0 0 0"/></joint>
+    <joint name="t3_to_t4" type="fixed"><parent link="top_slice_3"/><child link="top_slice_4"/><origin xyz="${x_top} 0 0" rpy="0 0 0"/></joint>
+
+    <joint name="mid_to_b2" type="fixed"><parent link="base_link"/><child link="bottom_slice_2"/><origin xyz="-${x_mid/2 + x_bot + x_bot/2} 0 0" rpy="0 0 0"/></joint>
+    <joint name="b2_to_b3" type="fixed"><parent link="bottom_slice_2"/><child link="bottom_slice_3"/><origin xyz="-${x_bot} 0 0" rpy="0 0 0"/></joint>
+    <joint name="b3_to_b4" type="fixed"><parent link="bottom_slice_3"/><child link="bottom_slice_4"/><origin xyz="-${x_bot} 0 0" rpy="0 0 0"/></joint>
+    <joint name="b4_to_b5" type="fixed"><parent link="bottom_slice_4"/><child link="bottom_slice_5"/><origin xyz="-${x_bot} 0 0" rpy="0 0 0"/></joint>
+
+    <!-- Mast & Tower Links and Mount Points -->
+    <link name="robot_base_front_mount">
+        <visual><geometry><box size="0.15 0.15 0.02"/></geometry><material name="mount_gray"/></visual>
+        <xacro:inertial_box mass="0.1" x="0.15" y="0.15" z="0.02"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <joint name="robot_base_front_mount_joint" type="fixed">
+        <parent link="base_link"/><child link="robot_base_front_mount"/>
+        <origin xyz="0.235 0.0 0.06" rpy="0 0 0"/>
+    </joint>
+
+    <link name="robot_base_back_mount">
+        <visual><geometry><box size="0.02 0.15 0.1"/></geometry><material name="mount_gray"/></visual>
+        <xacro:inertial_box mass="0.1" x="0.02" y="0.15" z="0.1"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <joint name="robot_base_back_mount_joint" type="fixed">
+        <parent link="base_link"/><child link="robot_base_back_mount"/>
+        <origin xyz="-0.33 0.0 0.0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Mast / Poles -->
+    <link name="pole_left_link">
+        <visual><geometry><cylinder radius="0.01" length="0.8"/></geometry><material name="grad_mast"/></visual>
+        <xacro:inertial_cylinder mass="0.2" length="0.8" radius="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_cylinder>
+    </link>
+    <joint name="pole_left_joint" type="fixed">
+        <parent link="base_link"/><child link="pole_left_link"/>
+        <origin xyz="-0.095 0.21 0.45" rpy="0 0 0"/>
+    </joint>
+
+    <link name="pole_right_link">
+        <visual><geometry><cylinder radius="0.01" length="0.8"/></geometry><material name="grad_mast"/></visual>
+        <xacro:inertial_cylinder mass="0.2" length="0.8" radius="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_cylinder>
+    </link>
+    <joint name="pole_right_joint" type="fixed">
+        <parent link="base_link"/><child link="pole_right_link"/>
+        <origin xyz="-0.09 -0.21 0.45" rpy="0 0 0"/>
+    </joint>
+
+    <link name="pole_cross_mount_link">
+        <visual><geometry><box size="0.02 0.40 0.20"/></geometry><material name="tower_yellow"/></visual>
+        <xacro:inertial_box mass="0.5" x="0.02" y="0.40" z="0.20"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <joint name="pole_cross_mount_joint" type="fixed">
+        <parent link="base_link"/><child link="pole_cross_mount_link"/>
+        <origin xyz="-0.09 0.0 0.55" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+</robot>

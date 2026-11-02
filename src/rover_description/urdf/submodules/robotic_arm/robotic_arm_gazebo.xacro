@@ -1,0 +1,104 @@
+<?xml version="1.0" ?>
+<robot name="robotic_arm" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<xacro:arg name="standalone_arm" default="false"/>
+
+<!-- Only instantiate a dedicated GazeboSimROS2ControlPlugin when running in
+     standalone mode (isolated arm test). When mounted on the full rover, the
+     master plugin in core_plugins.xacro manages both chassis and arm joints. -->
+<xacro:if value="$(arg standalone_arm)">
+<gazebo>
+  <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+    <parameters>$(find rover_description)/config/robotic_arm/ros2_controllers.yaml</parameters>
+    <position_proportional_gain>1.0</position_proportional_gain>
+    <!-- In standalone mode, joint_state_merger reads /arm/joint_states -->
+    <ros>
+      <xacro:if value="${'$(arg ros_namespace)' != ''}">
+        <namespace>$(arg ros_namespace)</namespace>
+      </xacro:if>
+      <remapping>/joint_states:=/arm/joint_states</remapping>
+    </ros>
+  </plugin>
+</gazebo>
+</xacro:if>
+
+<xacro:property name="body_color" value="Gazebo/Silver" />
+
+<gazebo reference="robotic_arm_base_link">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+  <gravity>true</gravity>
+</gazebo>
+
+<gazebo reference="base_link">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+  <gravity>true</gravity>
+</gazebo>
+
+<gazebo reference="link_01_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_02_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_03_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_04_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_05_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_06_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_72_1">
+  <material>${body_color}</material>
+  <mu1>20.0</mu1>
+  <mu2>20.0</mu2>
+  <kp>100.0</kp>
+  <kd>10.0</kd>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="link_72_2">
+  <material>${body_color}</material>
+  <mu1>20.0</mu1>
+  <mu2>20.0</mu2>
+  <kp>100.0</kp>
+  <kd>10.0</kd>
+  <self_collide>true</self_collide>
+</gazebo>
+
+</robot>
+

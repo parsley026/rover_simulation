@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="sensor_generic_lidar" params="prefix parent">
+    <link name="${prefix}_link">
+      <visual>
+        <geometry><cylinder radius="0.04" length="0.07"/></geometry>
+        <material name="sensor_black"><color rgba="0.1 0.1 0.1 0.95"/></material>
+      </visual>
+    </link>
+    <joint name="${prefix}_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}_link"/>
+      <origin xyz="0.0 0.0 0.04" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!--
+  Unified ros2_control configuration for the actuator arm.
+  Behavior is selected by the `use_real_hardware` xacro arg (declared in
+  actuator_arm.xacro and propagated to this file):
+    use_real_hardware:=true  → ActuatorArmSystemHardware (real VESC motors)
+    use_real_hardware:=false → gz_ros2_control/GazeboSimSystem (default, sim)
+
+  On real hardware, read_only:=true disables periodic writes but leaves the
+  lifecycle stop commands intact.
+
+  Per-joint gear_ratio:
+    Real hardware: 1000.0 — VESC encoder counts motor-side rotations; the
+    joint sits on the output side of a 1000:1 gearbox, so the hardware
+    plugin multiplies by 1000.0 to translate to joint space.
+    Simulation: 1.0 — Gazebo models the joint at the output shaft directly.
+
+  Note: per-joint direction differences between sim and real are handled in
+  actuator_arm.xacro by flipping the <axis> element of the affected joints,
+  NOT by sign-flipping gear_ratio here.
+
+  Gripper (real only): the physical gripper has two jaws driven by a single
+  VESC (118). gripper2 reuses vesc_id=118 with gear_ratio=-1.0 so read()
+  returns the mirrored state; write() only commands gripper1 (joint index 6).
+  In sim, gripper2 is an independent prismatic joint with no vesc_id.
+-->
+<robot name="robotic_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:arg name="use_real_hardware" default="false"/>
+<xacro:arg name="ros_namespace" default=""/>
+<xacro:arg name="read_only" default="false"/>
+<xacro:property name="is_real" value="$(arg use_real_hardware)"/>
+
+<ros2_control name="${'ActuatorArmHardware' if is_real else 'GazeboSimSystem'}" type="system">
+  <hardware>
+    <plugin>${'actuator_arm_hardware/ActuatorArmSystemHardware' if is_real else 'gz_ros2_control/GazeboSimSystem'}</plugin>
+    <xacro:if value="$(arg use_real_hardware)">
+      <param name="ros_namespace">$(arg ros_namespace)</param>
+      <param name="read_only">$(arg read_only)</param>
+    </xacro:if>
+  </hardware>
+
+  <joint name="link1">
+    <param name="vesc_id">112</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">0.0</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <joint name="link2">
+    <param name="vesc_id">113</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">-0.17453292519943295</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <joint name="link3">
+    <param name="vesc_id">114</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">-0.45378560551852565</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <joint name="link4">
+    <param name="vesc_id">115</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">0.0</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <joint name="link5">
+    <param name="vesc_id">116</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">0.6108652381980153</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <joint name="link6">
+    <param name="vesc_id">117</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">0.0</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <!-- Primary gripper jaw — driven by VESC 118 -->
+  <joint name="gripper1">
+    <param name="vesc_id">118</param>
+    <param name="gear_ratio">1000</param>
+    <command_interface name="position" />
+    <command_interface name="velocity" />
+    <state_interface name="position">
+      <param name="initial_value">0.001</param>
+    </state_interface>
+    <state_interface name="velocity" />
+  </joint>
+
+  <!--
+    Secondary gripper jaw.
+    Real: mechanically coupled to gripper1 — reuses vesc_id=118 with
+          gear_ratio=-1.0 so read() returns the mirrored state. write()
+          never commands joint index 7, so no spurious CAN messages.
+    Sim:  independent prismatic joint (no shared motor, no vesc_id).
+    TODO: Fix comment
+  -->
+  <joint name="gripper2">
+    <xacro:if value="$(arg use_real_hardware)">
+      <param name="vesc_id">118</param>
+      <param name="gear_ratio">-1.0</param>
+      <command_interface name="position" />
+      <command_interface name="velocity" />
+    </xacro:if>
+    <state_interface name="position">
+      <param name="initial_value">-0.001</param>
+    </state_interface>
+    <state_interface name="velocity"/>
+  </joint>
+
+</ros2_control>
+
+</robot>

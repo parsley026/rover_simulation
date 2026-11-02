@@ -102,7 +102,64 @@ bool ProcessSubsystemManager::start_process()
   if (pid == 0) {
     // CHILD PROCESS: Create a new Process Group so we can kill the whole tree later
     setpgid(0, 0);
-    
+
+    // Ensure nav_ws packages (built from source) are discoverable even if the
+    // parent process was started without nav_ws sourced.
+    const std::string nav_ws_install = "/home/rex/nav_ws/install";
+
+    // Helper: prepend <nav_ws_install>/<pkg> dirs to an env var
+    auto prepend_env = [&](const char* var, const std::string& prefix) {
+      const char* current = getenv(var);
+      std::string updated = prefix;
+      if (current && current[0] != '\0') {
+        updated += ":";
+        updated += current;
+      }
+      setenv(var, updated.c_str(), 1 /*overwrite*/);
+    };
+
+    // Collect all per-package install sub-paths
+    // AMENT_PREFIX_PATH expects the install/<pkg> roots (no subdirs)
+    std::string ament_prefix_additions;
+    // PYTHONPATH and LD_LIBRARY_PATH need the full sub-paths
+    std::string python_additions;
+    std::string ldlib_additions;
+
+    // Walk install/<pkg> dirs and accumulate paths
+    // We do this by globbing the known structure; fall back to a broad entry
+    // AMENT_PREFIX_PATH: each package root
+    {
+      std::string find_cmd = "find " + nav_ws_install +
+        " -maxdepth 1 -mindepth 1 -type d 2>/dev/null";
+      FILE* fp = popen(find_cmd.c_str(), "r");
+      if (fp) {
+        char buf[512];
+        while (fgets(buf, sizeof(buf), fp)) {
+          std::string dir(buf);
+          if (!dir.empty() && dir.back() == '\n') dir.pop_back();
+          if (!ament_prefix_additions.empty()) ament_prefix_additions += ":";
+          ament_prefix_additions += dir;
+
+          if (!python_additions.empty()) python_additions += ":";
+          python_additions += dir + "/lib/python3.12/site-packages";
+
+          if (!ldlib_additions.empty()) ldlib_additions += ":";
+          ldlib_additions += dir + "/lib";
+        }
+        pclose(fp);
+      }
+    }
+
+    if (!ament_prefix_additions.empty()) {
+      prepend_env("AMENT_PREFIX_PATH", ament_prefix_additions);
+    }
+    if (!python_additions.empty()) {
+      prepend_env("PYTHONPATH", python_additions);
+    }
+    if (!ldlib_additions.empty()) {
+      prepend_env("LD_LIBRARY_PATH", ldlib_additions);
+    }
+
     std::vector<std::string> args;
     args.push_back("ros2");
     args.push_back("launch");
@@ -110,6 +167,12 @@ bool ProcessSubsystemManager::start_process()
     args.push_back(launch_file_);
 
     for (const auto& kv : launch_arguments_) {
+      if (kv.second.empty()) {
+        RCLCPP_WARN(parent_node_->get_logger(),
+          "Skipping empty launch argument '%s' for subsystem %s.",
+          kv.first.c_str(), launch_file_.c_str());
+        continue;
+      }
       args.push_back(kv.first + ":=" + kv.second);
     }
 
@@ -120,7 +183,7 @@ bool ProcessSubsystemManager::start_process()
     exec_args.push_back(nullptr);
 
     execvp("ros2", exec_args.data());
-    
+
     // If execvp fails, exit the child process
     exit(1);
   } else if (pid > 0) {

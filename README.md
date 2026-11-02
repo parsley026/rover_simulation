@@ -1,7 +1,9 @@
 source install/setup.bash
 
-ros2 launch gazebo_simulation simulation_with_kinematics.launch.py world-name:='marsyard2020.world' pose:='1.0 2.0 1.0'
-ros2 launch gazebo_simulation simulation_with_kinematics.launch.py world-name:='mars_yard.sdf'
+ros2 launch gazebo_simulation simulation_with_stuff.launch.py world-name:='mars_yard.sdf' pose:='1.0 2.0 1.0'
+ros2 launch gazebo_simulation simulation_with_stuff.launch.py world-name:='mars_yard.sdf'
+ros2 launch gazebo_simulation simulation_with_stuff.launch.py
+
 ros2 launch gazebo_simulation simulation.launch.py
 
 ros2 launch rover_kinematics_bridge rover_kinematics_bridge.launch.xml
@@ -16,7 +18,7 @@ ros2 launch rover_autonomy_outdated playground_naviagtion.launch.py
 
 rviz2 --ros-args --remap use_sim_time:=true
 
-ros2 launch rover_autonomy main_compute.launch.py 
+ros2 launch rover_autonomy main_compute.launch.py
 
 ros2 run rover_autonomy_outdated path_recorder --ros-args -p odom_topic:=/kinematics/odom
 
@@ -27,3 +29,9 @@ ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 python3 web_action_proxy.py
 
 ros2 run rover_autonomy_outdated path_recorder --ros-args -p odom_topic:=/kinematics/odom -p max_path_length_m:=20.0
+
+ros2 run rtabmap_viz rtabmap_viz
+
+ros2 launch autonomy_dashboard/dashboard.launch.xml vite_port:=8080 \
+    rosbridge_url:="ws://192.168.1.100:9090" \
+    ros_base:="/home/raptors/Desktop/rover_simulation_ai"

@@ -14,6 +14,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ros_gz REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -24,6 +25,7 @@ find_package(xacro REQUIRED)
 find_package(gazebo_worlds REQUIRED)
 
 find_package(rover_description REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 find_package(gz-cmake3 REQUIRED)
 find_package(gz-plugin2 REQUIRED COMPONENTS register)
@@ -78,9 +80,16 @@ endif()
 #   DESTINATION lib/${PROJECT_NAME}
 # )
 
-install(DIRECTORY launch config
+install(DIRECTORY launch config scripts
   DESTINATION share/${PROJECT_NAME}/
 )
+
+
+
+find_package(std_srvs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+
+
 
 # Following hooks are used to ensure that the correct environment variables
 # will be set by exectuting 'sourece install/setup.bash' after compilation.

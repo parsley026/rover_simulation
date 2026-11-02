@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<robot name="rover" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="use_sim_time"    default="false"/>
+  <xacro:arg name="world_name"      default="demo"/>
+  <xacro:arg name="entity_name"     default="rover"/>
+
+  <!-- Include all modules -->
+  <xacro:include filename="$(find rover_description)/urdf/common/parameters.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/common/materials.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/chassis.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/wheel.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/suspension.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/mounts/_mounts.xacro"/>
+
+  <!-- Base body -->
+  <xacro:base_link/>
+
+  <!-- Left side: suspension -> wheel -->
+  <xacro:suspension_assembly prefix="left" reflect_y="1"/>
+
+  <!-- Right side: suspension -> wheel -->
+  <xacro:suspension_assembly prefix="right" reflect_y="-1"/>
+
+  <!-- Load payload config -->
+  <xacro:arg name="payload_config" default="$(find rover_description)/config/payload.yaml"/>
+  <xacro:property name="payload" value="${xacro.load_yaml('$(arg payload_config)')}"/>
+  <xacro:property name="submodules" value="${payload.get('submodules') or []}"/>
+  <xacro:property name="sensors" value="${payload.get('sensors') or []}"/>
+  
+  <xacro:property name="sensor_mount_03_pitch" value="${payload.get('base', dict()).get('sensor_mount_03_pitch', 0.0)}"/>
+
+  <!-- Static Chassis Mounts (Mast) -->
+  <xacro:mast_mounts name="mast" parent_link="base_link"
+                     sensor_mount_03_pitch="${sensor_mount_03_pitch}"/>
+
+  <!-- ========================================== -->
+  <!--               SUBMODULES                   -->
+  <!-- ========================================== -->
+
+  <!-- Robotic arm: gated by presence in payload.yaml -->
+  <xacro:property name="robotic_arms" value="${[sub for sub in submodules if sub.get('id') == 'robotic_arm']}"/>
+  <xacro:if value="${robotic_arms != []}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/robotic_arm/robotic_arm_base.xacro"/>
+    <xacro:property name="robotic_arm_sub" value="${robotic_arms[0]}"/>
+    <xacro:property name="robotic_arm_parent" value="${robotic_arm_sub.get('parent', 'robot_base_front_mount')}"/>
+    <xacro:robotic_arm parent_link="${robotic_arm_parent}"
+                       module_position_front="${robotic_arm_parent == 'robot_base_front_mount'}"
+                       module_position_back="${robotic_arm_parent == 'robot_base_back_mount'}"
+                       xyz="${robotic_arm_sub.get('xyz', '0 0 0.01')}"
+                       rpy="${robotic_arm_sub.get('rpy', '0 0 0')}"
+                       sensor_mount_06_pitch="${robotic_arm_sub.get('sensor_mount_06_pitch', 0.0)}"/>
+  </xacro:if>
+
+  <xacro:property name="autonomys" value="${[sub for sub in submodules if sub.get('id') == 'autonomy']}"/>
+  <xacro:if value="${autonomys != []}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/autonomy/autonomy_base.xacro"/>
+    <xacro:property name="auto_sub" value="${autonomys[0]}"/>
+    <xacro:property name="auto_parent" value="${auto_sub.get('parent', 'robot_base_front_mount')}"/>
+    <xacro:autonomy_base name="autonomy" parent_link="${auto_parent}" 
+                         module_position_front="${auto_parent == 'robot_base_front_mount'}" 
+                         module_position_back="${auto_parent == 'robot_base_back_mount'}"
+                         sensor_mount_00_pitch="${auto_sub.get('sensor_mount_00_pitch', 0.0)}"
+                         sensor_mount_01_pitch="${auto_sub.get('sensor_mount_01_pitch', 0.0)}"/>
+  </xacro:if>
+
+  <xacro:property name="crossbars" value="${[sub for sub in submodules if sub.get('id') == 'crossbar']}"/>
+  <xacro:if value="${crossbars != []}">
+    <xacro:include filename="$(find rover_description)/urdf/submodules/crossbar/crossbar_base.xacro"/>
+    <xacro:property name="crossbar_sub" value="${crossbars[0]}"/>
+    <xacro:crossbar_base name="crossbar" parent_link="${crossbar_sub.get('parent', 'pole_cross_mount_link')}"
+                         sensor_mount_02_pitch="${crossbar_sub.get('sensor_mount_02_pitch', 0.0)}"/>
+  </xacro:if>
+
+  <!-- ========================================== -->
+  <!--                 SENSORS                    -->
+  <!-- ========================================== -->
+
+  <!-- Include sensor macros once at file scope -->
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/lidar/ouster/os1.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/stereolabs/zed2i.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/hikvision/ip_camera.xacro"/>
+
+  <!-- Static sensor dispatcher macro -->
+  <xacro:macro name="attach_sensor" params="sensor_id sensors_list">
+    <xacro:property name="matches" value="${[s for s in sensors_list if s.get('id') == sensor_id]}"/>
+    <xacro:if value="${matches != []}">
+      <xacro:property name="s" value="${matches[0]}"/>
+      <xacro:if value="${s['model'] == 'lidar/ouster/os1'}">
+        <xacro:sensor_lidar_ouster_os1 prefix="${sensor_id}" parent="${s['parent']}"/>
+      </xacro:if>
+      <xacro:if value="${s['model'] == 'camera/stereolabs/zed2i'}">
+        <xacro:sensor_camera_stereolabs_zed2i prefix="${sensor_id}" parent="${s['parent']}"/>
+      </xacro:if>
+      <xacro:if value="${s['model'] == 'camera/hikvision/ip_camera'}">
+        <xacro:sensor_camera_hikvision_ip_camera prefix="${sensor_id}" parent="${s['parent']}"/>
+      </xacro:if>
+    </xacro:if>
+  </xacro:macro>
+
+  <!-- Attach configured sensors (gated by parent submodule existence) -->
+  <xacro:if value="${autonomys != []}">
+    <xacro:attach_sensor sensor_id="lidar_00"     sensors_list="${sensors}"/>
+    <xacro:attach_sensor sensor_id="camera_01"    sensors_list="${sensors}"/>
+  </xacro:if>
+
+  <xacro:if value="${crossbars != []}">
+    <xacro:attach_sensor sensor_id="camera_02"    sensors_list="${sensors}"/>
+  </xacro:if>
+
+  <xacro:attach_sensor sensor_id="camera_03"    sensors_list="${sensors}"/>
+  <xacro:attach_sensor sensor_id="camera_04"    sensors_list="${sensors}"/>
+  <xacro:attach_sensor sensor_id="camera_05"    sensors_list="${sensors}"/>
+
+  <xacro:if value="${robotic_arms != []}">
+    <xacro:attach_sensor sensor_id="camera_06"    sensors_list="${sensors}"/>
+    <xacro:attach_sensor sensor_id="camera_wrist" sensors_list="${sensors}"/>
+    <xacro:attach_sensor sensor_id="wrist_camera" sensors_list="${sensors}"/>
+  </xacro:if>
+
+  <!-- Hardware Interface & Plugins -->
+  <xacro:if value="$(arg use_sim_time)">
+    <xacro:include filename="$(find rover_description)/urdf/gazebo/chassis_ros2control.xacro"/>
+    <xacro:include filename="$(find rover_description)/urdf/gazebo/core_plugins.xacro"/>
+    <xacro:gazebo_core_plugins
+      world_name="$(arg world_name)"
+      entity_name="$(arg entity_name)"
+      force_constant="${differential_force}"
+      differential_damping="${differential_damping}"
+      bogie_spring="${bogie_spring}"
+      bogie_damping="${bogie_damping}"
+      has_arm="${robotic_arms != []}"
+    />
+  </xacro:if>
+
+</robot>

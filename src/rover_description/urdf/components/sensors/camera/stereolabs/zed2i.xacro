@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/stereolabs/zed2i_camera_assembly.xacro"/>
+  
+  <xacro:macro name="sensor_camera_stereolabs_zed2i" params="prefix parent">
+    <xacro:zed_camera camera_name="${prefix}" parent_frame="${parent}">
+    </xacro:zed_camera>
+  </xacro:macro>
+</robot>

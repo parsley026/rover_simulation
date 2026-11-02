@@ -23,7 +23,6 @@ add_executable(${PROJECT_NAME}_node
   src/gazebo/gazebo_command_publisher.cpp
   src/bridge_modes/simulation_mode.cpp
   src/bridge_modes/digital_shadow_mode.cpp
-  src/bridge_modes/digital_twin_mode.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_node PUBLIC include

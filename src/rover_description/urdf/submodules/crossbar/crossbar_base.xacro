@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="crossbar_base" params="name parent_link sensor_mount_02_pitch:=0.0">
+        
+        <!-- Main crossbar body -->
+        <link name="${name}_link">
+            <visual>
+              <geometry><box size="0.02 0.40 0.20"/></geometry>
+              <material name="tower_yellow"/>
+            </visual>
+            <xacro:inertial_box mass="0.5" x="0.02" y="0.40" z="0.20">
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </xacro:inertial_box>
+        </link>
+        <joint name="${name}_joint" type="fixed">
+            <parent link="${parent_link}"/>
+            <child link="${name}_link"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </joint>
+
+        <!-- Sensor Mount 02 on the crossbar -->
+        <link name="sensor_mount_02_pivot_link">
+            <visual><origin xyz="0 0 0" rpy="1.570796 0 0"/><geometry><cylinder radius="0.005" length="0.12"/></geometry><material name="mount_green"/></visual>
+            <xacro:inertial_cylinder mass="0.01" length="0.12" radius="0.005"><origin xyz="0 0 0" rpy="1.570796 0 0"/></xacro:inertial_cylinder>
+        </link>
+        <joint name="sensor_mount_02_pivot_joint" type="fixed">
+            <parent link="${name}_link"/>
+            <child link="sensor_mount_02_pivot_link"/>
+            <origin xyz="0.0 0.0 0.0" rpy="0 ${sensor_mount_02_pitch * pi / 180.0} 0"/>
+        </joint>
+        <link name="sensor_mount_02_link">
+            <visual><geometry><box size="0.02 0.12 0.035"/></geometry><material name="mount_green"/></visual>
+            <xacro:inertial_box mass="0.01" x="0.02" y="0.12" z="0.035"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+        </link>
+        <joint name="sensor_mount_02_joint" type="fixed">
+            <parent link="sensor_mount_02_pivot_link"/>
+            <child link="sensor_mount_02_link"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </joint>
+
+    </xacro:macro>
+</robot>

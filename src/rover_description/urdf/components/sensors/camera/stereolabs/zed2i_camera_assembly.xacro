@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<robot name="zed2i_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Simulation sensor flag — set by rover.urdf.xacro when use_sim_time:=true -->
+  <xacro:arg name="use_sim_time" default="false"/>
+
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/gazebo_sensors.xacro"/>
+
+  <!--
+    zed_camera macro
+    ================
+    Defines the full ZED2i link/joint tree used by both real-hardware (where
+    the ZED SDK driver publishes all sensor data) and simulation (where Gazebo
+    sensor plugins generate left/right/depth/IMU topics).
+
+    In real-hardware mode (use_sim_time=false):
+      - Only the frame links are created; the ZED ROS 2 wrapper handles data.
+      - Internal sensor links (IMU, mag, baro, temp) are present for TF.
+
+    In simulation mode (use_sim_time=true):
+      - Gazebo stereo camera sensors are injected via <xacro:if>.
+      - Gazebo RGBD camera sensor is injected for depth data.
+      - Gazebo IMU sensor is injected at 200 Hz.
+      - Use stereo_image_proc on /left + /right for disparity if needed.
+  -->
+  <xacro:macro name="zed_camera" params="camera_name parent_frame
+                                         cam_pos_x:=0.0365 cam_pos_y:=0.0 cam_pos_z:=-0.015
+                                         cam_roll:=0.0  cam_pitch:=0.0 cam_yaw:=0.0
+                                         baseline:=0.12 height:=0.03">
+
+    <xacro:property name="M_PI"            value="3.1415926535897931"/>
+    <xacro:property name="optical_offset_x" value="-0.01"/>
+    <xacro:property name="screw_offset_x"   value="-0.01"/>
+
+    <!-- ── Base Joint connecting to the robot mount plate ── -->
+    <joint name="${camera_name}_base_joint" type="fixed">
+      <parent link="${parent_frame}"/>
+      <child  link="${camera_name}_camera_link"/>
+      <origin xyz="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}"
+              rpy="${cam_roll} ${cam_pitch} ${cam_yaw}"/>
+    </joint>
+
+    <!-- ── Base Link (mounting screw hole reference) ── -->
+    <link name="${camera_name}_camera_link"/>
+
+    <!-- ── Camera Center (carries mesh + internal sensor origins) ── -->
+    <link name="${camera_name}_camera_center">
+      <visual>
+        <origin xyz="${screw_offset_x} 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://rover_description/meshes/sensors/camera/stereolabs/zed.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="zed2i_mat">
+          <color rgba="0.25 0.25 0.25 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="${screw_offset_x} 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.03 0.175 0.033"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${camera_name}_camera_center_joint" type="fixed">
+      <parent link="${camera_name}_camera_link"/>
+      <child  link="${camera_name}_camera_center"/>
+      <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- ── Left Camera frame ── -->
+    <link  name="${camera_name}_left_camera_frame"/>
+    <joint name="${camera_name}_left_camera_joint" type="fixed">
+      <parent link="${camera_name}_camera_center"/>
+      <child  link="${camera_name}_left_camera_frame"/>
+      <origin xyz="${optical_offset_x} ${baseline/2} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link  name="${camera_name}_left_camera_frame_optical"/>
+    <joint name="${camera_name}_left_camera_joint_optical" type="fixed">
+      <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+      <parent link="${camera_name}_left_camera_frame"/>
+      <child  link="${camera_name}_left_camera_frame_optical"/>
+    </joint>
+
+    <!-- ── Right Camera frame ── -->
+    <link  name="${camera_name}_right_camera_frame"/>
+    <joint name="${camera_name}_right_camera_joint" type="fixed">
+      <parent link="${camera_name}_camera_center"/>
+      <child  link="${camera_name}_right_camera_frame"/>
+      <origin xyz="${optical_offset_x} -${baseline/2} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link  name="${camera_name}_right_camera_frame_optical"/>
+    <joint name="${camera_name}_right_camera_joint_optical" type="fixed">
+      <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+      <parent link="${camera_name}_right_camera_frame"/>
+      <child  link="${camera_name}_right_camera_frame_optical"/>
+    </joint>
+
+    <!-- ── Internal sensor frames (required by ZED SDK / ROS 2 wrapper) ── -->
+    <link name="${camera_name}_imu_link"/>
+    <joint name="${camera_name}_imu_joint" type="fixed">
+      <parent link="${camera_name}_camera_center"/>
+      <child  link="${camera_name}_imu_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${camera_name}_mag_link"/>
+    <joint name="${camera_name}_mag_joint" type="fixed">
+      <parent link="${camera_name}_camera_center"/>
+      <child  link="${camera_name}_mag_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${camera_name}_baro_link"/>
+    <joint name="${camera_name}_baro_joint" type="fixed">
+      <parent link="${camera_name}_camera_center"/>
+      <child  link="${camera_name}_baro_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${camera_name}_temp_left_link"/>
+    <joint name="${camera_name}_temp_left_joint" type="fixed">
+      <parent link="${camera_name}_left_camera_frame"/>
+      <child  link="${camera_name}_temp_left_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${camera_name}_temp_right_link"/>
+    <joint name="${camera_name}_temp_right_joint" type="fixed">
+      <parent link="${camera_name}_right_camera_frame"/>
+      <child  link="${camera_name}_temp_right_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- ================================================================
+         SIMULATION SENSORS
+         Injected only when use_sim_time:=true.
+         In real-hardware mode the ZED ROS 2 wrapper produces equivalent
+         topics; no Gazebo sensor block is needed there.
+
+         Topics produced (with {camera_name} = e.g. "camera_01"):
+           camera_01/left/image_raw        (stereo left, R8G8B8 1280×720)
+           camera_01/left/camera_info
+           camera_01/right/image_raw       (stereo right, R8G8B8 1280×720)
+           camera_01/right/camera_info
+           camera_01/depth/image_raw       (RGBD depth, 640×360 10 Hz)
+           camera_01/depth/camera_info
+           camera_01/depth/points          (PointCloud2)
+           camera_01/imu/data_raw          (IMU 200 Hz)
+
+         For disparity maps run:
+           ros2 launch stereo_image_proc stereo_image_proc.launch.py \
+               left_namespace:=camera_01/left right_namespace:=camera_01/right
+         ================================================================ -->
+    <xacro:if value="$(arg use_sim_time)">
+
+      <!-- Left mono camera (stereo pair) -->
+      <xacro:camera_sensor
+          name="${camera_name}_left_sensor"
+          parent="${camera_name}_left_camera_frame"
+
+          camera_topic="${camera_name}/left/image_raw"
+          camera_info_topic="${camera_name}/left/camera_info"
+          type="camera"
+
+          fps="15.0"
+          h_fov="1.7628"
+          width="1280" height="720"
+          format="R8G8B8"
+
+          clip_near="0.1" clip_far="20.0"
+          noise_type="gaussian" noise_mean="0.0" noise_stddev="0.002"
+
+          frame_id="${camera_name}_left_camera_frame_optical"/>
+
+      <!-- Right mono camera (stereo pair) -->
+      <xacro:camera_sensor
+          name="${camera_name}_right_sensor"
+          parent="${camera_name}_right_camera_frame"
+
+          camera_topic="${camera_name}/right/image_raw"
+          camera_info_topic="${camera_name}/right/camera_info"
+          type="camera"
+
+          fps="15.0"
+          h_fov="1.7628"
+          width="1280" height="720"
+          format="R8G8B8"
+
+          clip_near="0.1" clip_far="20.0"
+          noise_type="gaussian" noise_mean="0.0" noise_stddev="0.002"
+
+          frame_id="${camera_name}_right_camera_frame_optical"/>
+
+      <!-- RGBD depth sensor (produces colour + depth + point cloud) -->
+      <xacro:camera_sensor
+          name="${camera_name}_depth_sensor"
+          parent="${camera_name}_camera_center"
+
+          camera_topic="${camera_name}/depth"
+          camera_info_topic="${camera_name}/depth/camera_info"
+          type="rgbd_camera"
+
+          fps="10.0"
+          h_fov="1.7628"
+          width="640" height="360"
+          format="R8G8B8"
+
+          clip_near="0.2" clip_far="20.0"
+          noise_type="gaussian" noise_mean="0.0" noise_stddev="0.001"
+
+          frame_id="${camera_name}_left_camera_frame_optical"/>
+
+      <!-- IMU at 200 Hz (matches real ZED2i internal IMU rate) -->
+      <xacro:imu_sensor
+          name="${camera_name}_imu_sensor"
+          parent="${camera_name}_imu_link"
+
+          imu_topic="${camera_name}/imu/data_raw"
+
+          fps="200.0"
+
+          frame_id="${camera_name}_imu_link"/>
+
+    </xacro:if>
+
+  </xacro:macro>
+
+</robot>

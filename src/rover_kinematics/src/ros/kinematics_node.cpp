@@ -220,24 +220,16 @@ KinematicsNode::assembleWheelsFromCommand(const WheelCommand &command, const rcl
     w->turn.set_value   = hardware_interface_.steeringSetFromRadians(command.steering_angle_rad[i] * STEER_PRESCALE, i);
   }
 
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Assembled Wheels Message:");
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Front Left: Drive RPM = %f, Turn Pos = %f",
-                       msg.front_left.drive.set_value,
-                       msg.front_left.turn.set_value);
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Front Right: Drive RPM = %f, Turn Pos = %f",
-                       msg.front_right.drive.set_value,
-                       msg.front_right.turn.set_value);
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Rear Left: Drive RPM = %f, Turn Pos = %f",
-                       msg.rear_left.drive.set_value,
-                       msg.rear_left.turn.set_value);
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Rear Right: Drive RPM = %f, Turn Pos = %f",
-                       msg.rear_right.drive.set_value,
-                       msg.rear_right.turn.set_value);
+  RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+      "⚙️ [IK: Assembled Wheels]\n"
+      "  [FL] Drive RPM: %9.2f | Turn Pos: %9.2f\n"
+      "  [FR] Drive RPM: %9.2f | Turn Pos: %9.2f\n"
+      "  [RL] Drive RPM: %9.2f | Turn Pos: %9.2f\n"
+      "  [RR] Drive RPM: %9.2f | Turn Pos: %9.2f",
+      msg.front_left.drive.set_value, msg.front_left.turn.set_value,
+      msg.front_right.drive.set_value, msg.front_right.turn.set_value,
+      msg.rear_left.drive.set_value, msg.rear_left.turn.set_value,
+      msg.rear_right.drive.set_value, msg.rear_right.turn.set_value);
 
   return msg;
 }
@@ -330,10 +322,11 @@ void KinematicsNode::updateWatchdog(const rclcpp::Time &current_time) {
 }
 
 double KinematicsNode::getPhysicalAngleRad(double measured_value, std::size_t wheel_index) const {
+  (void)wheel_index; // Unused, hardware interface already applied polarity
   double val = measured_value;
-  // Remove hardware polarity inversion to get raw degrees
-  if (config_.invert_steering(wheel_index)) val = -val;
-  // Convert degrees to radians (measured_value is in degrees as per HardwareInterface)
+  // Hardware polarity inversion is already removed by HardwareInterface::steeringSetFromPrecisePos,
+  // so measured_value is already the true physical angle in degrees.
+  // Convert degrees to radians
   return val * (M_PI / 180.0);
 }
 
@@ -354,8 +347,8 @@ bool KinematicsNode::isMechanicallySafe(const rex_interfaces::msg::Wheels &feedb
     const auto& mn = config_.min_mechanical_angles();
     const auto& mx = config_.max_mechanical_angles();
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                         "Mechanical limit safety active: drive disabled. "
-                         "Limits [FL:%.2f..%.2f  FR:%.2f..%.2f  RL:%.2f..%.2f  RR:%.2f..%.2f] rad",
+                         "⚠️ [Safety] Mechanical limit active! Drive disabled.\n"
+                         "  Limits [FL:%.2f..%.2f  FR:%.2f..%.2f  RL:%.2f..%.2f  RR:%.2f..%.2f] rad",
                          mn[0], mx[0], mn[1], mx[1], mn[2], mx[2], mn[3], mx[3]);
     return false;
   }
@@ -386,12 +379,19 @@ bool KinematicsNode::isSteeringCoherent(const rex_interfaces::msg::Wheels &targe
     getPhysicalAngleRad(feedback.rear_right.turn.set_value,  3),
   };
 
-  const double coherence_error = computeSteeringCoherence(steer_rad);
+  const std::array<double, 4> drive_speeds = {
+    target.front_left.drive.set_value,
+    target.front_right.drive.set_value,
+    target.rear_left.drive.set_value,
+    target.rear_right.drive.set_value,
+  };
+
+  const double coherence_error = computeSteeringCoherence(steer_rad, drive_speeds);
 
   if (coherence_error > config_.steering_coherence_threshold()) {
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 500,
-                         "Coherence safety active: steering incoherence %.3f > threshold %.3f. "
-                         "Drive disabled until wheels align. angles=[%.2f, %.2f, %.2f, %.2f] rad",
+                         "⚠️ [Safety] Coherence check failed: error %.3f > max %.3f.\n"
+                         "  Drive disabled until wheels align. Angles=[%.2f, %.2f, %.2f, %.2f] rad",
                          coherence_error, config_.steering_coherence_threshold(),
                          steer_rad[0], steer_rad[1], steer_rad[2], steer_rad[3]);
     return false;
@@ -447,7 +447,8 @@ void KinematicsNode::applySteeringFirstSafety(
  *         values above config_.steering_coherence_threshold() block drive.
  */
 double KinematicsNode::computeSteeringCoherence(
-    const std::array<double, 4> &steer_angles_rad) const {
+    const std::array<double, 4> &steer_angles_rad,
+    const std::array<double, 4> &drive_speeds) const {
 
   // Wheel positions in the robot body frame [FL, FR, RL, RR].
   // x: positive = forward (front axle),  y: positive = left.
@@ -462,11 +463,23 @@ double KinematicsNode::computeSteeringCoherence(
   Eigen::Matrix<double, 8, 3> A;
   Eigen::Matrix<double, 8, 1> b;
 
+  // Find the maximum speed to normalize the velocity vectors.
+  // This prevents the residual from scaling with absolute speed, while preserving the
+  // relative velocities which are required for a valid rigid body twist (e.g. Ackerman inner vs outer).
+  double max_speed = 1e-6;
+  for (int i = 0; i < 4; ++i) {
+    max_speed = std::max(max_speed, std::abs(drive_speeds[i]));
+  }
+
   for (int i = 0; i < 4; ++i) {
     A(2*i,     0) =  1.0;  A(2*i,     1) = 0.0;  A(2*i,     2) = -wy[i];
     A(2*i + 1, 0) =  0.0;  A(2*i + 1, 1) = 1.0;  A(2*i + 1, 2) =  wx[i];
-    b(2*i)     = std::cos(steer_angles_rad[i]);
-    b(2*i + 1) = std::sin(steer_angles_rad[i]);
+    
+    // Scale the direction vector by the normalized target speed.
+    // This perfectly reconstructs the commanded rigid body velocity field.
+    const double v = drive_speeds[i] / max_speed;
+    b(2*i)     = v * std::cos(steer_angles_rad[i]);
+    b(2*i + 1) = v * std::sin(steer_angles_rad[i]);
   }
 
   // Solve the 3×3 normal equations: (AᵀA) x = Aᵀb.
@@ -536,11 +549,13 @@ void KinematicsNode::onUpdate() {
     cmd.x_axis = 0.0;
     cmd.y_axis = 0.0;
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                         "cmd_vel timeout! No command received for %.2fs (limit: %.2fs). Braking.",
+                         "⚠️ [Timeout] cmd_vel timed out! No command for %.2fs (limit: %.2fs). Braking.",
                          elapsed_cmd_sec, config_.cmd_vel_timeout_sec());
   }
 
   // ─ ─ 
+
+  int active_kinematics_control_mode = ControlMode::NONE;
 
   if (communication_state_.load(std::memory_order_acquire) == CommunicationState::OPENED) {
     WheelCommand target_ik{};
@@ -554,7 +569,7 @@ void KinematicsNode::onUpdate() {
 
     // ─ ─
     
-    const int active_kinematics_control_mode = [&]() -> int {
+    active_kinematics_control_mode = [&]() -> int {
       for (const int mode : KinematicsControlMode) {
         if (kinematics_control_mode & mode) {
           return mode;
@@ -667,24 +682,17 @@ void KinematicsNode::onUpdate() {
     target_wheels_msg = assembleStopMessage(current_time);
   }
 
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Publishing Wheels Message:");
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Front Left: Drive RPM = %f, Turn Pos = %f",
-                       target_wheels_msg.front_left.drive.set_value,
-                       target_wheels_msg.front_left.turn.set_value);
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Front Right: Drive RPM = %f, Turn Pos = %f",
-                       target_wheels_msg.front_right.drive.set_value,
-                       target_wheels_msg.front_right.turn.set_value);
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Rear Left: Drive RPM = %f, Turn Pos = %f",
-                       target_wheels_msg.rear_left.drive.set_value,
-                       target_wheels_msg.rear_left.turn.set_value);
-  RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                       "Rear Right: Drive RPM = %f, Turn Pos = %f",
-                       target_wheels_msg.rear_right.drive.set_value,
-                       target_wheels_msg.rear_right.turn.set_value);
+  RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+      "↑ [TX: Wheels Message] Control Mode: %d\n"
+      "  [FL] Drive RPM: %9.2f | Turn Pos: %9.2f\n"
+      "  [FR] Drive RPM: %9.2f | Turn Pos: %9.2f\n"
+      "  [RL] Drive RPM: %9.2f | Turn Pos: %9.2f\n"
+      "  [RR] Drive RPM: %9.2f | Turn Pos: %9.2f",
+      active_kinematics_control_mode,
+      target_wheels_msg.front_left.drive.set_value, target_wheels_msg.front_left.turn.set_value,
+      target_wheels_msg.front_right.drive.set_value, target_wheels_msg.front_right.turn.set_value,
+      target_wheels_msg.rear_left.drive.set_value, target_wheels_msg.rear_left.turn.set_value,
+      target_wheels_msg.rear_right.drive.set_value, target_wheels_msg.rear_right.turn.set_value);
 
   // Keep the drive torque off until the steering has reached the commanded
   // angle for any drive mode. This prevents the rover from applying wheel
@@ -736,8 +744,8 @@ void KinematicsNode::cmdVelManualCallback(
     cmd_vel.y_axis = msg->y_axis;
     cmd_vel.x_axis = msg->x_axis;
 
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-               "Received Manual Command: Mode = %d, Vel = %f, Y Axis = %f, X Axis = %f",
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+               "↓ [RX: Manual Cmd]   Mode: %d | Vel: %7.3f | Y: %7.3f | X: %7.3f",
                static_cast<int>(cmd_vel.mode), cmd_vel.vel,
                cmd_vel.y_axis, cmd_vel.x_axis);
 
@@ -750,6 +758,10 @@ void KinematicsNode::cmdVelManualCallback(
  */
 void KinematicsNode::cmdVelAutonomyCallback(
     const geometry_msgs::msg::Twist::SharedPtr msg) {
+  
+  RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                       "💡 [DEBUG] cmdVelAutonomyCallback triggered! Received Twist: linear.x=%.2f", msg->linear.x);
+
   last_cmd_vel_time_ns_.store(this->get_clock()->now().nanoseconds(), std::memory_order_release);
 
   if (control_mode_.load(std::memory_order_acquire) & ControlMode::DRIVE_AUTONOMY) {
@@ -761,8 +773,8 @@ void KinematicsNode::cmdVelAutonomyCallback(
     cmd_vel.y_axis = msg->linear.y;
     cmd_vel.x_axis = msg->angular.z;
 
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-               "Received Autonomy Command: Mode = %d, Vel = %f, Y Axis = %f, X Axis = %f",
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+               "↓ [RX: Autonomy Cmd] Mode: %d | Vel: %7.3f | Y: %7.3f | X: %7.3f",
                static_cast<int>(cmd_vel.mode), cmd_vel.vel,
                cmd_vel.y_axis, cmd_vel.x_axis);
 

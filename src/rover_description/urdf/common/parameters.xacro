@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Load physics parameters from YAML -->
+  <xacro:property name="physics_path" value="$(find rover_description)/config/physics.yaml"/>
+  <xacro:property name="physics" value="${xacro.load_yaml(physics_path)}"/>
+
+  <!-- Parametric Variables (m) -->
+  <xacro:property name="c" value="0.15" />
+  <xacro:property name="a" value="0.037" />
+  <xacro:property name="b" value="0.0555" />
+
+  <xacro:property name="z_thick" value="0.1" />
+  <xacro:property name="x_mid" value="0.08" />
+  <xacro:property name="x_top" value="0.07" />
+  <xacro:property name="x_bot" value="0.056" />
+
+  <!-- Chassis Derived Properties -->
+  <xacro:property name="x_merged" value="${x_bot + x_mid + x_top}" />
+  <xacro:property name="x_merged_offset" value="${(x_top - x_bot) / 2}" />
+  <xacro:property name="w_mid" value="${c + 10*a}" />
+  <xacro:property name="w_t2" value="${c + 4*a + 2*b}" />
+  <xacro:property name="w_t3" value="${c + 4*a}" />
+  <xacro:property name="w_t4" value="${c + 2*a}" />
+  <xacro:property name="w_b2" value="${c + 8*a}" />
+  <xacro:property name="w_b3" value="${c + 6*a}" />
+  <xacro:property name="w_b4" value="${c + 4*a}" />
+  <xacro:property name="w_b5" value="${c + 2*a}" />
+
+  <!-- Suspension Parameters -->
+  <xacro:property name="suspension_y_mount" value="0.32" />
+  <xacro:property name="swivel_z_offset" value="0.0" />
+  <xacro:property name="swivel_limit" value="0.785" />
+  <xacro:property name="arm_pivot_x" value="0.06" />
+  <xacro:property name="arm_limit" value="0.4" />
+  
+  <!-- Wheel Parameters -->
+  <xacro:property name="wheel_radius" value="${physics['wheel']['radius']}" />
+  <xacro:property name="wheel_width" value="${physics['wheel']['width']}" />
+  <xacro:property name="steer_limit" value="1.57" />
+  <xacro:property name="wheel_drop_z" value="-0.19" />
+  
+  <!-- Physics Masses -->
+  <xacro:property name="mass_chassis" value="${physics['chassis']['mass']}" />
+  <xacro:property name="mass_suspension_frame" value="${physics['suspension']['frame']['mass']}" />
+  <xacro:property name="mass_arm" value="${physics['suspension']['arm']['mass']}" />
+  <xacro:property name="mass_steer" value="${physics['steer']['mass']}" />
+  <xacro:property name="mass_wheel" value="${physics['wheel']['mass']}" />
+  
+  <!-- Limits -->
+  <xacro:property name="steer_effort" value="${physics['limits']['steer_effort']}" />
+  <xacro:property name="steer_vel" value="${physics['limits']['steer_vel']}" />
+  <xacro:property name="drive_effort" value="${physics['limits']['drive_effort']}" />
+  <xacro:property name="drive_vel" value="${physics['limits']['drive_vel']}" />
+  <xacro:property name="suspension_effort" value="${physics['limits']['suspension_effort']}" />
+  <xacro:property name="bogie_spring" value="${physics['limits'].get('bogie_spring', 100.0)}" />
+  <xacro:property name="bogie_damping" value="${physics['limits'].get('bogie_damping', 5.0)}" />
+  <xacro:property name="differential_force" value="${physics['limits'].get('differential_force', 150.0)}" />
+  <xacro:property name="differential_damping" value="${physics['limits'].get('differential_damping', 25.0)}" />
+  
+  <!-- Friction -->
+  <xacro:property name="mu1_wheel" value="${physics['wheel']['friction']['mu1']}" />
+  <xacro:property name="mu2_wheel" value="${physics['wheel']['friction']['mu2']}" />
+
+  <!-- Joint Dynamics (Viscous Damping & Friction) -->
+  <xacro:property name="steer_joint_damping" value="${physics['steer']['damping']}" />
+  <xacro:property name="steer_joint_friction" value="${physics['steer']['friction']}" />
+  <xacro:property name="drive_joint_damping" value="${physics['drive']['damping']}" />
+  <xacro:property name="drive_joint_friction" value="${physics['drive']['friction']}" />
+  <xacro:property name="swivel_joint_damping" value="${physics['suspension'].get('swivel', dict()).get('damping', 5.0)}" />
+  <xacro:property name="swivel_joint_friction" value="${physics['suspension'].get('swivel', dict()).get('friction', 0.1)}" />
+  <xacro:property name="arm_pivot_damping" value="${physics['suspension'].get('arm', dict()).get('damping', 2.0)}" />
+  <xacro:property name="arm_pivot_friction" value="${physics['suspension'].get('arm', dict()).get('friction', 0.05)}" />
+
+</robot>

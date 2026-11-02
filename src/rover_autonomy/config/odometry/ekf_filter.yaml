@@ -1,15 +1,24 @@
 /**:
   ros__parameters:
     use_sim_time: false
-    frequency: 15.0
-    sensor_timeout: 0.5
+    frequency: 30.0
+    sensor_timeout: 0.1
     two_d_mode: false               
-    publish_tf: true               
+    publish_tf: true
+    transform_time_offset: 0.05
+    transform_tolerance: 0.1               
 
     map_frame: map
     odom_frame: odom
     base_link_frame: base_link  
     world_frame: odom
+
+    odom0_mahalanobis_distance: 3.0
+    odom1_mahalanobis_distance: 3.0
+    odom2_mahalanobis_distance: 3.0
+    pose0_mahalanobis_distance: 4.0
+    pose1_mahalanobis_distance: 4.0
+    pose2_mahalanobis_distance: 4.0
 
     # Sensor routing (odomX, imuX, and their _config arrays) are now 
     # dynamically injected at launch time by localization.launch.py 

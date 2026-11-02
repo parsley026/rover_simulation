@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="materials_config_path" value="$(find rover_description)/config/materials.yaml"/>
+  <xacro:property name="mats_yaml" value="${xacro.load_yaml(materials_config_path)}"/>
+  <xacro:property name="mats" value="${mats_yaml['materials']}"/>
+
+  <!-- Macro to define material from materials.yaml configuration -->
+  <xacro:macro name="define_material" params="name">
+    <xacro:property name="c" value="${mats[name]}"/>
+    <material name="${name}">
+      <color rgba="${c[0]} ${c[1]} ${c[2]} ${c[3]}"/>
+    </material>
+  </xacro:macro>
+
+  <xacro:define_material name="rover_orange"/>
+  <xacro:define_material name="rover_dark_grey"/>
+  <xacro:define_material name="rover_light_grey"/>
+  <xacro:define_material name="rover_red"/>
+  <xacro:define_material name="rover_bright_red"/>
+  <xacro:define_material name="rover_green"/>
+  <xacro:define_material name="rover_yellow"/>
+  <xacro:define_material name="rover_black"/>
+
+  <!-- Chassis & Mast Materials -->
+  <xacro:define_material name="grad_base"/>
+  <xacro:define_material name="grad_t2"/>
+  <xacro:define_material name="grad_t3"/>
+  <xacro:define_material name="grad_t4"/>
+  <xacro:define_material name="grad_b2"/>
+  <xacro:define_material name="grad_b3"/>
+  <xacro:define_material name="grad_b4"/>
+  <xacro:define_material name="grad_b5"/>
+
+  <xacro:define_material name="mount_gray"/>
+  <xacro:define_material name="mount_dark_gray"/>
+  <xacro:define_material name="tower_yellow"/>
+  <xacro:define_material name="mount_red"/>
+  <xacro:define_material name="mount_green"/>
+  <xacro:define_material name="grad_mast"/>
+
+  <xacro:define_material name="sensor_black"/>
+  <xacro:define_material name="sensor_cyan"/>
+
+  <!-- Suspension Materials -->
+  <xacro:define_material name="carbon_black"/>
+  <xacro:define_material name="frame_grey"/>
+  <xacro:define_material name="pivot_orange"/>
+  <xacro:define_material name="actuator_silver"/>
+  <xacro:define_material name="tire_orange"/>
+</robot>

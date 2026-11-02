@@ -1,7 +1,6 @@
 #include "rover_kinematics_bridge/rover_kinematics_bridge.h"
 #include "rover_kinematics_bridge/bridge_modes/simulation_mode.hpp"
 #include "rover_kinematics_bridge/bridge_modes/digital_shadow_mode.hpp"
-#include "rover_kinematics_bridge/bridge_modes/digital_twin_mode.hpp"
 
 namespace rover_kinematics_bridge {
 
@@ -26,26 +25,15 @@ rover_kinematics_bridge::rover_kinematics_bridge(const rclcpp::NodeOptions& opti
             pole_numbers_, publish_rate_hz_);
     } 
     else if (mode_str_ == "digital_shadow") {
-        active_mode_ = std::make_unique<bridge_modes::DigitalShadowMode>(this, gazebo_pub_, conversions_, config_);
+        active_mode_ = std::make_unique<bridge_modes::DigitalShadowMode>(this, conversions_, config_);
         RCLCPP_INFO(get_logger(),
             "\n[bridge] ========================================\n"
             "         Mode  : DIGITAL_SHADOW\n"
             "         Config: pole_numbers=%d | rate=%.0f Hz\n"
-            "         Flow  : Real VescStatus -> Gazebo  [one-way observer]\n"
+            "         Flow  : Real VescStatus -> /joint_states [RViz visualization]\n"
             "         ========================================",
             pole_numbers_, publish_rate_hz_);
-    } 
-    else if (mode_str_ == "digital_twin") {
-        active_mode_ = std::make_unique<bridge_modes::DigitalTwinMode>(this, gazebo_pub_, conversions_, hardware_timeout_sec_, config_);
-        RCLCPP_INFO(get_logger(),
-            "\n[bridge] ========================================\n"
-            "         Mode  : DIGITAL_TWIN\n"
-            "         Config: pole_numbers=%d | rate=%.0f Hz | hw_timeout=%.2f s\n"
-            "         Flow  : Measured state (HW priority) -> Gazebo\n"
-            "                 Predicted state (fallback)   -> Gazebo\n"
-            "         ========================================",
-            pole_numbers_, publish_rate_hz_, hardware_timeout_sec_);
-    } 
+    }
     else {
         RCLCPP_WARN(get_logger(), "[bridge] Unknown mode '%s' — defaulting to 'simulation'.", mode_str_.c_str());
         active_mode_ = std::make_unique<bridge_modes::SimulationMode>(this, gazebo_pub_, conversions_, config_);
@@ -63,16 +51,31 @@ void rover_kinematics_bridge::loadParameters()
     declare_parameter<double>     ("motor_gear_ratio",     31.0);
     declare_parameter<double>     ("publish_rate",         20.0);
     declare_parameter<double>     ("hardware_timeout_sec", 0.5);
-    declare_parameter<bool>       ("invert_left_steering",  true);
-    declare_parameter<bool>       ("invert_right_steering", true);
+    declare_parameter<bool>("invert_drive_fl", false);
+    declare_parameter<bool>("invert_drive_fr", false);
+    declare_parameter<bool>("invert_drive_rl", false);
+    declare_parameter<bool>("invert_drive_rr", false);
+
+    declare_parameter<bool>("invert_steering_fl", true);
+    declare_parameter<bool>("invert_steering_fr", true);
+    declare_parameter<bool>("invert_steering_rl", true);
+    declare_parameter<bool>("invert_steering_rr", true);
 
     mode_str_             = get_parameter("mode").as_string();
     pole_numbers_         = get_parameter("pole_numbers").as_int();
     motor_gear_ratio_     = get_parameter("motor_gear_ratio").as_double();
     publish_rate_hz_      = get_parameter("publish_rate").as_double();
     hardware_timeout_sec_ = get_parameter("hardware_timeout_sec").as_double();
-    config_.invert_left_steering  = get_parameter("invert_left_steering").as_bool();
-    config_.invert_right_steering = get_parameter("invert_right_steering").as_bool();
+
+    config_.invert_drive_fl = get_parameter("invert_drive_fl").as_bool();
+    config_.invert_drive_fr = get_parameter("invert_drive_fr").as_bool();
+    config_.invert_drive_rl = get_parameter("invert_drive_rl").as_bool();
+    config_.invert_drive_rr = get_parameter("invert_drive_rr").as_bool();
+
+    config_.invert_steering_fl = get_parameter("invert_steering_fl").as_bool();
+    config_.invert_steering_fr = get_parameter("invert_steering_fr").as_bool();
+    config_.invert_steering_rl = get_parameter("invert_steering_rl").as_bool();
+    config_.invert_steering_rr = get_parameter("invert_steering_rr").as_bool();
 }
 
 void rover_kinematics_bridge::onUpdate()

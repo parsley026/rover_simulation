@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rover_description)/urdf/components/sensors/camera/hikvision/ip_camera_asseemble.xacro"/>
+  
+  <xacro:macro name="sensor_camera_hikvision_ip_camera" params="prefix parent">
+    <xacro:hivision_camera name="${prefix}" parent_link="${parent}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:hivision_camera>
+  </xacro:macro>
+</robot>

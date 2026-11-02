@@ -1,0 +1,80 @@
+# Bridge template: Luxonis OAK-D Pro W (simulation mode)
+#
+# Token substitution applied at runtime by dynamic_bridge_node:
+#   {ID}          → sensor id from payload.yaml  (e.g. camera_01)
+#   {ROBOT_NAME}  → Gazebo entity name           (e.g. rover)
+#   {WORLD_NAME}  → Gazebo world name            (e.g. mars_yard)
+
+# ── RGB ───────────────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/rgb/image_raw"
+  gz_topic_name:  "/{ID}_rgbd_sensor/image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/rgb/camera_info"
+  gz_topic_name:  "/{ID}_rgbd_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── Left ──────────────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/left/image_raw"
+  gz_topic_name:  "/{ID}_left_sensor/image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/left/camera_info"
+  gz_topic_name:  "/{ID}_left_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── Right ─────────────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/right/image_raw"
+  gz_topic_name:  "/{ID}_right_sensor/image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/right/camera_info"
+  gz_topic_name:  "/{ID}_right_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── Depth / RGBD ──────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/depth/image_raw"
+  gz_topic_name:  "/{ID}_rgbd_sensor/depth_image"
+  ros_type_name:  "sensor_msgs/msg/Image"
+  gz_type_name:   "gz.msgs.Image"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/depth/camera_info"
+  gz_topic_name:  "/{ID}_rgbd_sensor/camera_info"
+  ros_type_name:  "sensor_msgs/msg/CameraInfo"
+  gz_type_name:   "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+- ros_topic_name: "/{ID}/depth/points"
+  gz_topic_name:  "/{ID}_rgbd_sensor/points"
+  ros_type_name:  "sensor_msgs/msg/PointCloud2"
+  gz_type_name:   "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+  qos_profile: 'SENSOR_DATA'
+
+# ── IMU ───────────────────────────────────────────────────────────────────
+- ros_topic_name: "/{ID}/imu/data_raw"
+  gz_topic_name:  "/{ID}_imu"
+  ros_type_name:  "sensor_msgs/msg/Imu"
+  gz_type_name:   "gz.msgs.IMU"
+  direction: GZ_TO_ROS

@@ -7,7 +7,7 @@
 #include "rover_autonomy/parameter_manager.hpp"
 #include "rover_autonomy/subsystems/camera_subsystem_manager.hpp"
 #include "rover_autonomy/subsystems/lidar_subsystem_manager.hpp"
-#include "rover_autonomy/subsystems/description_subsystem_manager.hpp"
+
 #include "rover_autonomy/subsystems/odometry_subsystem_manager.hpp"
 #include "rover_autonomy/subsystems/localization_and_mapping_subsystem_manager.hpp"
 #include "rover_autonomy/subsystems/navigation_subsystem_manager.hpp"
@@ -48,7 +48,7 @@ private:
   // Subsystem instances — always created, enabled_ flag governs behavior
   std::unique_ptr<CameraSubsystemManager> camera_subsystem_;
   std::unique_ptr<LidarSubsystemManager> lidar_subsystem_;
-  std::unique_ptr<DescriptionSubsystemManager> description_subsystem_;
+
   std::unique_ptr<OdometrySubsystemManager> odometry_subsystem_;
   std::unique_ptr<LocalizationAndMappingSubsystemManager> mapping_subsystem_;
   std::unique_ptr<NavigationSubsystemManager> navigation_subsystem_;
@@ -77,6 +77,43 @@ private:
   void on_set_global_topography(
     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
     std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  // Additional pipeline services
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr camera_00_service_;
+  void on_set_camera_00(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr camera_01_service_;
+  void on_set_camera_01(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr lidar_00_service_;
+  void on_set_lidar_00(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr odom_camera_00_service_;
+  void on_set_odom_camera_00(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr odom_camera_01_service_;
+  void on_set_odom_camera_01(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr odom_lidar_00_service_;
+  void on_set_odom_lidar_00(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr localization_service_;
+  void on_set_localization(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+
 
   // Recovery callback fired by ParameterManager when a config param changes at runtime
   void on_subsystem_config_changed(const std::string & subsystem_name);

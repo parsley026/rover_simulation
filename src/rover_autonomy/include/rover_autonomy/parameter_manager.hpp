@@ -85,9 +85,6 @@ public:
   // [[nodiscard]]: call once and store the result.
   [[nodiscard]] SubsystemConfig get_navigation_config() const;
 
-  // Returns a fully resolved SubsystemConfig for the description subsystem.
-  // [[nodiscard]]: call once and store the result; never call repeatedly.
-  [[nodiscard]] SubsystemConfig get_description_config() const;
 
 private:
   rclcpp_lifecycle::LifecycleNode * node_;

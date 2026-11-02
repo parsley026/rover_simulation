@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
 project(rover_autonomy)
 
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -28,7 +36,6 @@ add_library(main_compute_component SHARED
   src/subsystems/composite_subsystem_manager.cpp
   src/subsystems/camera_subsystem_manager.cpp
   src/subsystems/lidar_subsystem_manager.cpp
-  src/subsystems/description_subsystem_manager.cpp
   src/subsystems/odometry_subsystem_manager.cpp
   src/subsystems/localization_and_mapping_subsystem_manager.cpp
   src/subsystems/navigation_subsystem_manager.cpp
@@ -59,7 +66,6 @@ rclcpp_components_register_node(
 install(DIRECTORY
   config  
   launch
-  urdf
   mesh
   DESTINATION share/${PROJECT_NAME}
 )
@@ -97,6 +103,7 @@ install(TARGETS odometry_health_node
 install(PROGRAMS 
   scripts/mock_sync_publisher.py 
   scripts/mock_health_publisher.py 
+  scripts/aruco_odom_updater.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

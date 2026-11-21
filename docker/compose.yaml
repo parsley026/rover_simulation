@@ -1,0 +1,58 @@
+# Digital-shadow dev container.
+#
+#   docker compose -f docker/compose.yaml build
+#   docker compose -f docker/compose.yaml run --rm shadow
+#
+# First time inside the container:
+#   rosdep update
+#   rosdep install --from-paths src --ignore-src -r -y   # fills any apt gaps
+#   colcon build --symlink-install
+#   source install/setup.bash
+
+services:
+  shadow:
+    build:
+      context: ..                      # repo root (see ../.dockerignore)
+      dockerfile: docker/Dockerfile
+    image: rover-shadow:jazzy
+    container_name: rover-shadow
+    working_dir: /ws
+    stdin_open: true
+    tty: true
+
+    volumes:
+      - ..:/ws                         # source tree; build/install/log land here too
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    environment:
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: "1"
+      # Deliberately NOT the rover's domain. See "Safety" below.
+      ROS_DOMAIN_ID: ${SHADOW_ROS_DOMAIN_ID:-42}
+
+    # Host networking lets DDS discovery reach other machines on the LAN
+    # (Linux hosts only). ipc: host avoids the Fast DDS shared-memory
+    # mismatch between a container and processes on the host.
+    network_mode: host
+    ipc: host
+
+    # NVIDIA GPU: don't edit here, add docker/compose.nvidia.yaml instead:
+    #   docker compose -f docker/compose.yaml -f docker/compose.nvidia.yaml run --rm shadow
+    # Intel/AMD GPU: uncomment below for GPU-accelerated Gazebo/RViz.
+    # Without it, run Gazebo with `headless:=true` and view from the host.
+    # devices:
+    #   - /dev/dri:/dev/dri
+
+    command: bash
+
+# Safety
+# ------
+# The shadow must only ever LISTEN to the real rover.
+#  * simulation mode publishes fake VescStatus on /CAN/RX/vesc_status, the
+#    same topic digital_shadow mode consumes as real data.
+#  * rover_kinematics publishes /CAN/TX/set_motor_vel.
+# On the rover's own ROS_DOMAIN_ID either of those could contaminate the real
+# system, so the container defaults to a separate domain. Feeding it real data
+# should go through a one-way relay (e.g. ros-jazzy-domain-bridge) that
+# forwards only the RX/state topics. Only set SHADOW_ROS_DOMAIN_ID to the
+# rover's domain once that is in place.

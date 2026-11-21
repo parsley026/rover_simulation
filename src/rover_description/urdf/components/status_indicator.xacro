@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Status indicator frame. robot_state_publisher publishes the fixed joint as a static transform,
+    so the frame moves with the rover in both simulation and digital_shadow.
+  -->
+  <xacro:macro name="status_indicator" params="parent_link xyz:='0 0 0.40'">
+    <link name="status_indicator_link">
+      <!-- Tiny inertial so URDF->SDF conversion keeps the link in Gazebo -->
+      <xacro:inertial_box mass="0.01" x="0.02" y="0.02" z="0.02">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </xacro:inertial_box>
+    </link>
+
+    <joint name="status_indicator_joint" type="fixed">
+      <parent link="${parent_link}"/>
+      <child link="status_indicator_link"/>
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+</robot>

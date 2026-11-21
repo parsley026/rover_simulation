@@ -41,6 +41,12 @@
   <xacro:define_material name="sensor_black"/>
   <xacro:define_material name="sensor_cyan"/>
 
+  <!-- Safety Indicator Materials -->
+  <xacro:define_material name="indicator_shell"/>
+  <xacro:define_material name="indicator_cap"/>
+  <xacro:define_material name="indicator_pcb"/>
+  <xacro:define_material name="indicator_led_board"/>
+
   <!-- Suspension Materials -->
   <xacro:define_material name="carbon_black"/>
   <xacro:define_material name="frame_grey"/>

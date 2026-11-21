@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Safety indicator model.
+
+    Layers:
+    top cap        white, the pole end shows through it
+    clear shell    translucent, with a LED board behind each flat face
+    LED boards     white PCB, 2 columns of LEDs
+                   left column: communication_state
+                   right column: control_mode (for the plugin)
+    base PCB       green board just above the bottom cap
+    bottom cap     white band
+  -->
+
+  <xacro:property name="safety_indicator_mesh"
+                  value="$(find rover_description)/meshes/indicators/safety_indicator/rounded_triangle_prism.stl"/>
+
+  <!-- Geometry of the unit mesh (see scripts/generate_safety_indicator_mesh.py):
+       width 1 along y, flat face at x = +0.3732, rounded corner at x = -0.5464 -->
+  <xacro:property name="safety_indicator_unit_face_x" value="0.3732"/>
+  <xacro:property name="safety_indicator_unit_back_x" value="0.5464"/>
+
+  <!-- LED rows (two LEDs per row, generated recursively) -->
+  <xacro:macro name="safety_indicator_led_rows" params="name row rows pitch z0 col_offset size">
+    <visual>
+      <origin xyz="0 ${col_offset} ${z0 + row * pitch}" rpy="0 0 0"/>
+      <geometry><box size="${size * 0.3} ${size} ${size}"/></geometry>
+      <material name="${name}_led"/>
+    </visual>
+    <visual>
+      <origin xyz="0 ${-col_offset} ${z0 + row * pitch}" rpy="0 0 0"/>
+      <geometry><box size="${size * 0.3} ${size} ${size}"/></geometry>
+      <material name="${name}_led"/>
+    </visual>
+    <xacro:if value="${row + 1 &lt; rows}">
+      <xacro:safety_indicator_led_rows name="${name}" row="${row + 1}" rows="${rows}" pitch="${pitch}"
+                                       z0="${z0}" col_offset="${col_offset}" size="${size}"/>
+    </xacro:if>
+  </xacro:macro>
+
+  <!--
+    A single LED face behind the translucent shell
+    position: (board_x * cos(yaw), board_x * sin(yaw), board_z)
+    rotation: rpy = (0, 0, yaw)  -> the board's +x (LED side) faces outward
+  -->
+  <xacro:macro name="safety_indicator_led_face"
+               params="name face board_x board_z board_t board_w board_h
+                       led_rows led_pitch led_size led_color">
+    <xacro:property name="yaw" value="${face * 2.0 * pi / 3.0}"/>
+
+    <joint name="${name}_led_board_${face}_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_led_board_${face}_link"/>
+      <origin xyz="${board_x * cos(yaw)} ${board_x * sin(yaw)} ${board_z}" rpy="0 0 ${yaw}"/>
+    </joint>
+    <link name="${name}_led_board_${face}_link">
+      <visual>
+        <geometry><box size="${board_t} ${board_w} ${board_h}"/></geometry>
+        <material name="indicator_led_board"/>
+      </visual>
+      <xacro:inertial_box mass="0.001" x="0.01" y="0.01" z="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <xacro:safety_indicator_gz_material link="${name}_led_board_${face}_link" rgb="0.88 0.88 0.88"/>
+
+    <!-- LED frame: centre of the array -->
+    <joint name="${name}_led_${face}_joint" type="fixed">
+      <parent link="${name}_led_board_${face}_link"/>
+      <child link="${name}_led_${face}_link"/>
+      <origin xyz="${board_t / 2 + led_size * 0.15} 0 0" rpy="0 0 0"/>
+    </joint>
+    <link name="${name}_led_${face}_link">
+      <xacro:safety_indicator_led_rows name="${name}" row="0" rows="${led_rows}" pitch="${led_pitch}"
+                                       z0="${-(led_rows - 1) * led_pitch / 2}"
+                                       col_offset="${board_w / 4}" size="${led_size}"/>
+      <xacro:inertial_box mass="0.001" x="0.01" y="0.01" z="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <xacro:safety_indicator_gz_material link="${name}_led_${face}_link" rgb="${led_color}" emissive="${led_color}"/>
+  </xacro:macro>
+
+  <!-- LED Faces (generated recursively) -->
+  <xacro:macro name="safety_indicator_led_faces"
+               params="name face faces board_x board_z board_t board_w board_h
+                       led_rows led_pitch led_size led_color">
+    <xacro:safety_indicator_led_face name="${name}" face="${face}"
+                                     board_x="${board_x}" board_z="${board_z}"
+                                     board_t="${board_t}" board_w="${board_w}" board_h="${board_h}"
+                                     led_rows="${led_rows}" led_pitch="${led_pitch}" led_size="${led_size}"
+                                     led_color="${led_color}"/>
+    <xacro:if value="${face + 1 &lt; faces}">
+      <xacro:safety_indicator_led_faces name="${name}" face="${face + 1}" faces="${faces}"
+                                        board_x="${board_x}" board_z="${board_z}"
+                                        board_t="${board_t}" board_w="${board_w}" board_h="${board_h}"
+                                        led_rows="${led_rows}" led_pitch="${led_pitch}" led_size="${led_size}"
+                                        led_color="${led_color}"/>
+    </xacro:if>
+  </xacro:macro>
+
+  <!-- Gazebo material -->
+  <xacro:macro name="safety_indicator_gz_material" params="link rgb alpha:=1.0 emissive:='0 0 0'">
+    <gazebo reference="${link}">
+      <visual>
+        <material>
+          <ambient>${rgb} ${alpha}</ambient>
+          <diffuse>${rgb} ${alpha}</diffuse>
+          <specular>0.3 0.3 0.3 1.0</specular>
+          <emissive>${emissive} 1.0</emissive>
+        </material>
+        <transparency>${1.0 - alpha}</transparency>
+      </visual>
+    </gazebo>
+  </xacro:macro>
+
+  <!--
+    Parameters (metres, kg):
+      name              link name prefix
+      parent_link       link to mount on
+      *origin           pose of the mount frame in parent_link
+      width             housing width across the flat LED face's corners (y extent)
+      height            total height, bottom cap to top cap
+      top_cap_height    white top cap
+      bottom_cap_height white bottom cap
+      pole_radius       radius of the pole running through the centre
+      led_rows          LED rows per board (2 LEDs per row)
+      led_faces         LED faces (3 by default)
+      led_color         "r g b", 0-1; default LED colour (Gazebo)
+      mass              total mass
+  -->
+  <xacro:macro name="safety_indicator"
+               params="name parent_link *origin
+                       width:=0.075 height:=0.20
+                       top_cap_height:=0.035 bottom_cap_height:=0.015
+                       pole_radius:=0.01
+                       led_rows:=10 led_faces:=3 led_color:='0.0 1.0 0.0'
+                       mass:=0.15">
+
+    <!-- Parameters' derived dimensions -->
+    <xacro:property name="clear_height" value="${height - top_cap_height - bottom_cap_height}"/>
+    <xacro:property name="face_x"       value="${safety_indicator_unit_face_x * width}"/>
+    <xacro:property name="wall"         value="0.002"/>
+    <xacro:property name="board_x"      value="${face_x - wall - 0.004}"/>
+    <xacro:property name="board_w"      value="${0.43 * width}"/>
+    <xacro:property name="board_h"      value="${clear_height - 0.012}"/>
+    <xacro:property name="board_t"      value="0.0016"/>
+    <xacro:property name="led_size"     value="${min(0.006, board_w * 0.22)}"/>
+    <xacro:property name="led_pitch"    value="${(board_h - 2 * led_size) / max(led_rows - 1, 1)}"/>
+    <xacro:property name="pcb_z"        value="${bottom_cap_height + 0.004}"/>
+
+    <!-- Default LED color (in both rViz and Gazebo) -->
+    <material name="${name}_led">
+      <color rgba="${led_color} 1.0"/>
+    </material>
+
+    <!-- Mount frame + clear shell -->
+    <joint name="${name}_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent_link}"/>
+      <child link="${name}_link"/>
+    </joint>
+
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 ${bottom_cap_height}" rpy="0 0 0"/>
+        <geometry><mesh filename="${safety_indicator_mesh}" scale="${width} ${width} ${clear_height}"/></geometry>
+        <material name="indicator_shell"/>
+      </visual>
+      <!-- Simple cylinder enclosure around the model -->
+      <collision>
+        <origin xyz="0 0 ${height / 2}" rpy="0 0 0"/>
+        <geometry><cylinder radius="${safety_indicator_unit_back_x * width}" length="${height}"/></geometry>
+      </collision>
+      <xacro:inertial_cylinder mass="${mass}" length="${height}" radius="${0.45 * width}">
+        <origin xyz="0 0 ${height / 2}" rpy="0 0 0"/>
+      </xacro:inertial_cylinder>
+    </link>
+    <xacro:safety_indicator_gz_material link="${name}_link" rgb="0.85 0.92 0.95" alpha="0.35"/>
+
+    <!-- White caps -->
+    <joint name="${name}_caps_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_caps_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+    <link name="${name}_caps_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry><mesh filename="${safety_indicator_mesh}" scale="${width} ${width} ${bottom_cap_height}"/></geometry>
+        <material name="indicator_cap"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 ${height - top_cap_height}" rpy="0 0 0"/>
+        <geometry><mesh filename="${safety_indicator_mesh}" scale="${width} ${width} ${top_cap_height}"/></geometry>
+        <material name="indicator_cap"/>
+      </visual>
+      <xacro:inertial_box mass="0.001" x="0.01" y="0.01" z="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <xacro:safety_indicator_gz_material link="${name}_caps_link" rgb="0.95 0.95 0.93"/>
+
+    <!-- Pole running through the center (connecting both top and bottom caps) -->
+    <joint name="${name}_pole_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_pole_link"/>
+      <origin xyz="0 0 ${height / 2 + 0.0005}" rpy="0 0 0"/>
+    </joint>
+    <link name="${name}_pole_link">
+      <visual>
+        <geometry><cylinder radius="${pole_radius}" length="${height}"/></geometry>
+        <material name="rover_orange"/>
+      </visual>
+      <xacro:inertial_box mass="0.001" x="0.01" y="0.01" z="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <xacro:safety_indicator_gz_material link="${name}_pole_link" rgb="1.0 0.366 0.065"/>
+
+    <!-- Green base PCB -->
+    <joint name="${name}_pcb_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_pcb_link"/>
+      <origin xyz="0 0 ${pcb_z}" rpy="0 0 0"/>
+    </joint>
+    <link name="${name}_pcb_link">
+      <visual>
+        <geometry><mesh filename="${safety_indicator_mesh}" scale="${0.85 * width} ${0.85 * width} ${board_t}"/></geometry>
+        <material name="indicator_pcb"/>
+      </visual>
+      <xacro:inertial_box mass="0.001" x="0.01" y="0.01" z="0.01"><origin xyz="0 0 0" rpy="0 0 0"/></xacro:inertial_box>
+    </link>
+    <xacro:safety_indicator_gz_material link="${name}_pcb_link" rgb="0.05 0.4 0.15"/>
+
+    <!-- LED boards, one per flat face -->
+    <xacro:if value="${led_faces > 0}">
+      <xacro:safety_indicator_led_faces name="${name}" face="0" faces="${min(led_faces, 3)}"
+                                        board_x="${board_x}" board_z="${bottom_cap_height + clear_height / 2}"
+                                        board_t="${board_t}" board_w="${board_w}" board_h="${board_h}"
+                                        led_rows="${led_rows}" led_pitch="${led_pitch}" led_size="${led_size}"
+                                        led_color="${led_color}"/>
+    </xacro:if>
+
+  </xacro:macro>
+</robot>

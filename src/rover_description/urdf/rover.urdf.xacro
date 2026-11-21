@@ -12,6 +12,8 @@
   <xacro:include filename="$(find rover_description)/urdf/components/wheel.xacro"/>
   <xacro:include filename="$(find rover_description)/urdf/components/suspension.xacro"/>
   <xacro:include filename="$(find rover_description)/urdf/components/mounts/_mounts.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/status_indicator.xacro"/>
+  <xacro:include filename="$(find rover_description)/urdf/components/indicators/safety_indicator.xacro"/>
 
   <!-- Base body -->
   <xacro:base_link/>
@@ -33,6 +35,26 @@
   <!-- Static Chassis Mounts (Mast) -->
   <xacro:mast_mounts name="mast" parent_link="base_link"
                      sensor_mount_03_pitch="${sensor_mount_03_pitch}"/>
+
+  <!-- Safety indicator frame above the mast (approx. 0.55 + 0.40 = 0.95 m above base_link) -->
+  <xacro:status_indicator parent_link="pole_cross_mount_link" xyz="0 0 0.40"/>
+
+  <!-- Safety indicator tower: gated and placed by payload.yaml -->
+  <xacro:property name="safety_cfg" value="${payload.get('safety_indicator') or dict()}"/>
+  <xacro:if value="${safety_cfg.get('enabled', False)}">
+    <xacro:safety_indicator name="safety_indicator"
+                            parent_link="${safety_cfg.get('parent', 'pole_left_link')}"
+                            led_color="${safety_cfg.get('led_color', '0.0 1.0 0.0')}"
+                            width="${safety_cfg.get('width', 0.075)}"
+                            height="${safety_cfg.get('height', 0.20)}"
+                            top_cap_height="${safety_cfg.get('top_cap_height', 0.035)}"
+                            bottom_cap_height="${safety_cfg.get('bottom_cap_height', 0.015)}"
+                            pole_radius="${safety_cfg.get('pole_radius', 0.01)}"
+                            led_rows="${safety_cfg.get('led_rows', 10)}"
+                            led_faces="${safety_cfg.get('led_faces', 3)}">
+      <origin xyz="${safety_cfg.get('xyz', '0 0 0.40')}" rpy="${safety_cfg.get('rpy', '0 0 0')}"/>
+    </xacro:safety_indicator>
+  </xacro:if>
 
   <!-- ========================================== -->
   <!--               SUBMODULES                   -->

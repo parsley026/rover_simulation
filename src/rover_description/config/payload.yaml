@@ -5,6 +5,17 @@ base:
 
   sensor_mount_05_pitch: 0.0
 
+# Safety indicator
+safety_indicator:
+  enabled: true
+  parent: "pole_left_link"
+  xyz: "0 0 0.40"            # pole top
+  rpy: "0 0 0"               # yaw turns the LED face (+x = forward)
+  led_color: "0.0 1.0 0.0"   # r g b, 0-1; green = driving on the real rover
+  led_faces: 3               # LED boards: 1 = front face only, 3 = all faces
+  # Optional size overrides (metres): width, height, top_cap_height,
+  # bottom_cap_height, pole_radius, led_rows
+
 submodules:
   # - id: "robotic_arm"
   #   model: "robotic_arm/robotic_arm_base"

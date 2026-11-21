@@ -31,6 +31,12 @@ materials:
   sensor_black: [0.1, 0.1, 0.1, 0.95]
   sensor_cyan: [0.0, 0.8, 0.9, 0.85]
 
+  # Safety indicator (urdf/components/indicators/safety_indicator.xacro)
+  indicator_shell: [0.85, 0.92, 0.95, 0.35]
+  indicator_cap: [0.95, 0.95, 0.93, 1.0]
+  indicator_pcb: [0.05, 0.4, 0.15, 1.0]
+  indicator_led_board: [0.88, 0.88, 0.88, 1.0]
+
   # Suspension Materials
   carbon_black: [0.1, 0.1, 0.1, 1.0]
   frame_grey: [0.75, 0.75, 0.76, 1.0]

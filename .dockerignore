@@ -1,7 +1,0 @@
-# The image only needs the three setup scripts. The repo (src/ alone is
-# ~330 MB of worlds and meshes) is bind-mounted at runtime, not copied.
-*
-!setup_ros2.sh
-!setup_gazebo.sh
-!setup_others.sh
-!docker/entrypoint.sh
